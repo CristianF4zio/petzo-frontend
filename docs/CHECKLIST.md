@@ -1,75 +1,45 @@
 # Checklist
 
-Estado de implementación por sprint (SPEC §16). `[x]` hecho y probado · `[ ]` pendiente · `[~]` parcial o depende de Cris.
+Estado por sprint según SPEC §16 (D-21, D-27). `[x]` hecho y probado · `[~]` parcial o depende de Cris · `[ ]` pendiente.
+El backend (B0–B4) vive en el repo `petzo-backend`; su detalle está en su propio `docs/CHECKLIST.md`.
 
-## S0 Setup
-- [x] Apps `apps/mobile` (Expo, scheme `petzo`), `apps/admin` (Vite), `apps/api` (Express + `/health`)
-- [x] Migración: 13 enums + 10 tablas (§14)
-- [x] Migración: RLS en 10 tablas, solo SELECT (§15)
-- [x] Bucket público `pet-photos` + seed de 11 municipios
-- [x] Migraciones probadas en local y aplicadas en la nube
-- [x] `.env.example` por app, `CLAUDE.md`, logs de skills y agentes
-- [x] Google OAuth configurado y probado en Supabase (usuario Google creado en `auth.users`)
+## Backend (resumen; detalle en petzo-backend)
+- [x] B0 Supabase + modelo: Flyway V1 (baseline) + V2 (trigger de perfiles); un registro nuevo crea su perfil
+- [x] B1 API core: JWT, perfiles, mascotas, fotos, catálogo, límite de plan, admin, Swagger (tests en verde)
+- [~] B2 Solicitudes + IA: implementado y probado con IA simulada; falta probar con `ANTHROPIC_API_KEY` real
+- [~] B3 Automatizaciones: `/internal/*`, flujos n8n y worker Stagehand listos; falta importarlos en n8n y una corrida real
+- [~] B4 API lista: tests, Dockerfile y colección `.http` listos; falta repo en GitHub, deploy en Render y correr la colección contra producción
 
-## S1 API core (HU-02, 03, 05, 10)
-- [x] Middleware JWT + middleware admin
-- [x] Perfil: ver/editar (zona, WhatsApp), alta del perfil
-- [x] CRUD de mascotas (crear, editar, pausar, adoptada)
-- [x] URLs firmadas de subida de fotos (1 a 5)
-- [x] Catálogo con filtros y paginación (20)
-- [x] Límite de plan (free 3 / pro 30)
-- [x] Swagger
-- [x] Endpoints probados con requests reales (`npm run smoke`, Supabase local)
-- [x] Verificar `SUPABASE_SERVICE_ROLE_KEY` en `apps/api/.env` contra la nube (catálogo y municipios responden)
-- [x] Supabase nube: "Confirm email" desactivado (`mailer_autoconfirm: true`)
+## F1 App móvil (Expo)
+- [x] Base: Expo Router, tokens del diseño (DM Sans, Lucide), cliente Supabase Auth
+- [x] Pantallas construidas: login correo + Google, completar perfil, catálogo con filtros, detalle, publicar (4 pasos), mis publicaciones, perfil, favoritos
+- [ ] Adaptar el cliente al contrato de la API Java (`/api/...`, camelCase, ProblemDetail, fotos en 3 pasos)
+- [ ] Solicitud de adopción + estado + botón de WhatsApp (contacto tras aprobar)
+- [ ] Solicitudes recibidas (resumen IA y puntaje) + aprobar/rechazar
+- [ ] Cuestionario de estilo de vida + recomendados (match)
+- [ ] Reportar publicación y solicitar verificación de fundación
+- [ ] Quitar `apps/api` y `supabase/` (legado previo a D-22/D-25)
+- [ ] Flujo completo en Expo Go contra producción
 
-## S2 App base (HU-01, 02, 03, 05, 10 + HU-11, HU-16 del diseño)
-- [x] Migración: columna `dewormed` (desparasitado) + API (local y nube)
-- [x] API: favoritos, eliminar borrador, reportar, conteo de publicaciones del publicador (smoke 16/16)
-- [~] Expo Router + tema (DM Sans, Lucide) + cliente Supabase/API
-- [~] Login correo + Google
-- [~] Completa tu perfil (zona, WhatsApp, foto)
-- [~] Catálogo con filtros, scroll infinito y estados
-- [~] Detalle con galería, publicador y reporte
-- [~] Publicar / editar (asistente 4 pasos, fotos comprimidas ~500 KB)
-- [~] Mis publicaciones (acciones por estado)
-- [~] Perfil y favoritos
-- [ ] Flujo completo en Expo Go (iPhone) contra la API local (Cris)
-
-`[~]` en S2 = implementado, typecheck + bundle iOS + expo-doctor OK; falta la prueba en el iPhone.
-
-## S3 Solicitudes + IA (HU-06, 07, 08, 09)
-- [ ] Cliente Haiku 5.5 + `ai_logs` + tope diario
-- [ ] Enviar solicitud (una activa por mascota)
-- [ ] Pre-evaluación IA (resumen + puntaje)
-- [ ] Aprobar/rechazar + liberar WhatsApp
-- [ ] Cuestionario de estilo de vida + match
-
-## S4 n8n (HU-04)
-- [ ] Endpoints `/internal/*` con `x-internal-secret`
-- [ ] Flujo 1: moderación
-- [ ] Flujo 2: notificaciones por correo
-- [ ] Fallback: si n8n o IA fallan, queda `pending_review`
-- [ ] Callbacks de moderación solo aplican si `status = pending_review` y `updated_at` coincide con lo evaluado
-
-## S5 Panel (HU-12, 13)
-- [ ] Login admin
-- [ ] Cola de moderación con motivo y riesgo
-- [ ] Verificar fundaciones y asignar plan
+## F2 Panel admin (React + Vite)
+- [ ] Login admin (Supabase Auth) y guardia por rol
+- [ ] Cola de moderación con motivo y riesgo; aprobar / rechazar con motivo
+- [ ] Fundaciones (verificar / rechazar) y plan Gratis/Pro
 - [ ] Usuarios (suspender) y reportes
+- [ ] Importaciones de Instagram (lanzar y ver progreso)
+- [ ] Métricas (HU-15, recortable)
 
-## S6 Stagehand (HU-14)
-- [ ] Worker de importación con Haiku 5.5
-- [ ] `import_jobs` + botón en el panel
-- [ ] Un perfil público genera borradores
-
-## S7 Entrega
-- [ ] Deploy API (Render) y panel (Vercel)
-- [ ] APK con EAS contra la API pública
+## F3 Entrega
+- [ ] APK con EAS apuntando a la API pública
 - [ ] Prueba de punta a punta
-- [ ] README y evidencias
+- [ ] READMEs y evidencias
+
+## Pendientes de Cris
+- [ ] Repo vacío `petzo-backend` en GitHub (URL para hacer push)
+- [ ] `ANTHROPIC_API_KEY` en `petzo-backend/.env`
+- [ ] Servicio Docker en Render con las variables del `.env`
+- [ ] Importar los 2 flujos de n8n y pasar sus URLs de producción
+- [ ] Sesión del CLI de Expo (`npx expo login` o `EXPO_TOKEN`) para EAS
 
 ## Recortables (en este orden, si hay atraso)
-- [ ] HU-15 dashboard
-- [ ] HU-16 favoritos
-- [ ] HU-11 reportes
+- [ ] HU-15 dashboard → HU-16 favoritos → HU-11 reportes → HU-06 match

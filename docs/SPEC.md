@@ -135,18 +135,18 @@ Prioridad MoSCoW: M = Must, S = Should, C = Could.
 
 ## 8. Arquitectura y stack
 
-App y panel solo hablan con la API REST; la API es la única que toca Supabase con el service key, llama a la IA y orquesta n8n y Stagehand.
-[embed]
+App y panel solo hablan con la API REST; la API es la única que toca Supabase (por JDBC para los datos; el service key solo se usa para Storage), llama a la IA y orquesta n8n y Stagehand.
+
 El login ocurre con el SDK de Supabase Auth en la app (correo o Google); la app envía ese JWT a la API, que lo valida y decide qué puede hacer el usuario. n8n recibe webhooks de la API y le devuelve resultados por endpoints internos con una clave compartida.
 
 | Capa | Tecnología | Hosting sugerido |
 | --- | --- | --- |
 | Móvil | React Native + Expo (TypeScript) | Expo Go / APK con EAS |
 | Panel | React + Vite (TypeScript) | Vercel o Netlify |
-| API | Node.js + Express (TypeScript) | Render o Railway |
+| API | Java 21 + Spring Boot (Maven), JPA + Flyway | Render (Docker) |
 | Datos | Supabase: Postgres, Auth, Storage | Supabase Cloud |
 | Automatización | n8n | n8n Cloud (tu cuenta) |
-| Scraping | Stagehand (Node) | Mismo servidor de la API |
+| Scraping | Stagehand (Node) | Worker aparte en el repo backend; corre en tu PC y le pide trabajos a la API |
 
 ## 9. Flujos de IA y automatización
 
@@ -177,7 +177,7 @@ Skills y agentes de Claude Code para construir todo esto se definen en el siguie
 | D-01 | Cualquier usuario puede publicar | Solo fundaciones; fundaciones + particulares | Máxima oferta desde el día 1; el riesgo de fraude se cubre con moderación IA y reportes |
 | D-02 | Badge de fundación verificada | Sin distinción | Compensa D-01 con una señal de confianza y da valor al plan Pro |
 | D-03 | React Native con Expo | Flutter; Kotlin solo Android | Un código para iOS y Android, mismo lenguaje que backend y panel |
-| D-04 | Node.js + Express | FastAPI; NestJS | Stack JavaScript de punta a punta, menos contexto que cargar y menos tokens |
+| D-04 | Node.js + Express | FastAPI; NestJS | Reemplazada por D-22 |
 | D-05 | React + Vite para el panel | Next.js; Angular | Liviano, sin SSR innecesario para un panel interno |
 | D-06 | IA: moderación, pre-evaluación y match | Ficha desde foto | Atacan los dos problemas del mercado: fraude y filtro de adoptantes |
 | D-07 | Freemium para fundaciones | Donaciones; patrocinios | Ingreso de quienes más publican; el cobro se difiere a v2 |
@@ -195,6 +195,12 @@ Skills y agentes de Claude Code para construir todo esto se definen en el siguie
 | D-19 | RLS solo de lectura; escritura solo por API | Sin RLS; políticas de escritura por rol | La anon key va en el APK; RLS evita acceso directo y mantiene a la API como única autoridad |
 | D-20 | Bucket público + subida por URL firmada | Bucket privado con lectura firmada | Las fotos ya son públicas en el catálogo; menos latencia y código |
 | D-21 | Construir hoy en 8 mini-sprints con recortes definidos | Sprints de varios días | La entrega es hoy; el orden por dependencias evita bloqueos |
+| D-22 | Backend en Java 21 + Spring Boot | Node.js + Express (D-04) | Cambio de requisito; Spring Security, JPA y Flyway cubren JWT, datos y migraciones con librerías estándar |
+| D-23 | Dos repos: petzo-backend y petzo-frontend | Monorepo | Stacks distintos (Java vs TypeScript), deploys independientes, contexto más chico para Claude Code |
+| D-24 | Stagehand como worker Node que consulta trabajos pendientes a la API | La API llama al worker; worker en Render | Stagehand no tiene SDK Java; al consultar la API, el worker puede correr en tu PC sin exponer puertos y sin cargar Chromium en un Render gratis |
+| D-25 | JDBC + JPA + Flyway contra Postgres de Supabase | PostgREST con service_role; supabase/migrations | Lo idiomático en Spring; el esquema queda versionado junto al código que lo usa |
+| D-26 | Trigger SQL crea el perfil al registrarse | Crear el perfil en el primer /me | Todo usuario de Auth tiene perfil siempre, sin carreras entre requests |
+| D-27 | Backend completo y probado antes del frontend | Construir app y API en paralelo | El frontend consume un contrato estable (Swagger) desplegado; evita rehacer pantallas |
 
 ## 11. Riesgos y próximos pasos
 
@@ -236,12 +242,12 @@ Usaremos **Claude Haiku 5.5** (`claude-haiku-5-5`) de Anthropic para todas las t
 
 El presupuesto alcanza de sobra. Igual dejamos un tope diario en la API (se suman tokens desde `ai_logs`) y, si se pasa, la IA se apaga y todo cae en revisión manual.
 
-Notas para el desarrollo: Haiku 5.5 rechaza parámetros de muestreo como `temperature` y el _prefill_ del asistente, que sí aceptaba Haiku 4.5 ([VKTR](https://www.vktr.com/ai-platforms/anthropic-cuts-smallmodel-pricing-90-with-claude-haiku-55/)). Su tokenizador genera cerca de 30% más tokens que el de Haiku 4.5, y eso ya está en las estimaciones.
+Notas para el desarrollo: Haiku 5.5 rechaza parámetros de muestreo como `temperature` y el _prefill_ del asistente, que sí aceptaba Haiku 4.5 ([VKTR](https://www.vktr.com/ai-platforms/anthropic-cuts-smallmodel-pricing-90-with-claude-haiku-55/)). Su tokenizador genera cerca de 30% más tokens que el de Haiku 4.5, y eso ya está en las estimaciones. Desde Spring Boot se llama con el SDK oficial de Anthropic para Java.
 
 ## 13. Modelo de datos
 
 Son 10 tablas alrededor de `pets` y `profiles`. Las decisiones que lo simplifican: la fundación es un tipo de perfil, la zona es un catálogo y los estados son enums.
-[embed]
+
 `favorites` es N:M entre usuarios y mascotas. `ai_logs` apunta a mascotas o solicitudes por `entity_type` + `entity_id`, sin FK, para registrar cualquier tarea de IA en una sola tabla.
 
 ## 14. Tablas, columnas y por qué
@@ -265,11 +271,11 @@ Los estados son `enum` de Postgres y no texto libre, para que la base rechace va
 
 No se guarda el resultado del match: se calcula al pedirlo y queda registrado en `ai_logs`, porque cambia cada vez que entra o sale una mascota.
 
-El límite del plan (3 o 30 activas) lo valida la API, contando `pets` con estado `pending_review` o `approved` del dueño. Es una regla de negocio y por eso vive en el backend.
+El límite del plan (3 o 30 activas) lo valida la API, contando `pets` con estado `pending_review` o `approved` del dueño. Es una regla de negocio y por eso vive en el backend. Al registrarse un usuario, un trigger SQL sobre auth.users crea su fila en profiles con el nombre y el avatar de Google; es SQL puro, no una Edge Function.
 
 ## 15. RLS y Storage
 
-RLS va activo en las 10 tablas, con políticas solo de lectura y **ninguna de escritura**. Todo lo que se escribe pasa por la API, que usa el `service_role` (ese rol se salta RLS).
+RLS va activo en las 10 tablas, con políticas solo de lectura y **ninguna de escritura**. Todo lo que se escribe pasa por la API Spring Boot, que se conecta a Postgres por JDBC con el rol `postgres` (que se salta RLS). El `service_role` key solo lo usa el backend para la API de Storage.
 
 **Por qué si la app no consulta la base directo:** la app necesita la `anon key` para el login con Supabase Auth, y esa clave viaja dentro del APK. Sin RLS, cualquiera que la extraiga podría leer o modificar la base con PostgREST. RLS cierra esa puerta y la API queda como única vía de escritura (RNF-01, RNF-02).
 
@@ -292,38 +298,46 @@ RLS va activo en las 10 tablas, con políticas solo de lectura y **ninguna de es
 
 | Bucket | Lectura | Subida | Ruta |
 | --- | --- | --- | --- |
-| `pet-photos` (público) | Cualquiera con la URL | Solo con URL firmada que emite la API (`createSignedUploadUrl`) | `pets/{pet_id}/{uuid}.jpg`, `avatars/{user_id}.jpg` |
+| `pet-photos` (público) | Cualquiera con la URL | Solo con URL firmada que emite la API (`Storage upload/sign`) | `pets/{pet_id}/{uuid}.jpg`, `avatars/{user_id}.jpg` |
 
 Se eligió bucket público porque las fotos son el contenido público del catálogo, y así no hace falta firmar cada lectura (menos latencia, menos código). El costo es que la foto de una publicación rechazada sigue accesible si alguien tiene la URL; para cubrirlo, la API borra esas fotos al rechazar.
 
-## 16. Plan de construcción (hoy, 22 de octubre)
+## 16. Plan de construcción (hoy, desde las 16:15)
 
-Se construye hoy, con un solo desarrollador y agentes de IA, en 8 mini-sprints de 45 a 120 minutos. El orden sigue las dependencias: datos → API → app → IA → automatizaciones → panel → entrega. Cada sprint cierra con algo probado y un commit.
+Dos repos (D-23):
 
-| Sprint | Hora | Entregable | HU | Listo cuando |
-| --- | --- | --- | --- | --- |
-| S0 Setup | 13:00–13:45 | Monorepo `apps/api`, `apps/mobile`, `apps/admin`; proyecto Supabase; migraciones (10 tablas, enums, RLS, seed de municipios); bucket; Google OAuth; `CLAUDE.md` | — | La migración corre limpia y el login de Google funciona en el dashboard de Supabase |
-| S1 API core | 13:45–15:30 | Middleware JWT + admin; perfiles; CRUD de mascotas; URLs firmadas; catálogo con filtros; límite de plan; Swagger | HU-02, 03, 05, 10 | Endpoints probados con requests reales |
-| S2 App base | 15:30–17:30 | Expo: login correo + Google, perfil, catálogo, detalle, publicar con fotos, mis publicaciones | HU-01, 02, 03, 05, 10 | Flujo completo en Expo Go contra la API local |
-| S3 Solicitudes + IA | 17:30–18:45 | Solicitud, pre-evaluación con Haiku, aprobar/rechazar, WhatsApp; cuestionario y match | HU-06, 07, 08, 09 | Una solicitud real muestra resumen y puntaje |
-| S4 n8n | 18:45–19:45 | Flujo 1 (moderación) y flujo 2 (notificaciones); endpoints internos con secreto compartido | HU-04 | Publicar → aprobada o en revisión automáticamente + correo recibido |
-| S5 Panel | 19:45–21:00 | React + Vite: login admin, cola de moderación, verificar fundaciones y plan, usuarios | HU-12, 13 | El admin aprueba una publicación marcada |
-| S6 Stagehand | 21:00–21:45 | Worker de importación + botón en el panel + `import_jobs` | HU-14 | Un perfil público genera borradores |
-| S7 Entrega | 21:45–23:15 | Deploy de API (Render) y panel (Vercel); APK con EAS apuntando a la API pública; prueba de punta a punta; README y evidencias | — | APK instalado y funcionando contra producción |
+- `petzo-backend`: API Spring Boot, migraciones Flyway, `stagehand-worker/` (Node), `n8n/` (flujos exportados en JSON), `http/` (colección de pruebas).
+- `petzo-frontend`: `apps/mobile` (Expo) y `apps/admin` (React + Vite).
 
-**En paralelo (tú, con tu agente de diseño):** tener listas las pantallas antes de las 15:30 (inicio de S2). Si no llegan a tiempo, S2 arranca con UI básica y el diseño se aplica en S7.
+**Regla de paso:** el frontend no arranca hasta que la API esté desplegada y todas sus pruebas pasen (D-27).
 
-**Recortes si vamos atrasados, en este orden:** HU-15 dashboard → HU-16 favoritos → HU-11 reportes → HU-06 match (la pre-evaluación se queda, porque ya cubre el uso de IA en el backend). Moderación, notificaciones y Stagehand no se recortan: son requisitos del enunciado.
+| Sprint | Hora | Entregable | Listo cuando |
+| --- | --- | --- | --- |
+| B0 Supabase + modelo | 16:15–17:00 | Proyecto Supabase, Google OAuth, bucket `pet-photos`; repo backend con Spring Initializr; migración Flyway V1 (enums, 10 tablas, índices, trigger de perfiles, RLS, seed de municipios) | La migración corre en Supabase y un registro nuevo crea su perfil |
+| B1 API core | 17:00–18:30 | Seguridad JWT de Supabase; perfiles; CRUD de mascotas y fotos (URLs firmadas); catálogo con filtros; límite de plan; endpoints admin; Swagger | Tests de controladores y servicios en verde |
+| B2 Solicitudes + IA | 18:30–19:15 | Solicitudes, aprobar/rechazar, contacto WhatsApp; pre-evaluación y match con Haiku (SDK Java); `ai_logs` y tope diario | Una solicitud real devuelve resumen y puntaje |
+| B3 Automatizaciones | 19:15–20:00 | Flujos n8n 1 y 2 + endpoints `/internal/*`; worker Stagehand + `import_jobs` | Publicar → moderación automática + correo; una importación crea borradores |
+| B4 API lista | 20:00–20:30 | Suite completa de tests; deploy en Render (Docker); colección `.http` corrida contra la URL pública | **Paso al frontend** |
+| F1 App móvil | 20:30–22:00 | Expo: auth, perfil, catálogo, detalle, publicar, solicitudes, match | Flujo completo en Expo Go contra producción |
+| F2 Panel | 22:00–22:45 | React + Vite: moderación, fundaciones, usuarios, importación | El admin aprueba una publicación marcada |
+| F3 Entrega | 22:45–23:30 | APK con EAS, prueba de punta a punta, READMEs y evidencias | APK instalado y funcionando |
+
+**En paralelo (tú):** el diseño de pantallas tiene que estar listo antes de las 20:30.
+
+**Recortes si vamos atrasados, en este orden:** HU-15 dashboard → HU-16 favoritos → HU-11 reportes → HU-06 match. No se recortan moderación, notificaciones ni Stagehand.
 
 **Riesgos de tiempo:**
 
-- El build de EAS puede pasar 20 a 40 minutos en cola. Hay que lanzarlo apenas la API esté desplegada.
-- Render (plan gratis) se duerme tras un rato sin tráfico: hay que despertar la API antes de la demo.
-- Google OAuth en Expo necesita bien configurado el _redirect_ (`scheme` de la app + URL en Supabase). Por eso se prueba en S0 y no en S2.
+- La conexión directa a Postgres de Supabase es solo IPv6. Desde Render hay que usar la cadena del **session pooler** (Supavisor, puerto 5432), que sí acepta IPv4.
+- Render gratis da 512 MB y se duerme: limitar el heap (`-Xmx350m`) y despertar la API antes de la demo. El arranque en frío de Spring tarda cerca de un minuto.
+- El build de EAS puede pasar 20 a 40 minutos en cola: lanzarlo apenas la app funcione.
+- Google OAuth en Expo necesita bien configurado el _redirect_. Se configura en B0 y se prueba al inicio de F1.
 
-## 17. Prompt para Claude Code
+## 17. Prompt para Claude Code (backend)
 
-Antes de usarlo, exporta este documento como Markdown y guárdalo en `docs/SPEC.md` dentro del repo. Así Claude Code lo lee una sola vez y no hay que pegarle la especificación en cada mensaje: menos tokens. Después pega el prompt al iniciar la sesión, y al empezar cada sprint escribe solo "Arranca S1", "Arranca S2", etc.
+Este prompt es solo para el repo `petzo-backend`. El del frontend se arma cuando la API pase B4, con la URL de producción y el Swagger reales.
+
+Antes de usarlo, exporta este documento como Markdown a `docs/SPEC.md` dentro de `petzo-backend`. Después pega el prompt, y en cada sprint escribe solo "Arranca B1", "Arranca B2", etc.
 
 ```
 
@@ -331,6 +345,6 @@ Antes de usarlo, exporta este documento como Markdown y guárdalo en `docs/SPEC.
 
 **Por qué está escrito así:**
 
-- La especificación va en un archivo y no en el chat: Claude Code la consulta por secciones y no la carga completa en cada turno.
-- Los dos logs (`SKILLS_LOG.md` y `AGENTS_LOG.md`) quedan en el repo y te sirven directo como evidencia para explicar qué skills y agentes usaste y por qué.
-- Plan corto + tu OK antes de cada sprint deja la toma de decisiones en tus manos, que es lo que se evalúa.
+- Un prompt por repo: Claude Code carga solo el contexto de ese repo y así se gastan menos tokens.
+- La lista de endpoints y los flujos fijan el contrato que después consume el frontend.
+- Los logs `SKILLS_LOG.md` y `AGENTS_LOG.md` quedan en el repo y te sirven como evidencia para explicar qué skills y agentes usaste y por qué.

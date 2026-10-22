@@ -1,46 +1,28 @@
-# Petzo
+# Petzo frontend
 
-Dog and cat adoption app for Gran Caracas. Source of truth: `docs/SPEC.md` — read only the section you need (§14 data model, §15 RLS, §16 sprints, §10 decisions).
+Frontend of Petzo (dog/cat adoption, Gran Caracas). This repo is `petzo-frontend` (D-23): `apps/mobile` + `apps/admin`. The API lives in the `petzo-backend` repo (Java 21 + Spring Boot, D-22) — never add backend code here. Source of truth: `docs/SPEC.md` (read only the section you need: §5 RF, §7 HU, §15 RLS, §16 sprints).
 
 ## Stack
-- `apps/mobile`: React Native + Expo (TS). Delivered as EAS APK + Expo Go. See `apps/mobile/AGENTS.md` (Expo changes fast: check versioned docs, use `npx expo install`).
-- `apps/api`: Node + Express (TS), REST + Swagger. Only component that touches Supabase with `service_role`.
-- `apps/admin`: React + Vite (TS).
-- `supabase/`: Postgres + Auth (email/password, Google) + Storage. Migrations in `supabase/migrations`.
-- AI: Claude Haiku 5.5 (`claude-haiku-5-5`) via `@anthropic-ai/sdk`. n8n: flow 1 moderation, flow 2 notifications. Stagehand: Instagram import worker.
+- `apps/mobile`: React Native + Expo SDK 58 (TS), Expo Router in `src/app`. Delivered as EAS APK + Expo Go. See `apps/mobile/AGENTS.md` (check versioned Expo docs, use `npx expo install`).
+- `apps/admin`: React + Vite (TS): moderation, foundations, users, imports.
+- Auth: Supabase Auth SDK only (email/password + Google). Every data call goes to the REST API with `Authorization: Bearer <access token>`.
+- Design: `docs/design/Petzo.dc.html` (tokens + screens) and `docs/DESIGN_PROMPT.md`.
 
 ## Commands
-- API: `cd apps/api && npm run dev` (tsx watch, loads `.env`; Swagger at `/docs`) · `npm run typecheck` · `npm run smoke` (E2E against local Supabase, must be running)
-- Mobile: `cd apps/mobile && npx expo start` · `npx tsc --noEmit`
+- Mobile: `cd apps/mobile && npx expo start` · `npx tsc --noEmit` · `npx expo-doctor` · APK: `npx eas-cli@latest build -p android --profile preview`
 - Admin: `cd apps/admin && npm run dev` · `npm run build`
-- DB local: `npx supabase start` · `npx supabase db reset` (reapplies migrations). Ports are 553xx (543xx taken by another local project).
-- DB cloud: `. ./.env && npx supabase db push --db-url "postgresql://postgres.zcaiksgwvadoumcntrzx:$SUPABASE_DB_PASSWORD@aws-0-us-east-1.pooler.supabase.com:5432/postgres"` (session pooler; direct host is IPv6-only)
+- API for local dev: run `petzo-backend` (`./mvnw spring-boot:run`, port 8090). Swagger at `/swagger-ui.html`.
 
-Apps are independent npm projects (no workspaces): Expo and Vite pin different React versions.
-
-## Architecture rules
-- Supabase only authenticates. The API validates the JWT and authorizes everything; `/admin/*` checks `profiles.role = 'admin'`.
-- All writes go through the API (`service_role`). RLS is on for every table with SELECT-only policies (§15). Never add write policies.
-- No Supabase Edge Functions.
-- Schema changes = new migration file; never edit an applied one.
-- Plan limits (free 3 / pro 30 active pets) are enforced in the API, counting `pending_review` + `approved`.
-- WhatsApp is only returned when an approved request links both users.
-- Uploads: API issues signed upload URLs for bucket `pet-photos`; deletes photos when a pet is rejected.
-
-## AI rules
-- Never send `temperature`, `top_p` or assistant prefill (Haiku 5.5 rejects them). Ask for short JSON, validate with zod.
-- Log every AI call in `ai_logs` (task, model, tokens, result).
-- Daily token cap from env `AI_DAILY_TOKEN_CAP`; over it, AI is skipped and items stay `pending_review`.
-- If AI or n8n fail, nothing is lost: the pet stays `pending_review`.
-- n8n calls back `/internal/*` with header `x-internal-secret`.
-
-## Conventions
-- Code, names and commits in English (Conventional Commits). UI text in Spanish.
-- Secrets only in `.env` (gitignored); each app has `.env.example`. Never hardcode keys.
+## Rules
+- The app never reads or writes tables directly: RLS is SELECT-only and the API is the only writer (D-19). Only the anon/publishable key ships in the app.
+- Contract = the API's Swagger (D-27): camelCase JSON, ProblemDetail errors with `code`, paginated catalog `{items, page, pageSize, total}`.
+- WhatsApp is shown only through `GET /api/requests/{id}/contact` after approval (RNF-04).
+- Photos: compress (≤ ~500 KB, RNF-06) → `POST /api/pets/{id}/photos/upload-url` → upload to the signed URL → `POST /api/pets/{id}/photos`.
+- UI text in Spanish; code, names and commits in English. Secrets only in `.env` (each app has `.env.example`).
+- Legacy: `apps/api` (Node) and `supabase/` belong to the plan before D-22/D-25; the schema now lives in Flyway in `petzo-backend`. Do not modify them; they are removed in F1.
 
 ## Workflow
-- Sprints per SPEC §16; on "Arranca Sx" do only that sprint. Short plan (≤10 lines) and wait for OK.
-- Track tasks in `docs/CHECKLIST.md`: tick items as they are done and tested; add new tasks there before starting them.
-- Commit each finished piece of work with a short subject that describes the action (Conventional Commits, no body) and push to `origin main`. Scan for secrets before pushing.
-- Close each sprint: run what can be tested, commit, push, report (≤15 lines).
-- Log skills in `docs/SKILLS_LOG.md` and subagents in `docs/AGENTS_LOG.md` (only real uses).
+- Sprints per SPEC §16: F1 mobile, F2 admin, F3 delivery (backend B0–B4 runs in `petzo-backend`). On "Arranca Fx" do only that sprint: short plan (≤10 lines), wait for OK.
+- Track tasks in `docs/CHECKLIST.md`; tick items when done and tested.
+- Commit each finished piece with a short Conventional Commit subject (no body) and push to `origin main`. Scan for secrets before pushing.
+- Log skills in `docs/SKILLS_LOG.md` and subagents in `docs/AGENTS_LOG.md` (real uses only).

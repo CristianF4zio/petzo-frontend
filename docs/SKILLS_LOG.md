@@ -1,5 +1,7 @@
 # Skills log
 
+> Las filas S0–S2 son del plan anterior (API en Node + migraciones del CLI de Supabase). Desde D-22/D-23 el backend vive en `petzo-backend`, con su propio log; aquí siguen solo los sprints F1–F3.
+
 | Sprint | Skill | Para qué la usaste | Resultado |
 | --- | --- | --- | --- |
 | S0 | anthropic-skills:docs | Leer la spec desde el Claude Doc y exportarla a `docs/SPEC.md` | SPEC.md generado (§1–§17) |
