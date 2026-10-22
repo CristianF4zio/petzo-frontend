@@ -37,7 +37,7 @@ export default function Profile() {
     }, []),
   );
 
-  const name = profile?.full_name || 'Sin nombre';
+  const name = profile?.fullName || 'Sin nombre';
   const wa = localWhatsapp(profile?.whatsapp);
 
   return (
@@ -46,13 +46,13 @@ export default function Profile() {
         <Text style={type.h1}>Perfil</Text>
         <View style={styles.me}>
           <View style={styles.avatar}>
-            {profile?.avatar_url ? <Image source={profile.avatar_url} style={StyleSheet.absoluteFill} contentFit="cover" /> : <Text style={type.h2}>{initials(name)}</Text>}
+            {profile?.avatarUrl ? <Image source={profile.avatarUrl} style={StyleSheet.absoluteFill} contentFit="cover" /> : <Text style={type.h2}>{initials(name)}</Text>}
           </View>
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={type.h2}>{name}</Text>
             <View style={styles.inline}>
               <MapPin size={14} color={color.muted} />
-              <Text style={type.small}>{zoneName(profile?.municipality_id) || 'Sin zona'}</Text>
+              <Text style={type.small}>{zoneName(profile?.municipalityId) || 'Sin zona'}</Text>
             </View>
           </View>
         </View>

@@ -61,7 +61,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         return n;
       });
       try {
-        await api(`/me/favorites/${petId}`, { method: on ? 'DELETE' : 'PUT' });
+        await api(`/favorites/${petId}`, { method: on ? 'DELETE' : 'POST' });
       } catch (e) {
         setFavIds((s) => {
           const n = new Set(s);
@@ -82,7 +82,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       profile,
       municipalities,
       zoneName: (id) => municipalities.find((m) => m.id === id)?.name ?? '',
-      isComplete: !!profile?.whatsapp && !!profile?.municipality_id,
+      isComplete: !!profile?.complete,
       refreshProfile,
       favIds,
       toggleFav,

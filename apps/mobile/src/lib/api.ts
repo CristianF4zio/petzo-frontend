@@ -7,60 +7,68 @@ export type PetStatus = 'draft' | 'pending_review' | 'approved' | 'rejected' | '
 
 export type Publisher = {
   id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  municipality_id: number | null;
-  account_type: 'person' | 'foundation';
-  foundation_name: string | null;
-  verification_status: string;
-  pets_count?: number;
+  name: string | null;
+  avatarUrl: string | null;
+  municipalityId: number | null;
+  foundation: boolean;
+  verified: boolean;
+  petsCount: number | null;
 };
+
+export type Photo = { id: string; url: string; path: string };
 
 export type Pet = {
   id: string;
-  owner_id: string;
   species: Species;
   name: string;
-  age_months: number;
+  ageMonths: number;
   sex: Sex;
   size: Size;
-  municipality_id: number;
+  municipalityId: number;
   vaccinated: boolean;
   sterilized: boolean;
   dewormed: boolean;
   description: string | null;
   status: PetStatus;
-  moderation_reason?: string | null;
-  updated_at: string;
-  photos: string[];
-  publisher?: Publisher;
+  version: number;
+  photos: Photo[];
+  publisher: Publisher;
+  moderationReason: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type Profile = {
   id: string;
-  full_name: string | null;
-  avatar_url: string | null;
+  fullName: string | null;
+  avatarUrl: string | null;
   whatsapp: string | null;
-  municipality_id: number | null;
+  municipalityId: number | null;
   plan: 'free' | 'pro';
-  account_type: 'person' | 'foundation';
-  foundation_name: string | null;
+  accountType: 'person' | 'foundation';
+  foundationName: string | null;
+  verificationStatus: 'none' | 'pending' | 'verified' | 'rejected';
+  complete: boolean;
 };
 
 export type Municipality = { id: number; name: string };
+
+export type Page<T> = { items: T[]; page: number; pageSize: number; total: number };
+
+export type UploadUrl = { path: string; signedUrl: string; token: string };
 
 export class ApiError extends Error {
   constructor(
     public status: number,
     public code: string,
     message: string,
-    public details?: { fieldErrors?: Record<string, string[]> },
+    public fields?: Record<string, string>,
   ) {
     super(message);
   }
 }
 
-const BASE = process.env.EXPO_PUBLIC_API_URL!;
+const BASE = process.env.EXPO_PUBLIC_API_URL! + '/api';
 
 export async function api<T = unknown>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
   const { data } = await supabase.auth.getSession();
@@ -76,10 +84,15 @@ export async function api<T = unknown>(path: string, init: { method?: string; bo
     throw new ApiError(0, 'OFFLINE', 'Sin conexión. Revisa tus datos o el wifi.');
   }
   const text = await res.text();
-  const json = text ? JSON.parse(text) : null;
+  let json: any = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    // non-JSON body (proxy error page, cold start); fall through to the generic error
+  }
   if (!res.ok) {
-    const e = json?.error ?? {};
-    throw new ApiError(res.status, e.code ?? 'INTERNAL', e.message ?? 'Algo falló. Intenta de nuevo.', e.details);
+    // Spring ProblemDetail: { code, detail, fields? }
+    throw new ApiError(res.status, json?.code ?? 'INTERNAL', json?.detail ?? 'Algo falló. Intenta de nuevo.', json?.fields);
   }
   return json as T;
 }
@@ -90,6 +103,3 @@ export async function uploadSigned(path: string, token: string, base64: string) 
   const { error } = await supabase.storage.from('pet-photos').uploadToSignedUrl(path, token, bytes, { contentType: 'image/jpeg' });
   if (error) throw new ApiError(0, 'UPLOAD_FAILED', 'No se subió la foto');
 }
-
-// Public URL → storage path (pets/{id}/{file}.jpg), needed to re-save existing photos
-export const storagePath = (url: string) => decodeURIComponent(url.split('/object/public/pet-photos/')[1]?.split('?')[0] ?? '');

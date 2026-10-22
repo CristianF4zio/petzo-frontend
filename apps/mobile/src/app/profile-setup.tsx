@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Field, FieldError, Footer, Header, Input, OptionSheet, SelectButton } from '@/components/ui';
-import { ApiError, api, uploadSigned } from '@/lib/api';
+import { ApiError, api, uploadSigned, type UploadUrl } from '@/lib/api';
 import { formatWhatsapp, initials, localWhatsapp } from '@/lib/format';
 import { pickAvatar, type LocalPhoto } from '@/lib/photos';
 import { useSession } from '@/lib/session';
@@ -18,8 +18,8 @@ export default function ProfileSetup() {
   const { next } = useLocalSearchParams<{ next?: string }>();
   const { profile, municipalities, zoneName, refreshProfile } = useSession();
   const say = useToast();
-  const [nombre, setNombre] = useState(profile?.full_name ?? '');
-  const [zona, setZona] = useState(profile?.municipality_id ? String(profile.municipality_id) : '');
+  const [nombre, setNombre] = useState(profile?.fullName ?? '');
+  const [zona, setZona] = useState(profile?.municipalityId ? String(profile.municipalityId) : '');
   const [wa, setWa] = useState(localWhatsapp(profile?.whatsapp));
   const [avatar, setAvatar] = useState<LocalPhoto | null>(null);
   const [zoneOpen, setZoneOpen] = useState(false);
@@ -41,24 +41,29 @@ export default function ProfileSetup() {
     setBusy(true);
     try {
       if (avatar) {
-        const up = await api<{ path: string; token: string }>('/me/avatar/upload-url', { method: 'POST' });
+        const up = await api<UploadUrl>('/me/avatar/upload-url', { method: 'POST' });
         await uploadSigned(up.path, up.token, avatar.base64);
         await api('/me/avatar', { method: 'PUT' });
       }
-      await api('/me', { method: 'PATCH', body: { full_name: nombre.trim(), municipality_id: Number(zona), whatsapp: digits } });
+      await api('/me', { method: 'PUT', body: { fullName: nombre.trim(), municipalityId: Number(zona), whatsapp: digits } });
       await refreshProfile();
       say('¡Listo! Tu perfil está completo.');
       if (next === 'publish') router.replace('/publish');
       else leave();
     } catch (err) {
-      const f = err instanceof ApiError ? err.details?.fieldErrors : undefined;
-      setErrors(f ? { nombre: f.full_name?.[0], wa: f.whatsapp?.[0] && 'Revisa el número: debe verse como 0412 123 4567.' } : { form: err instanceof Error ? err.message : 'Algo falló.' });
+      const f = err instanceof ApiError ? err.fields : undefined;
+      // Fields the form can't point at (e.g. municipalityId) still get the general message
+      setErrors({
+        nombre: f?.fullName,
+        wa: f?.whatsapp && 'Revisa el número: debe verse como 0412 123 4567.',
+        form: f?.fullName || f?.whatsapp ? undefined : err instanceof Error ? err.message : 'Algo falló.',
+      });
     } finally {
       setBusy(false);
     }
   };
 
-  const photoUri = avatar?.uri ?? profile?.avatar_url;
+  const photoUri = avatar?.uri ?? profile?.avatarUrl;
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
@@ -70,7 +75,7 @@ export default function ProfileSetup() {
           </Text>
           <View style={styles.photoRow}>
             <Pressable accessibilityRole="button" accessibilityLabel="Foto de perfil" onPress={async () => setAvatar((await pickAvatar()) ?? avatar)} style={styles.avatar}>
-              {photoUri ? <Image source={photoUri} style={StyleSheet.absoluteFill} contentFit="cover" /> : profile?.full_name ? <Text style={type.title}>{initials(profile.full_name)}</Text> : <Camera size={24} color={color.muted} />}
+              {photoUri ? <Image source={photoUri} style={StyleSheet.absoluteFill} contentFit="cover" /> : profile?.fullName ? <Text style={type.title}>{initials(profile.fullName)}</Text> : <Camera size={24} color={color.muted} />}
             </Pressable>
             <View style={{ gap: 2 }}>
               <Button label={photoUri ? 'Cambiar foto' : 'Agregar foto'} variant="text" onPress={async () => setAvatar((await pickAvatar()) ?? avatar)} style={{ height: 32 }} />

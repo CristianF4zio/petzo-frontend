@@ -60,9 +60,9 @@ export default function PetDetail() {
 
   const fav = favIds.has(pet.id);
   const pub = pet.publisher;
-  const pubName = (pub?.account_type === 'foundation' && pub.foundation_name) || pub?.full_name || 'Publicador';
+  const pubName = pub.name || 'Publicador';
   const short = pet.name.split(' ')[0];
-  const own = pet.owner_id === profile?.id;
+  const own = pub.id === profile?.id;
   const health = [
     pet.vaccinated ? { Icon: Syringe, label: gendered('Vacunad', pet.sex) } : { Icon: CircleDashed, label: 'Sin vacunas' },
     pet.sterilized ? { Icon: CircleCheck, label: gendered('Esterilizad', pet.sex) } : { Icon: CircleDashed, label: 'Sin esterilizar' },
@@ -78,10 +78,10 @@ export default function PetDetail() {
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(u) => u}
+            keyExtractor={(ph) => ph.id}
             onMomentumScrollEnd={(e) => setIdx(Math.round(e.nativeEvent.contentOffset.x / width))}
             renderItem={({ item, index }) => (
-              <Image source={item} style={{ width, height: 270 }} contentFit="cover" accessibilityLabel={`Foto ${index + 1} de ${pet.photos.length} de ${pet.name}`} />
+              <Image source={item.url} style={{ width, height: 270 }} contentFit="cover" accessibilityLabel={`Foto ${index + 1} de ${pet.photos.length} de ${pet.name}`} />
             )}
           />
           <SafeAreaView edges={['top']} style={styles.overlay} pointerEvents="box-none">
@@ -113,12 +113,12 @@ export default function PetDetail() {
             <Text style={type.h1}>{pet.name}</Text>
             <View style={styles.row}>
               <MapPin size={14} color={color.muted} />
-              <Text style={type.small}>{`${zoneName(pet.municipality_id)} · Gran Caracas`}</Text>
+              <Text style={type.small}>{`${zoneName(pet.municipalityId)} · Gran Caracas`}</Text>
             </View>
           </View>
           <View style={styles.facts}>
             {[
-              ['Edad', ageText(pet.age_months)],
+              ['Edad', ageText(pet.ageMonths)],
               ['Sexo', SEX[pet.sex]],
               ['Tamaño', SIZE[pet.size]],
             ].map(([k, v]) => (
@@ -147,11 +147,11 @@ export default function PetDetail() {
           ) : null}
           <View style={styles.publisher}>
             <View style={styles.avatar}>
-              {pub?.avatar_url ? <Image source={pub.avatar_url} style={StyleSheet.absoluteFill} /> : <Text style={type.title}>{initials(pubName)}</Text>}
+              {pub?.avatarUrl ? <Image source={pub.avatarUrl} style={StyleSheet.absoluteFill} /> : <Text style={type.title}>{initials(pubName)}</Text>}
             </View>
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={type.title}>{pubName}</Text>
-              <Text style={type.small}>{`${zoneName(pub?.municipality_id)} · ${pub?.pets_count === 1 ? '1 publicación' : `${pub?.pets_count ?? 0} publicaciones`}`}</Text>
+              <Text style={type.small}>{`${zoneName(pub?.municipalityId)} · ${pub?.petsCount === 1 ? '1 publicación' : `${pub?.petsCount ?? 0} publicaciones`}`}</Text>
               {isVerified(pet) ? <VerifiedBadge /> : <Text style={[type.badge, styles.particular]}>Particular</Text>}
             </View>
           </View>

@@ -1,7 +1,7 @@
 import { MapPin } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { api, type Size } from '@/lib/api';
+import { api, type Page, type Size } from '@/lib/api';
 import { AGES, DEFAULT_FILTERS, ageLabel, toQuery, type Filters } from '@/lib/filters';
 import { SIZE } from '@/lib/format';
 import { useSession } from '@/lib/session';
@@ -27,8 +27,8 @@ export function FiltersSheet({ visible, filters, onApply, onClose }: Props) {
     if (!visible) return;
     let live = true;
     const t = setTimeout(() => {
-      api<{ pagination: { total: number } }>(toQuery(draft, 1)).then(
-        (r) => live && setCount(r.pagination.total),
+      api<Page<unknown>>(toQuery(draft, 1)).then(
+        (r) => live && setCount(r.total),
         () => live && setCount(null),
       );
     }, 300);

@@ -21,9 +21,9 @@ export function toQuery(f: Filters, page: number) {
   if (f.species) q.set('species', f.species);
   if (f.sex) q.set('sex', f.sex);
   if (f.sizes.length) q.set('size', f.sizes.join(','));
-  if (f.minAge) q.set('min_age_months', String(f.minAge));
-  if (f.maxAge !== NO_MAX) q.set('max_age_months', String(f.maxAge));
-  if (f.zone) q.set('municipality_id', String(f.zone));
+  if (f.minAge) q.set('ageMin', String(f.minAge));
+  if (f.maxAge !== NO_MAX) q.set('ageMax', String(f.maxAge));
+  if (f.zone) q.set('municipalityId', String(f.zone));
   return `/pets?${q}`;
 }
 

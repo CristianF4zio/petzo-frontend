@@ -15,7 +15,7 @@ Mobile app of Petzo (dog/cat adoption, Gran Caracas). This repo is `petzo-fronte
 - The app never reads or writes tables directly: RLS is SELECT-only and the API is the only writer (D-19). Only the anon/publishable key ships in the app.
 - Contract = the API's Swagger (D-27): camelCase JSON, ProblemDetail errors with `code`, paginated catalog `{items, page, pageSize, total}`.
 - WhatsApp is shown only through `GET /api/requests/{id}/contact` after approval (RNF-04).
-- Photos: compress (≤ ~500 KB, RNF-06) → `POST /api/pets/{id}/photos/upload-url` → upload to the signed URL → `POST /api/pets/{id}/photos`.
+- Publish (D-28): `POST /api/pets` creates a draft → per new photo: compress (≤ ~500 KB, RNF-06), `POST /api/pets/{id}/photos/upload-url`, upload to the signed URL → `PUT /api/pets/{id}/photos {paths}` with the whole gallery in order (first = cover) → `PATCH /api/pets/{id}/status {"status":"pending_review"}`.
 - UI text in Spanish; code, names and commits in English. Secrets only in `.env` (each app has `.env.example`).
 
 ## Workflow

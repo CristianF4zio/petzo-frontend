@@ -114,19 +114,19 @@ export default function Mine() {
               return (
                 <View key={p.id} style={styles.card}>
                   <View style={styles.row}>
-                    <Image source={p.photos[0]} style={styles.thumb} contentFit="cover" />
+                    <Image source={p.photos[0]?.url} style={styles.thumb} contentFit="cover" />
                     <View style={{ flex: 1, gap: 6 }}>
                       <Text style={type.title} numberOfLines={1}>
                         {p.name}
                       </Text>
                       <Pill label={label} fg={fg} bg={bg} />
-                      <Text style={type.caption}>{`${UPDATED[p.status]} ${timeAgo(p.updated_at)}`}</Text>
+                      <Text style={type.caption}>{`${UPDATED[p.status]} ${timeAgo(p.updatedAt)}`}</Text>
                     </View>
                   </View>
-                  {p.status === 'rejected' && p.moderation_reason ? (
+                  {p.status === 'rejected' && p.moderationReason ? (
                     <View style={styles.reason}>
                       <Text style={[type.label, { color: color.error, fontFamily: font.semibold }]}>Motivo del rechazo</Text>
-                      <Text style={[type.small, { color: color.error }]}>{p.moderation_reason}</Text>
+                      <Text style={[type.small, { color: color.error }]}>{p.moderationReason}</Text>
                     </View>
                   ) : null}
                   {note ? <Text style={type.caption}>{note}</Text> : null}

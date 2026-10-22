@@ -7,14 +7,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FiltersSheet } from '@/components/FiltersSheet';
 import { PetCard } from '@/components/PetCard';
 import { Button, Chip, Skeleton, StateView } from '@/components/ui';
-import { ApiError, api, type Pet, type Species } from '@/lib/api';
+import { ApiError, api, type Page, type Pet, type Species } from '@/lib/api';
 import { DEFAULT_FILTERS, NO_MAX, activeCount, ageLabel, toQuery, type Filters } from '@/lib/filters';
 import { SEX, SIZE } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { color, font, radius, shadow, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
-type Page = { data: Pet[]; pagination: { page: number; page_size: number; total: number } };
 type Status = 'loading' | 'ready' | 'error' | 'offline';
 
 function SkeletonCard() {
@@ -42,9 +41,9 @@ export default function Catalog() {
   const load = useCallback(async (f: Filters) => {
     setStatus('loading');
     try {
-      const r = await api<Page>(toQuery(f, 1));
-      setItems(r.data);
-      setTotal(r.pagination.total);
+      const r = await api<Page<Pet>>(toQuery(f, 1));
+      setItems(r.items);
+      setTotal(r.total);
       setPage(1);
       setStatus('ready');
     } catch (e) {
@@ -60,8 +59,8 @@ export default function Catalog() {
     if (loadingMore || status !== 'ready' || items.length >= total) return;
     setLoadingMore(true);
     try {
-      const r = await api<Page>(toQuery(filters, page + 1));
-      setItems((prev) => [...prev, ...r.data.filter((p) => !prev.some((x) => x.id === p.id))]);
+      const r = await api<Page<Pet>>(toQuery(filters, page + 1));
+      setItems((prev) => [...prev, ...r.items.filter((p) => !prev.some((x) => x.id === p.id))]);
       setPage(page + 1);
     } catch {
       say('No pudimos cargar más peludos.');
@@ -136,7 +135,7 @@ export default function Catalog() {
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={Separator}
           ListHeaderComponent={<Text style={[type.small, { marginBottom: 24 }]}>{`${total} peludos en ${filters.zone ? zoneName(filters.zone) : 'Gran Caracas'}`}</Text>}
-          renderItem={({ item }) => <PetCard pet={item} zone={zoneName(item.municipality_id)} fav={favIds.has(item.id)} onOpen={onOpen} onFav={onFav} />}
+          renderItem={({ item }) => <PetCard pet={item} zone={zoneName(item.municipalityId)} fav={favIds.has(item.id)} onOpen={onOpen} onFav={onFav} />}
           onEndReached={loadMore}
           onEndReachedThreshold={0.6}
           ListFooterComponent={

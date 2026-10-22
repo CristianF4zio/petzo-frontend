@@ -6,7 +6,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PhotoGrid, type Tile } from '@/components/PhotoGrid';
 import { Button, Chip, Field, FieldError, Footer, IconCircle, Input, OptionSheet, Segmented, SelectButton } from '@/components/ui';
-import { ApiError, api, storagePath, uploadSigned, type Pet, type Sex, type Size, type Species } from '@/lib/api';
+import { ApiError, api, uploadSigned, type Pet, type Sex, type Size, type Species, type UploadUrl } from '@/lib/api';
 import { PLAN_LIMITS, SEX, SIZE, ageText, gendered, isActive } from '@/lib/format';
 import { pickPhotos } from '@/lib/photos';
 import { useSession } from '@/lib/session';
@@ -43,7 +43,7 @@ export default function Publish() {
   const [step, setStep] = useState(1);
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
-  const [form, setForm] = useState<Form>(emptyForm(profile?.municipality_id ?? null));
+  const [form, setForm] = useState<Form>(emptyForm(profile?.municipalityId ?? null));
   const [errors, setErrors] = useState<Errors>({});
   const [petId, setPetId] = useState<string | null>(null);
   const [active, setActive] = useState(0);
@@ -56,10 +56,10 @@ export default function Publish() {
     setStep(1);
     setTiles([]);
     setSelected(null);
-    setForm(emptyForm(profile?.municipality_id ?? null));
+    setForm(emptyForm(profile?.municipalityId ?? null));
     setErrors({});
     setPetId(null);
-  }, [profile?.municipality_id]);
+  }, [profile?.municipalityId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -70,15 +70,15 @@ export default function Publish() {
           setPetId(p.id);
           setStep(1);
           setErrors({});
-          setTiles(p.photos.map((uri) => ({ key: uri, uri, path: storagePath(uri), status: 'ok' })));
+          setTiles(p.photos.map((ph) => ({ key: ph.id, uri: ph.url, path: ph.path, status: 'ok' })));
           setForm({
             species: p.species,
             name: p.name,
-            years: Math.floor(p.age_months / 12),
-            months: p.age_months % 12,
+            years: Math.floor(p.ageMonths / 12),
+            months: p.ageMonths % 12,
             sex: p.sex,
             size: p.size,
-            zone: p.municipality_id,
+            zone: p.municipalityId,
             health: { vaccinated: p.vaccinated, sterilized: p.sterilized, dewormed: p.dewormed },
             description: p.description ?? '',
           });
@@ -98,33 +98,28 @@ export default function Publish() {
     }
   };
 
-  // Uploads the given tiles; returns key → storage path for the ones that made it
+  // Uploads the given tiles straight to Storage; returns key → storage path for the ones that made it.
+  // Nothing is saved on the pet until PUT /photos.
   const upload = async (id: string, keys: string[]): Promise<Record<string, string>> => {
-    if (!keys.length) return {};
     setTiles((t) => t.map((x) => (keys.includes(x.key) ? { ...x, status: 'up' } : x)));
-    const urls = await api<{ path: string; token: string }[]>(`/pets/${id}/photos/upload-urls`, { method: 'POST', body: { count: keys.length } });
     const results = await Promise.all(
-      keys.map(async (key, i) => {
-        const tile = tiles.find((x) => x.key === key)!;
+      keys.map(async (key) => {
         try {
-          await uploadSigned(urls[i]!.path, urls[i]!.token, tile.base64!);
-          return { key, path: urls[i]!.path, ok: true };
+          const url = await api<UploadUrl>(`/pets/${id}/photos/upload-url`, { method: 'POST' });
+          await uploadSigned(url.path, url.token, tiles.find((x) => x.key === key)!.base64!);
+          return [key, url.path] as const;
         } catch {
-          return { key, path: undefined, ok: false };
+          return [key, undefined] as const;
         }
       }),
     );
-    setTiles((t) => t.map((x) => {
-      const r = results.find((y) => y.key === x.key);
-      return r ? { ...x, path: r.path, status: r.ok ? 'ok' : 'fail' } : x;
-    }));
-    return Object.fromEntries(results.filter((r) => r.ok).map((r) => [r.key, r.path!]));
+    const done = Object.fromEntries(results.filter(([, path]) => path)) as Record<string, string>;
+    setTiles((t) => t.map((x) => (keys.includes(x.key) ? { ...x, path: done[x.key], status: done[x.key] ? 'ok' : 'fail' } : x)));
+    return done;
   };
 
-  const retry = async (key: string) => {
-    if (!petId) return setTiles((t) => t.map((x) => (x.key === key ? { ...x, status: 'local' } : x)));
-    await upload(petId, [key]).catch(() => say('Sigue sin subir. Revisa tu conexión.'));
-  };
+  // The next submit uploads it again
+  const retry = (key: string) => setTiles((t) => t.map((x) => (x.key === key ? { ...x, status: 'local' } : x)));
 
   const validate = (): Errors => {
     const e: Errors = {};
@@ -147,16 +142,16 @@ export default function Publish() {
     const body = {
       species: form.species,
       name: form.name.trim(),
-      age_months: form.years * 12 + form.months,
+      ageMonths: form.years * 12 + form.months,
       sex: form.sex,
       size: form.size,
-      municipality_id: form.zone,
+      municipalityId: form.zone,
       ...form.health,
       description: form.description.trim(),
     };
     try {
       let id = petId;
-      if (id) await api(`/pets/${id}`, { method: 'PATCH', body });
+      if (id) await api(`/pets/${id}`, { method: 'PUT', body });
       else {
         id = (await api<Pet>('/pets', { method: 'POST', body })).id;
         setPetId(id);
@@ -168,11 +163,12 @@ export default function Publish() {
         setErrors({ step: 'Reintenta o quita la foto que no se subió.' });
         return;
       }
+      // Whole gallery in one call: adds, removals and cover order land together
       await api(`/pets/${id}/photos`, { method: 'PUT', body: { paths } });
       try {
         await api(`/pets/${id}/status`, { method: 'PATCH', body: { status: 'pending_review' } });
       } catch (e) {
-        // An approved pet that was edited is already back in review
+        // Drafts (new or imported) need this; an edited published pet is already back in review
         if (!(e instanceof ApiError && e.code === 'INVALID_STATUS')) throw e;
       }
       say(`Enviamos a ${body.name} a revisión. Te avisamos en minutos.`);

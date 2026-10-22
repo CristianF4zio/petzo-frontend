@@ -39,13 +39,13 @@ export default function Favorites() {
         ) : (
           pets.map((p) => (
             <Pressable key={p.id} accessibilityRole="button" accessibilityLabel={`Ver a ${p.name}`} onPress={() => router.push(`/pet/${p.id}`)} style={styles.card}>
-              <Image source={p.photos[0]} style={styles.thumb} contentFit="cover" />
+              <Image source={p.photos[0]?.url} style={styles.thumb} contentFit="cover" />
               <View style={{ flex: 1, gap: 4 }}>
                 <Text style={type.title} numberOfLines={1}>
                   {p.name}
                 </Text>
                 <Text style={type.small}>{petMeta(p)}</Text>
-                <Text style={type.small}>{zoneName(p.municipality_id)}</Text>
+                <Text style={type.small}>{zoneName(p.municipalityId)}</Text>
               </View>
             </Pressable>
           ))

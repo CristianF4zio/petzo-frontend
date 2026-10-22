@@ -10,8 +10,8 @@ import { VerifiedBadge } from './ui';
 
 export const HEART = 'M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z';
 
-export const isVerified = (pet: Pet) => pet.publisher?.account_type === 'foundation' && pet.publisher.verification_status === 'verified';
-export const petMeta = (pet: Pet) => `${ageText(pet.age_months)} · ${SEX[pet.sex]} · ${SIZE[pet.size]}`;
+export const isVerified = (pet: Pet) => pet.publisher.verified;
+export const petMeta = (pet: Pet) => `${ageText(pet.ageMonths)} · ${SEX[pet.sex]} · ${SIZE[pet.size]}`;
 
 type Props = { pet: Pet; zone: string; fav: boolean; onOpen: (id: string) => void; onFav: (id: string) => void };
 
@@ -19,7 +19,7 @@ export const PetCard = memo(function PetCard({ pet, zone, fav, onOpen, onFav }: 
   return (
     <View style={styles.card}>
       <Pressable accessibilityRole="button" accessibilityLabel={`Ver a ${pet.name}`} onPress={() => onOpen(pet.id)} style={styles.photo}>
-        <Image source={pet.photos[0]} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} recyclingKey={pet.id} />
+        <Image source={pet.photos[0]?.url} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} recyclingKey={pet.id} />
         <View style={styles.count} pointerEvents="none">
           <Images size={14} color={color.canvas} />
           <Text style={styles.countText}>{pet.photos.length}</Text>

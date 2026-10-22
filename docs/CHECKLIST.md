@@ -8,12 +8,12 @@ Repos: `petzo-backend` (B0–B4, detalle en su `docs/CHECKLIST.md`), `petzo-fron
 - [x] B1 API core: JWT, perfiles, mascotas, fotos, catálogo, límite de plan, admin, Swagger (tests en verde)
 - [~] B2 Solicitudes + IA: implementado y probado con IA simulada; falta probar con `ANTHROPIC_API_KEY` real
 - [~] B3 Automatizaciones: `/internal/*`, flujos n8n y worker Stagehand listos; falta importarlos en n8n y una corrida real
-- [~] B4 API lista: tests, Dockerfile y colección `.http` listos; falta repo en GitHub, deploy en Render y correr la colección contra producción
+- [~] B4 API lista: tests (20/20), Dockerfile y colección `.http` listos; falta deploy en Render y correr la colección contra producción
 
 ## F1 App móvil (Expo)
 - [x] Base: Expo Router, tokens del diseño (DM Sans, Lucide), cliente Supabase Auth
 - [x] Pantallas construidas: login correo + Google, completar perfil, catálogo con filtros, detalle, publicar (4 pasos), mis publicaciones, perfil, favoritos
-- [ ] Adaptar el cliente al contrato de la API Java (`/api/...`, camelCase, ProblemDetail, fotos en 3 pasos)
+- [x] Adaptar el cliente al contrato de la API Java (`/api/...`, camelCase, ProblemDetail, galería con `PUT /photos`, D-28); `tsc` y bundle de Metro OK
 - [ ] Solicitud de adopción + estado + botón de WhatsApp (contacto tras aprobar)
 - [ ] Solicitudes recibidas (resumen IA y puntaje) + aprobar/rechazar
 - [ ] Cuestionario de estilo de vida + recomendados (match)
