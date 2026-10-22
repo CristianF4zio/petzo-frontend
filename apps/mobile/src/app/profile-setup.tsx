@@ -1,0 +1,136 @@
+import { Image } from 'expo-image';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Camera, Lock, MapPin } from 'lucide-react-native';
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button, Field, FieldError, Footer, Header, Input, OptionSheet, SelectButton } from '@/components/ui';
+import { ApiError, api, uploadSigned } from '@/lib/api';
+import { formatWhatsapp, initials, localWhatsapp } from '@/lib/format';
+import { pickAvatar, type LocalPhoto } from '@/lib/photos';
+import { useSession } from '@/lib/session';
+import { color, font, radius, type } from '@/lib/theme';
+import { useToast } from '@/lib/toast';
+
+type Errors = Partial<Record<'nombre' | 'zona' | 'wa' | 'form', string>>;
+
+export default function ProfileSetup() {
+  const { next } = useLocalSearchParams<{ next?: string }>();
+  const { profile, municipalities, zoneName, refreshProfile } = useSession();
+  const say = useToast();
+  const [nombre, setNombre] = useState(profile?.full_name ?? '');
+  const [zona, setZona] = useState(profile?.municipality_id ? String(profile.municipality_id) : '');
+  const [wa, setWa] = useState(localWhatsapp(profile?.whatsapp));
+  const [avatar, setAvatar] = useState<LocalPhoto | null>(null);
+  const [zoneOpen, setZoneOpen] = useState(false);
+  const [errors, setErrors] = useState<Errors>({});
+  const [busy, setBusy] = useState(false);
+
+  const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
+
+  const save = async () => {
+    const e: Errors = {};
+    const digits = wa.replace(/\D/g, '');
+    if (!nombre.trim()) e.nombre = 'Escribe tu nombre.';
+    if (!zona) e.zona = 'Elige tu municipio.';
+    if (!digits) e.wa = 'Escribe tu número de WhatsApp.';
+    else if (digits.length !== 11 || !/^04\d{2}/.test(digits)) e.wa = 'Revisa el número: debe verse como 0412 123 4567.';
+    setErrors(e);
+    if (Object.keys(e).length) return;
+
+    setBusy(true);
+    try {
+      if (avatar) {
+        const up = await api<{ path: string; token: string }>('/me/avatar/upload-url', { method: 'POST' });
+        await uploadSigned(up.path, up.token, avatar.base64);
+        await api('/me/avatar', { method: 'PUT' });
+      }
+      await api('/me', { method: 'PATCH', body: { full_name: nombre.trim(), municipality_id: Number(zona), whatsapp: digits } });
+      await refreshProfile();
+      say('¡Listo! Tu perfil está completo.');
+      if (next === 'publish') router.replace('/publish');
+      else leave();
+    } catch (err) {
+      const f = err instanceof ApiError ? err.details?.fieldErrors : undefined;
+      setErrors(f ? { nombre: f.full_name?.[0], wa: f.whatsapp?.[0] && 'Revisa el número: debe verse como 0412 123 4567.' } : { form: err instanceof Error ? err.message : 'Algo falló.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const photoUri = avatar?.uri ?? profile?.avatar_url;
+
+  return (
+    <SafeAreaView style={styles.root} edges={['top']}>
+      <Header title="Completa tu perfil" onBack={leave} />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+          <Text style={type.body}>
+            {next === 'publish' ? 'Antes de publicar necesitamos algunos datos. Te toma un minuto.' : 'Lo necesitas para publicar o pedir una adopción. Te toma un minuto.'}
+          </Text>
+          <View style={styles.photoRow}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Foto de perfil" onPress={async () => setAvatar((await pickAvatar()) ?? avatar)} style={styles.avatar}>
+              {photoUri ? <Image source={photoUri} style={StyleSheet.absoluteFill} contentFit="cover" /> : profile?.full_name ? <Text style={type.title}>{initials(profile.full_name)}</Text> : <Camera size={24} color={color.muted} />}
+            </Pressable>
+            <View style={{ gap: 2 }}>
+              <Button label={photoUri ? 'Cambiar foto' : 'Agregar foto'} variant="text" onPress={async () => setAvatar((await pickAvatar()) ?? avatar)} style={{ height: 32 }} />
+              <Text style={type.caption}>Opcional. Ayuda a generar confianza.</Text>
+            </View>
+          </View>
+          <Field label="Nombre" error={errors.nombre}>
+            <Input value={nombre} onChangeText={setNombre} placeholder="Tu nombre y apellido" error={!!errors.nombre} autoComplete="name" />
+          </Field>
+          <Field label="Zona" error={errors.zona}>
+            <SelectButton icon={MapPin} value={zoneName(Number(zona))} placeholder="Elige tu municipio" onPress={() => setZoneOpen(true)} error={!!errors.zona} />
+          </Field>
+          <View style={{ gap: 8 }}>
+            <Text style={type.label}>WhatsApp</Text>
+            <View style={[styles.wa, errors.wa && { borderColor: color.error }]}>
+              <Text style={styles.prefix}>+58</Text>
+              <TextInput
+                accessibilityLabel="Número de WhatsApp"
+                value={wa}
+                onChangeText={(v) => setWa(formatWhatsapp(v))}
+                placeholder="0412 123 4567"
+                placeholderTextColor={color.muted}
+                keyboardType="number-pad"
+                style={styles.waInput}
+              />
+            </View>
+            <FieldError message={errors.wa} />
+            <View style={styles.lock}>
+              <Lock size={16} color={color.ink} />
+              <Text style={[type.small, { color: color.body, flex: 1 }]}>Lo pedimos para conectarte con quien adopta o publica. Solo se comparte cuando se aprueba una solicitud.</Text>
+            </View>
+          </View>
+          <FieldError message={errors.form} />
+        </ScrollView>
+        <Footer>
+          <Button label={busy ? 'Guardando…' : 'Guardar y continuar'} onPress={save} disabled={busy} />
+        </Footer>
+      </KeyboardAvoidingView>
+      <OptionSheet
+        visible={zoneOpen}
+        title="Municipio"
+        options={municipalities.map((m) => ({ value: String(m.id), label: m.name }))}
+        value={zona}
+        onPick={(v) => {
+          setZona(v);
+          setErrors((e) => ({ ...e, zona: undefined }));
+        }}
+        onClose={() => setZoneOpen(false)}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: color.canvas },
+  body: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24, gap: 20 },
+  photoRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  avatar: { width: 80, height: 80, borderRadius: radius.full, borderWidth: 1, borderColor: color.hairline, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  wa: { flexDirection: 'row', height: 48, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.sm, overflow: 'hidden' },
+  prefix: { fontFamily: font.medium, fontSize: 16, color: color.body, backgroundColor: color.strong, paddingHorizontal: 12, textAlignVertical: 'center', lineHeight: 46, borderRightWidth: 1, borderRightColor: color.hairline },
+  waInput: { flex: 1, paddingHorizontal: 12, fontFamily: font.regular, fontSize: 16, color: color.ink },
+  lock: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
+});
