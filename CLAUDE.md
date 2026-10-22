@@ -40,5 +40,6 @@ Apps are independent npm projects (no workspaces): Expo and Vite pin different R
 
 ## Workflow
 - Sprints per SPEC §16; on "Arranca Sx" do only that sprint. Short plan (≤10 lines) and wait for OK.
+- Track tasks in `docs/CHECKLIST.md`: tick items as they are done and tested; add new tasks there before starting them.
 - Close each sprint: run what can be tested, commit, report (≤15 lines).
 - Log skills in `docs/SKILLS_LOG.md` and subagents in `docs/AGENTS_LOG.md` (only real uses).
