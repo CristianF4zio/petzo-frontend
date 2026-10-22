@@ -1,0 +1,1 @@
+-- Municipalities ship in a migration so `db push` includes them. Local-only test data goes here.
