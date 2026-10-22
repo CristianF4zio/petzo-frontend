@@ -1,11 +1,11 @@
 # Petzo frontend
 
-Mobile app of Petzo (dog/cat adoption, Gran Caracas). This repo is `petzo-frontend` (D-23): `apps/mobile`. Sibling repos: `petzo-backend` (Java 21 + Spring Boot API, D-22) and `petzo-web` (React + Vite admin portal) — never add their code here. Source of truth: `docs/SPEC.md` (read only the section you need: §5 RF, §7 HU, §15 RLS, §16 sprints).
+Mobile app of Petzo (dog/cat adoption, Gran Caracas). This repo is `petzo-frontend` (D-23): `apps/mobile`. Sibling repos: `petzo-backend` (Java 21 + Spring Boot API, D-22) and `petzo-web` (React + Vite admin portal) — never add their code here. Source of truth: `../SPEC.md` (workspace root, outside the repo; read only the section you need: §5 RF, §7 HU, §15 RLS, §16 sprints).
 
 ## Stack
-- `apps/mobile`: React Native + Expo SDK 58 (TS), Expo Router in `src/app`. Delivered as EAS APK + Expo Go. See `apps/mobile/AGENTS.md` (check versioned Expo docs, use `npx expo install`).
+- `apps/mobile`: React Native + Expo SDK 58 (TS), Expo Router in `src/app`. Delivered as EAS APK + Expo Go. Check the versioned Expo docs for the SDK in `package.json`; add packages with `npx expo install`. `android/` is generated (CNG): configure in `app.json`, never edit it by hand.
 - Auth: Supabase Auth SDK only (email/password + Google). Every data call goes to the REST API with `Authorization: Bearer <access token>`.
-- Design: `docs/design/Petzo.dc.html` (tokens + screens) and `docs/DESIGN_PROMPT.md`.
+- Design: `docs/design/Petzo.dc.html` (tokens + screens).
 
 ## Commands
 - Mobile: `cd apps/mobile && npx expo start` · `npx tsc --noEmit` · `npx expo-doctor` · APK: `npx eas-cli@latest build -p android --profile preview`

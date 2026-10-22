@@ -21,13 +21,8 @@ Repos: `petzo-backend` (B0–B4, detalle en su `docs/CHECKLIST.md`), `petzo-fron
 - [x] Quitar `apps/api` y `supabase/` (legado previo a D-22/D-25)
 - [ ] Flujo completo en Expo Go contra producción
 
-## F2 Panel admin (React + Vite, repo `petzo-web`)
-- [ ] Login admin (Supabase Auth) y guardia por rol
-- [ ] Cola de moderación con motivo y riesgo; aprobar / rechazar con motivo
-- [ ] Fundaciones (verificar / rechazar) y plan Gratis/Pro
-- [ ] Usuarios (suspender) y reportes
-- [ ] Importaciones de Instagram (lanzar y ver progreso)
-- [ ] Métricas (HU-15, recortable)
+## F2 Panel admin (repo `petzo-web`)
+- [ ] Detalle en `petzo-web/docs/CHECKLIST.md`
 
 ## F3 Entrega
 - [ ] APK con EAS apuntando a la API pública

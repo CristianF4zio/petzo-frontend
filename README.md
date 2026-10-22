@@ -1,6 +1,6 @@
 # petzo-frontend
 
-App móvil de **Petzo**, adopción de perros y gatos en Gran Caracas. La especificación completa está en [`docs/SPEC.md`](docs/SPEC.md).
+App móvil de **Petzo**, adopción de perros y gatos en Gran Caracas. La especificación completa está en `SPEC.md`, en la carpeta que agrupa los tres repos.
 
 | Carpeta | Qué es |
 | --- | --- |
