@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css">
+<style>
+body{margin:0;background:#EBEBEB;font-family:'DM Sans',sans-serif;color:#222222;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font-family:inherit;color:inherit}
+a{color:#C2410C}a:hover{color:#9A3412}
+@keyframes pz-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;justify-content:center;padding:40px 24px;box-sizing:border-box">
+  <aside style="width:240px;display:flex;flex-direction:column;gap:24px;padding-top:8px">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;align-items:center;gap:8px"><i class="icon-paw-print" style="font-size:22px;line-height:1;color:#C2410C"></i><span style="font:600 22px/1.2 'DM Sans';color:#222222">Petzo</span></div>
+      <span style="font:400 14px/1.5 'DM Sans';color:#6A6A6A">Prototipo navegable · Android 360×800 dp</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <span style="font:600 11px/1 'DM Sans';color:#6A6A6A;letter-spacing:.04em;text-transform:uppercase;padding:0 12px 8px">Saltar a</span>
+      <sc-for list="{{ jumps }}" as="j" hint-placeholder-count="9">
+        <button onClick="{{ j.onClick }}" style="text-align:left;height:40px;border:0;background:{{ j.bg }};border-radius:8px;padding:0 12px;font:{{ j.weight }} 14px/1 'DM Sans';cursor:pointer;color:#222222">{{ j.label }}</button>
+      </sc-for>
+    </div>
+    <p style="margin:0;font:400 13px/1.5 'DM Sans';color:#6A6A6A">Cambia el estado de red (cargando, vacío, error, sin conexión) y el plan desde Tweaks. "Reintentar" recupera la conexión.</p>
+    <a href="Petzo Componentes.dc.html" style="font:500 14px/1.4 'DM Sans'">Tokens y componentes →</a>
+  </aside>
+
+  <div style="padding:10px;background:#222222;border-radius:36px;flex:none">
+    <div style="width:360px;height:800px;border-radius:26px;overflow:hidden;background:#FFFFFF;position:relative;display:flex;flex-direction:column">
+      <div style="height:24px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font:500 13px/1 'DM Sans';color:#222222">
+        <span>9:41</span>
+        <span style="display:flex;gap:4px;align-items:center"><i class="icon-signal" style="font-size:14px;line-height:1"></i><i class="{{ wifiIcon }}" style="font-size:14px;line-height:1"></i><i class="icon-battery-medium" style="font-size:16px;line-height:1"></i></span>
+      </div>
+      <sc-if value="{{ showOfflineBanner }}" hint-placeholder-val="{{ false }}">
+        <div role="status" style="flex:none;display:flex;align-items:center;gap:8px;padding:8px 16px;background:#3F3F3F;color:#FFFFFF;font:400 13px/1.4 'DM Sans'"><i class="icon-wifi-off" style="font-size:16px;line-height:1"></i>Sin conexión. Te mostramos lo último que cargaste.</div>
+      </sc-if>
+
+      <div style="flex:1;min-height:0;position:relative;display:flex;flex-direction:column">
+
+        <!-- 1 · Bienvenida -->
+        <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="flex:1;position:relative;background:repeating-linear-gradient(135deg,#F2F2F2 0 12px,#F7F7F7 12px 24px);display:flex;align-items:center;justify-content:center">
+              <span style="font:400 11px/1.4 'DM Mono',monospace;color:#6A6A6A;background:#FFFFFF;padding:4px 10px;border-radius:999px">foto a sangre · perro mirando a cámara</span>
+              <div style="position:absolute;top:16px;left:16px;display:flex;align-items:center;gap:8px;background:#FFFFFF;border-radius:999px;padding:8px 14px 8px 10px">
+                <i class="icon-paw-print" style="font-size:20px;line-height:1;color:#C2410C"></i><span style="font:600 16px/1 'DM Sans'">Petzo</span>
+              </div>
+            </div>
+            <div style="padding:24px 16px 16px;display:flex;flex-direction:column;gap:12px">
+              <h1 style="margin:0;font:600 22px/1.3 'DM Sans';color:#222222;text-wrap:pretty">Adopta un peludo en Caracas, con confianza</h1>
+              <p style="margin:0 0 4px;font:400 16px/1.5 'DM Sans';color:#3F3F3F;text-wrap:pretty">Revisamos cada publicación para evitar fraudes. Si el publicador aprueba tu solicitud, hablan directo por WhatsApp.</p>
+              <button onClick="{{ onGoogle }}" style="height:48px;border:0;border-radius:8px;background:#C2410C;color:#FFFFFF;font:500 16px/1 'DM Sans';display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-active="background:#9A3412"><span style="width:24px;height:24px;border-radius:999px;background:#FFFFFF;color:#C2410C;font:700 14px/24px 'DM Sans';text-align:center">G</span>Continuar con Google</button>
+              <button onClick="{{ onEmail }}" style="height:48px;border:1px solid #222222;border-radius:8px;background:#FFFFFF;color:#222222;font:500 16px/1 'DM Sans';display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" style-active="background:#F7F7F7"><i class="icon-mail" style="font-size:20px;line-height:1"></i>Entrar con correo</button>
+              <p style="margin:4px 0 0;font:400 13px/1.5 'DM Sans';color:#6A6A6A;text-align:center">Al continuar aceptas los <u>Términos</u> y la <u>Política de privacidad</u>.</p>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- 1b · Entrar / registro -->
+        <sc-if value="{{ isAuth }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="height:56px;display:flex;align-items:center;padding:0 4px;flex:none">
+              <button aria-label="Volver" onClick="{{ toWelcome }}" style="width:48px;height:48px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><i class="icon-arrow-left" style="font-size:24px;line-height:1"></i></button>
+            </div>
+            <div style="flex:1;overflow:auto;padding:0 16px 24px;display:flex;flex-direction:column;gap:16px">
+              <h1 style="margin:0;font:600 22px/1.3 'DM Sans'">{{ authTitle }}</h1>
+              <div style="display:flex;background:#F2F2F2;border-radius:999px;padding:4px;gap:4px">
+                <sc-for list="{{ authTabs }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;height:40px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.color }};font:{{ o.weight }} 14px/1 'DM Sans';cursor:pointer">{{ o.label }}</button></sc-for>
+              </div>
+              <sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+                <label style="display:flex;flex-direction:column;gap:8px">
+                  <span style="font:500 14px/1.4 'DM Sans'">Nombre</span>
+                  <input value="{{ auth.nombre }}" onChange="{{ onAuthNombre }}" placeholder="Como quieres que te vean" style="height:48px;box-sizing:border-box;border:1px solid {{ authErr.nombreB }};border-radius:8px;padding:0 12px;font:400 16px 'DM Sans';background:#FFFFFF;outline:none" style-focus="outline:2px solid #222222;outline-offset:-1px">
+                  <sc-if value="{{ authErr.hasNombre }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ authErr.nombre }}</span></sc-if>
+                </label>
+              </sc-if>
+              <label style="display:flex;flex-direction:column;gap:8px">
+                <span style="font:500 14px/1.4 'DM Sans'">Correo</span>
+                <input type="email" value="{{ auth.correo }}" onChange="{{ onAuthCorreo }}" placeholder="tucorreo@gmail.com" style="height:48px;box-sizing:border-box;border:1px solid {{ authErr.correoB }};border-radius:8px;padding:0 12px;font:400 16px 'DM Sans';background:#FFFFFF;outline:none" style-focus="outline:2px solid #222222;outline-offset:-1px">
+                <sc-if value="{{ authErr.hasCorreo }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ authErr.correo }}</span></sc-if>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:8px">
+                <span style="font:500 14px/1.4 'DM Sans'">Contraseña</span>
+                <div style="position:relative;display:flex">
+                  <input type="{{ passType }}" value="{{ auth.pass }}" onChange="{{ onAuthPass }}" placeholder="Mínimo 8 caracteres" style="flex:1;min-width:0;height:48px;box-sizing:border-box;border:1px solid {{ authErr.passB }};border-radius:8px;padding:0 48px 0 12px;font:400 16px 'DM Sans';background:#FFFFFF;outline:none" style-focus="outline:2px solid #222222;outline-offset:-1px">
+                  <button type="button" aria-label="{{ passAria }}" onClick="{{ togglePass }}" style="position:absolute;right:0;top:0;width:48px;height:48px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6A6A6A"><i class="{{ passIcon }}" style="font-size:20px;line-height:1"></i></button>
+                </div>
+                <sc-if value="{{ authErr.hasPass }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ authErr.pass }}</span></sc-if>
+              </label>
+              <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+                <button style="align-self:flex-start;height:48px;border:0;background:none;padding:0;font:500 14px 'DM Sans';text-decoration:underline;cursor:pointer;color:#222222">¿Olvidaste tu contraseña?</button>
+              </sc-if>
+              <button onClick="{{ onAuthSubmit }}" style="height:48px;border:0;border-radius:8px;background:#C2410C;color:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer;margin-top:8px" style-active="background:#9A3412">{{ authCta }}</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- 2 · Completa tu perfil -->
+        <sc-if value="{{ isProfileSetup }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="height:56px;display:flex;align-items:center;gap:4px;padding:0 4px;flex:none">
+              <button aria-label="Volver" onClick="{{ onProfileBack }}" style="width:48px;height:48px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><i class="icon-arrow-left" style="font-size:24px;line-height:1"></i></button>
+              <span style="font:600 16px/1 'DM Sans'">Completa tu perfil</span>
+            </div>
+            <div style="flex:1;overflow:auto;padding:8px 16px 24px;display:flex;flex-direction:column;gap:20px">
+              <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F">{{ profileIntro }}</p>
+              <div style="display:flex;align-items:center;gap:16px">
+                <button onClick="{{ toggleFoto }}" aria-label="Foto de perfil" style="width:80px;height:80px;border-radius:999px;border:1px solid #DDDDDD;background:{{ fotoBg }};display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0"><i class="{{ fotoIcon }}" style="font-size:24px;line-height:1;color:#6A6A6A"></i></button>
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <button onClick="{{ toggleFoto }}" style="align-self:flex-start;height:32px;border:0;background:none;padding:0;font:500 16px 'DM Sans';text-decoration:underline;cursor:pointer;color:#222222">{{ fotoCta }}</button>
+                  <span style="font:400 13px/1.4 'DM Sans';color:#6A6A6A">Opcional. Ayuda a generar confianza.</span>
+                </div>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:8px">
+                <span style="font:500 14px/1.4 'DM Sans'">Nombre</span>
+                <input value="{{ profile.nombre }}" onChange="{{ onPNombre }}" placeholder="Tu nombre y apellido" style="height:48px;box-sizing:border-box;border:1px solid {{ pErr.nombreB }};border-radius:8px;padding:0 12px;font:400 16px 'DM Sans';background:#FFFFFF;outline:none" style-focus="outline:2px solid #222222;outline-offset:-1px">
+                <sc-if value="{{ pErr.hasNombre }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ pErr.nombre }}</span></sc-if>
+              </label>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <span style="font:500 14px/1.4 'DM Sans'">Zona</span>
+                <button onClick="{{ openZoneProfile }}" style="height:48px;box-sizing:border-box;border:1px solid {{ pErr.zonaB }};border-radius:8px;padding:0 12px;background:#FFFFFF;display:flex;align-items:center;gap:8px;cursor:pointer;text-align:left">
+                  <i class="icon-map-pin" style="font-size:20px;line-height:1;color:#6A6A6A"></i><span style="flex:1;font:400 16px 'DM Sans';color:{{ pZonaColor }}">{{ pZonaLabel }}</span><i class="icon-chevron-down" style="font-size:20px;line-height:1"></i>
+                </button>
+                <sc-if value="{{ pErr.hasZona }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ pErr.zona }}</span></sc-if>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:8px">
+                <span style="font:500 14px/1.4 'DM Sans'">WhatsApp</span>
+                <div style="display:flex;border:1px solid {{ pErr.waB }};border-radius:8px;overflow:hidden;height:48px;box-sizing:border-box">
+                  <span style="display:flex;align-items:center;padding:0 12px;background:#F2F2F2;font:500 16px 'DM Sans';color:#3F3F3F;border-right:1px solid #DDDDDD">+58</span>
+                  <input inputmode="numeric" value="{{ profile.wa }}" onChange="{{ onPWa }}" placeholder="0412 123 4567" style="flex:1;min-width:0;border:0;padding:0 12px;font:400 16px 'DM Sans';outline:none;letter-spacing:.02em">
+                </div>
+                <sc-if value="{{ pErr.hasWa }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ pErr.wa }}</span></sc-if>
+                <span style="display:flex;gap:8px;align-items:flex-start;font:400 14px/1.5 'DM Sans';color:#3F3F3F"><i class="icon-lock" style="font-size:16px;line-height:1.4;color:#222222"></i>Lo pedimos para conectarte con quien adopta o publica. Solo se comparte cuando se aprueba una solicitud.</span>
+              </label>
+            </div>
+            <div style="flex:none;padding:12px 16px;border-top:1px solid #DDDDDD">
+              <button onClick="{{ onProfileSave }}" style="width:100%;height:48px;border:0;border-radius:8px;background:#C2410C;color:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer" style-active="background:#9A3412">Guardar y continuar</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- 3 · Catálogo -->
+        <sc-if value="{{ isCatalog }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="flex:none;padding:12px 16px 0">
+              <div role="radiogroup" aria-label="Especie" style="display:flex;align-items:center;height:56px;border-radius:999px;background:#FFFFFF;box-shadow:0 0 0 1px rgba(0,0,0,.02),0 2px 6px rgba(0,0,0,.04),0 4px 8px rgba(0,0,0,.10);padding:4px">
+                <sc-for list="{{ speciesPill }}" as="s">
+                  <button onClick="{{ s.onClick }}" aria-checked="{{ s.checked }}" role="radio" style="flex:1;height:48px;border-radius:999px;border:0;background:{{ s.bg }};display:flex;align-items:center;justify-content:center;gap:8px;font:{{ s.weight }} 16px/1 'DM Sans';color:#222222;cursor:pointer"><i class="{{ s.icon }}" style="font-size:20px;line-height:1"></i>{{ s.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="flex:none;display:flex;gap:8px;overflow-x:auto;padding:8px 16px;scrollbar-width:none;border-bottom:1px solid #DDDDDD">
+              <sc-for list="{{ filterChips }}" as="ch" hint-placeholder-count="6">
+                <button onClick="{{ ch.onClick }}" style="flex:none;height:48px;border:0;background:none;padding:0;display:flex;align-items:center;cursor:pointer">
+                  <span style="height:36px;display:flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1px solid {{ ch.border }};background:{{ ch.bg }};font:{{ ch.weight }} 14px/1 'DM Sans';color:#222222;white-space:nowrap">
+                    <sc-if value="{{ ch.isMain }}"><i class="icon-sliders-horizontal" style="font-size:16px;line-height:1"></i></sc-if>
+                    {{ ch.label }}
+                    <sc-if value="{{ ch.hasCount }}"><span style="min-width:20px;height:20px;border-radius:999px;background:#222222;color:#FFFFFF;font:600 11px/20px 'DM Sans';text-align:center">{{ ch.count }}</span></sc-if>
+                    <sc-if value="{{ ch.isSub }}"><i class="icon-chevron-down" style="font-size:16px;line-height:1"></i></sc-if>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+            <div onScroll="{{ onCatScroll }}" style="flex:1;overflow:auto;min-height:0">
+              <sc-if value="{{ cat.skeleton }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:16px;display:flex;flex-direction:column;gap:24px">{{ skelCards }}</div>
+              </sc-if>
+              <sc-if value="{{ cat.error }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:64px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+                  <span style="width:64px;height:64px;border-radius:999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center"><i class="icon-cloud-alert" style="font-size:28px;line-height:1"></i></span>
+                  <h2 style="margin:8px 0 0;font:600 20px/1.3 'DM Sans'">No pudimos cargar los peludos</h2>
+                  <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F">Algo falló de nuestro lado. Tus filtros siguen guardados.</p>
+                  <button onClick="{{ onRetry }}" style="margin-top:8px;height:48px;padding:0 24px;border:1px solid #222222;border-radius:8px;background:#FFFFFF;font:500 16px/1 'DM Sans';display:flex;align-items:center;gap:8px;cursor:pointer"><i class="icon-refresh-cw" style="font-size:18px;line-height:1"></i>Reintentar</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ cat.offline }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:64px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+                  <span style="width:64px;height:64px;border-radius:999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center"><i class="icon-wifi-off" style="font-size:28px;line-height:1"></i></span>
+                  <h2 style="margin:8px 0 0;font:600 20px/1.3 'DM Sans'">Sin conexión</h2>
+                  <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F">Revisa tus datos o el wifi. Cuando vuelva la señal te mostramos los peludos.</p>
+                  <button onClick="{{ onRetry }}" style="margin-top:8px;height:48px;padding:0 24px;border:1px solid #222222;border-radius:8px;background:#FFFFFF;font:500 16px/1 'DM Sans';display:flex;align-items:center;gap:8px;cursor:pointer"><i class="icon-refresh-cw" style="font-size:18px;line-height:1"></i>Reintentar</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ cat.empty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:64px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+                  <span style="width:64px;height:64px;border-radius:999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center"><i class="icon-search-x" style="font-size:28px;line-height:1"></i></span>
+                  <h2 style="margin:8px 0 0;font:600 20px/1.3 'DM Sans'">No hay peludos con esos filtros</h2>
+                  <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F">Prueba con otra zona o amplía el rango de edad.</p>
+                  <button onClick="{{ onClearFilters }}" style="margin-top:8px;height:48px;padding:0 24px;border:1px solid #222222;border-radius:8px;background:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer">Limpiar filtros</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ cat.list }}" hint-placeholder-val="{{ true }}">
+                <div style="padding:16px;display:flex;flex-direction:column;gap:24px">
+                  <span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A">{{ resultLine }}</span>
+                  <sc-for list="{{ cards }}" as="c" hint-placeholder-count="3">
+                    <article style="display:flex;flex-direction:column;gap:12px">
+                      <div style="position:relative;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:repeating-linear-gradient(135deg,#F2F2F2 0 12px,#F7F7F7 12px 24px);display:flex;align-items:center;justify-content:center">
+                        <button onClick="{{ c.onOpen }}" aria-label="{{ c.aria }}" style="position:absolute;inset:0;border:0;background:none;cursor:pointer;padding:0"></button>
+                        <span style="pointer-events:none;font:400 11px/1.4 'DM Mono',monospace;color:#6A6A6A;background:#FFFFFF;padding:4px 10px;border-radius:999px">{{ c.photoLabel }}</span>
+                        <button onClick="{{ c.onFav }}" aria-label="{{ c.favAria }}" style="position:absolute;top:4px;right:4px;width:48px;height:48px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+                          <svg width="26" height="26" viewBox="0 0 24 24" fill="{{ c.heartFill }}" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                        </button>
+                        <span style="position:absolute;left:12px;bottom:12px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.5);color:#FFFFFF;border-radius:999px;padding:4px 8px;font:500 13px/1 'DM Sans';pointer-events:none"><i class="icon-images" style="font-size:14px;line-height:1"></i>{{ c.fotos }}</span>
+                      </div>
+                      <button onClick="{{ c.onOpen }}" style="border:0;background:none;padding:0;text-align:left;display:flex;flex-direction:column;gap:4px;cursor:pointer;width:100%;min-width:0">
+                        <span style="font:600 16px/1.3 'DM Sans';color:#222222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">{{ c.name }}</span>
+                        <span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A">{{ c.meta }}</span>
+                        <span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A;display:flex;align-items:center;gap:4px"><i class="icon-map-pin" style="font-size:14px;line-height:1"></i>{{ c.zona }}</span>
+                        <sc-if value="{{ c.verified }}"><span style="align-self:flex-start;margin-top:4px;display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border:1px solid #0F766E;border-radius:999px;color:#0F766E;font:600 11px/1 'DM Sans'"><i class="icon-badge-check" style="font-size:14px;line-height:1"></i>Fundación verificada</span></sc-if>
+                      </button>
+                    </article>
+                  </sc-for>
+                  <sc-if value="{{ cat.loadingMore }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:24px">{{ skelMore }}</div></sc-if>
+                  <sc-if value="{{ cat.end }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:8px 0 16px;text-align:center;font:400 13px/1.5 'DM Sans';color:#6A6A6A">Eso es todo por ahora. Publican peludos nuevos todos los días.</p></sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- 5 · Detalle -->
+        <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="flex:1;overflow:auto;min-height:0">
+              <div style="position:relative;height:270px;background:repeating-linear-gradient(135deg,#F2F2F2 0 12px,#F7F7F7 12px 24px);display:flex;align-items:center;justify-content:center">
+                <span style="font:400 11px/1.4 'DM Mono',monospace;color:#6A6A6A;background:#FFFFFF;padding:4px 10px;border-radius:999px">{{ d.photoLabel }}</span>
+                <button aria-label="Foto anterior" onClick="{{ d.prev }}" style="position:absolute;left:0;top:0;bottom:0;width:40%;border:0;background:none;cursor:pointer"></button>
+                <button aria-label="Foto siguiente" onClick="{{ d.next }}" style="position:absolute;right:0;top:0;bottom:0;width:40%;border:0;background:none;cursor:pointer"></button>
+                <button aria-label="Volver al catálogo" onClick="{{ d.back }}" style="position:absolute;top:8px;left:8px;width:48px;height:48px;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer"><span style="width:40px;height:40px;border-radius:999px;background:#FFFFFF;border:1px solid #DDDDDD;display:flex;align-items:center;justify-content:center"><i class="icon-arrow-left" style="font-size:20px;line-height:1"></i></span></button>
+                <button aria-label="{{ d.favAria }}" onClick="{{ d.onFav }}" style="position:absolute;top:8px;right:8px;width:48px;height:48px;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer"><span style="width:40px;height:40px;border-radius:999px;background:#FFFFFF;border:1px solid #DDDDDD;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="{{ d.heartFill }}" stroke="{{ d.heartStroke }}" stroke-width="2" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg></span></button>
+                <span style="position:absolute;right:12px;bottom:12px;background:rgba(0,0,0,.5);color:#FFFFFF;border-radius:999px;padding:4px 10px;font:500 13px/1 'DM Sans'">{{ d.idx }}</span>
+              </div>
+              <div style="padding:20px 16px 24px;display:flex;flex-direction:column;gap:20px">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <h1 style="margin:0;font:600 22px/1.3 'DM Sans';text-wrap:pretty">{{ d.name }}</h1>
+                  <span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A;display:flex;align-items:center;gap:4px"><i class="icon-map-pin" style="font-size:14px;line-height:1"></i>{{ d.zona }} · Gran Caracas</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:1px solid #DDDDDD;border-bottom:1px solid #DDDDDD;padding:12px 0">
+                  <sc-for list="{{ d.facts }}" as="f"><div style="display:flex;flex-direction:column;gap:4px"><span style="font:400 13px/1.3 'DM Sans';color:#6A6A6A">{{ f.k }}</span><span style="font:600 16px/1.3 'DM Sans'">{{ f.v }}</span></div></sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <h2 style="margin:0;font:600 20px/1.3 'DM Sans'">Salud</h2>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <sc-for list="{{ d.health }}" as="h"><span style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;background:#F7F7F7;border:1px solid #DDDDDD;font:500 14px/1 'DM Sans';color:#222222"><i class="{{ h.icon }}" style="font-size:16px;line-height:1"></i>{{ h.label }}</span></sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <h2 style="margin:0;font:600 20px/1.3 'DM Sans'">Sobre {{ d.short }}</h2>
+                  <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F;text-wrap:pretty">{{ d.desc }}</p>
+                </div>
+                <div style="border:1px solid #DDDDDD;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center">
+                  <span style="width:48px;height:48px;border-radius:999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;font:600 16px/1 'DM Sans';flex:none">{{ d.pubInitials }}</span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                    <span style="font:600 16px/1.3 'DM Sans'">{{ d.pubName }}</span>
+                    <span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A">{{ d.pubZona }} · {{ d.pubCount }}</span>
+                    <sc-if value="{{ d.pubVerified }}"><span style="align-self:flex-start;display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border:1px solid #0F766E;border-radius:999px;color:#0F766E;font:600 11px/1 'DM Sans'"><i class="icon-badge-check" style="font-size:14px;line-height:1"></i>Fundación verificada</span></sc-if>
+                    <sc-if value="{{ d.pubParticular }}"><span style="align-self:flex-start;display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:999px;background:#F2F2F2;color:#3F3F3F;font:600 11px/1 'DM Sans'">Particular</span></sc-if>
+                  </div>
+                </div>
+                <div style="background:#F7F7F7;border-radius:14px;padding:12px 16px;display:flex;gap:12px;align-items:flex-start">
+                  <i class="icon-lock" style="font-size:20px;line-height:1.2"></i>
+                  <span style="font:400 14px/1.5 'DM Sans';color:#3F3F3F">{{ d.lockNote }}</span>
+                </div>
+                <button onClick="{{ d.onReport }}" style="align-self:flex-start;height:48px;border:0;background:none;padding:0;display:flex;align-items:center;gap:8px;font:400 14px 'DM Sans';color:#6A6A6A;text-decoration:underline;cursor:pointer"><i class="icon-flag" style="font-size:16px;line-height:1"></i>Reportar publicación</button>
+              </div>
+            </div>
+            <div style="flex:none;padding:12px 16px;border-top:1px solid #DDDDDD;background:#FFFFFF">
+              <sc-if value="{{ d.canRequest }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ d.onRequest }}" style="width:100%;height:48px;border:0;border-radius:8px;background:#C2410C;color:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer" style-active="background:#9A3412">{{ d.cta }}</button>
+              </sc-if>
+              <sc-if value="{{ d.requested }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:12px;min-height:48px">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:600 16px/1.3 'DM Sans'">Solicitud enviada</span><span style="font:400 13px/1.4 'DM Sans';color:#6A6A6A">Te avisamos cuando respondan.</span></div>
+                  <span style="height:24px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;background:#FEF3C7;color:#B45309;font:600 11px/1 'DM Sans'">Pendiente</span>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- 6 · Publicar -->
+        <sc-if value="{{ isPublish }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <sc-if value="{{ pubBlocked }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;padding:24px 16px;display:flex;flex-direction:column;gap:12px">
+                <h1 style="margin:0 0 24px;font:600 22px/1.3 'DM Sans'">Publica a tu peludo</h1>
+                <span style="width:64px;height:64px;border-radius:999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center"><i class="icon-lock" style="font-size:28px;line-height:1"></i></span>
+                <h2 style="margin:8px 0 0;font:600 20px/1.3 'DM Sans';text-wrap:pretty">Llegaste a tu límite de {{ limit }} publicaciones activas</h2>
+                <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F;text-wrap:pretty">Pausa una publicación o márcala como adoptada para publicar otra. Con el plan Pro tienes hasta 30 activas.</p>
+                <button onClick="{{ toMine }}" style="margin-top:12px;height:48px;border:0;border-radius:8px;background:#C2410C;color:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer">Ir a Mis publicaciones</button>
+                <button onClick="{{ onPro }}" style="height:48px;border:0;background:none;font:500 16px 'DM Sans';text-decoration:underline;cursor:pointer;color:#222222">Conocer el plan Pro</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ pubWizard }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:none;padding:16px 16px 12px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid #DDDDDD">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+                  <h1 style="margin:0;font:600 22px/1.3 'DM Sans'">Publica a tu peludo</h1>
+                  <span style="font:400 13px/1 'DM Sans';color:#6A6A6A;white-space:nowrap">Paso {{ wz.step }} de 4</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px" aria-hidden="true">
+                  <sc-for list="{{ wzProg }}" as="g"><span style="height:4px;border-radius:999px;background:{{ g.bg }}"></span></sc-for>
+                </div>
+                <span style="font:600 16px/1.3 'DM Sans'">{{ wzStepTitle }}</span>
+              </div>
+              <div style="flex:1;overflow:auto;min-height:0;padding:16px;display:flex;flex-direction:column;gap:20px">
+                <sc-if value="{{ wzS1 }}" hint-placeholder-val="{{ true }}">
+                  <p style="margin:0;font:400 14px/1.5 'DM Sans';color:#3F3F3F">Sube de 1 a 5 fotos tomadas por ti. La primera es la portada. Toca una foto para moverla o quitarla.</p>
+                  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+                    <sc-for list="{{ wzTiles }}" as="t">
+                      <div style="position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;background:repeating-linear-gradient(135deg,#F2F2F2 0 10px,#F7F7F7 10px 20px);outline:{{ t.outline }};outline-offset:2px">
+                        <button onClick="{{ t.onSel }}" aria-label="{{ t.aria }}" style="position:absolute;inset:0;border:0;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center"><span style="font:400 11px/1 'DM Mono',monospace;color:#6A6A6A">{{ t.label }}</span></button>
+                        <sc-if value="{{ t.isCover }}"><span style="position:absolute;top:8px;left:8px;background:#FFFFFF;color:#222222;border-radius:999px;padding:4px 8px;font:600 11px/1 'DM Sans';pointer-events:none">Portada</span></sc-if>
+                        <sc-if value="{{ t.up }}"><div style="position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#FFFFFF;font:600 13px/1 'DM Sans';pointer-events:none"><span>{{ t.pct }}</span><div style="width:64px;height:4px;border-radius:999px;background:rgba(255,255,255,.35);overflow:hidden"><div style="height:100%;width:{{ t.pct }};background:#FFFFFF"></div></div></div></sc-if>
+                        <sc-if value="{{ t.fail }}"><div style="position:absolute;inset:0;background:#FEE2E2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;text-align:center"><span style="display:flex;align-items:center;gap:4px;font:500 13px/1.2 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:14px;line-height:1"></i>No se subió</span><button onClick="{{ t.onRetry }}" style="height:40px;border:0;background:none;font:600 14px 'DM Sans';text-decoration:underline;cursor:pointer;color:#222222">Reintentar</button></div></sc-if>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ wzCanAdd }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ wzAdd }}" style="aspect-ratio:1;border-radius:14px;border:1px dashed #6A6A6A;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;font:500 13px/1 'DM Sans';color:#222222"><i class="icon-image-plus" style="font-size:24px;line-height:1"></i>Agregar</button>
+                    </sc-if>
+                  </div>
+                  <span style="font:400 13px/1 'DM Sans';color:#6A6A6A">{{ wzCount }}</span>
+                  <sc-if value="{{ wzHasSel }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                      <sc-for list="{{ wzSelActions }}" as="a"><button onClick="{{ a.onClick }}" aria-label="{{ a.label }}" style="height:48px;padding:0 14px;border:1px solid #DDDDDD;border-radius:8px;background:#FFFFFF;display:flex;align-items:center;gap:6px;font:500 14px/1 'DM Sans';cursor:pointer;color:#222222"><i class="{{ a.icon }}" style="font-size:18px;line-height:1"></i>{{ a.text }}</button></sc-for>
+                    </div>
+                  </sc-if>
+                </sc-if>
+                <sc-if value="{{ wzS2 }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 14px/1.4 'DM Sans'">Especie</span>
+                    <div style="display:flex;background:#F2F2F2;border-radius:999px;padding:4px;gap:4px"><sc-for list="{{ wzEsp }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;height:40px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.color }};font:{{ o.weight }} 14px/1 'DM Sans';cursor:pointer">{{ o.label }}</button></sc-for></div>
+                  </div>
+                  <label style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font:500 14px/1.4 'DM Sans'">Nombre</span>
+                    <input value="{{ wz.nombre }}" onChange="{{ wzNombre }}" placeholder="¿Cómo se llama?" style="height:48px;box-sizing:border-box;border:1px solid {{ wzErr.nombreB }};border-radius:8px;padding:0 12px;font:400 16px 'DM Sans';outline:none" style-focus="outline:2px solid #222222;outline-offset:-1px">
+                    <sc-if value="{{ wzErr.hasNombre }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ wzErr.nombre }}</span></sc-if>
+                  </label>
+                  <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 14px/1.4 'DM Sans'">Edad aproximada</span>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                      <div style="position:relative"><select aria-label="Años" value="{{ wz.anios }}" onChange="{{ wzAnios }}" style="width:100%;appearance:none;height:48px;border:1px solid #DDDDDD;border-radius:8px;padding:0 40px 0 12px;font:400 16px 'DM Sans';background:#FFFFFF"><sc-for list="{{ yearOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><i class="icon-chevron-down" style="position:absolute;right:12px;top:14px;font-size:20px;line-height:1;pointer-events:none"></i></div>
+                      <div style="position:relative"><select aria-label="Meses" value="{{ wz.meses }}" onChange="{{ wzMeses }}" style="width:100%;appearance:none;height:48px;border:1px solid #DDDDDD;border-radius:8px;padding:0 40px 0 12px;font:400 16px 'DM Sans';background:#FFFFFF"><sc-for list="{{ monthOpts }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><i class="icon-chevron-down" style="position:absolute;right:12px;top:14px;font-size:20px;line-height:1;pointer-events:none"></i></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 14px/1.4 'DM Sans'">Sexo</span>
+                    <div style="display:flex;background:#F2F2F2;border-radius:999px;padding:4px;gap:4px"><sc-for list="{{ wzSexo }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;height:40px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.color }};font:{{ o.weight }} 14px/1 'DM Sans';cursor:pointer">{{ o.label }}</button></sc-for></div>
+                    <sc-if value="{{ wzErr.hasSexo }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ wzErr.sexo }}</span></sc-if>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px"><span style="font:500 14px/1.4 'DM Sans'">Tamaño</span>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ wzTam }}" as="o"><button onClick="{{ o.onClick }}" style="height:48px;border:0;background:none;padding:0;cursor:pointer"><span style="height:36px;display:flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};font:{{ o.weight }} 14px/1 'DM Sans';color:#222222">{{ o.label }}</span></button></sc-for></div>
+                    <sc-if value="{{ wzErr.hasTam }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ wzErr.tam }}</span></sc-if>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 14px/1.4 'DM Sans'">Zona</span>
+                    <button onClick="{{ openZoneWizard }}" style="height:48px;border:1px solid #DDDDDD;border-radius:8px;padding:0 12px;background:#FFFFFF;display:flex;align-items:center;gap:8px;cursor:pointer;text-align:left"><i class="icon-map-pin" style="font-size:20px;line-height:1;color:#6A6A6A"></i><span style="flex:1;font:400 16px 'DM Sans';color:#222222">{{ wz.zona }}</span><i class="icon-chevron-down" style="font-size:20px;line-height:1"></i></button>
+                    <span style="font:400 13px/1.4 'DM Sans';color:#6A6A6A">Tomada de tu perfil. Cámbiala si el peludo está en otra zona.</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ wzS3 }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:4px"><span style="font:500 14px/1.4 'DM Sans'">Salud (marca lo que aplica)</span>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ wzSalud }}" as="o"><button onClick="{{ o.onClick }}" aria-pressed="{{ o.on }}" style="height:48px;border:0;background:none;padding:0;cursor:pointer"><span style="height:36px;display:flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};font:{{ o.weight }} 14px/1 'DM Sans';color:#222222"><i class="{{ o.icon }}" style="font-size:16px;line-height:1"></i>{{ o.label }}</span></button></sc-for></div>
+                  </div>
+                  <label style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font:500 14px/1.4 'DM Sans'">Descripción</span>
+                    <textarea value="{{ wz.desc }}" onChange="{{ wzDesc }}" maxlength="1000" placeholder="Cuenta cómo es, qué le gusta y qué tipo de hogar busca." style="height:180px;box-sizing:border-box;border:1px solid {{ wzErr.descB }};border-radius:8px;padding:12px;font:400 16px/1.5 'DM Sans';resize:none;outline:none" style-focus="outline:2px solid #222222;outline-offset:-1px"></textarea>
+                    <div style="display:flex;justify-content:space-between;gap:8px;font:400 13px/1.4 'DM Sans'"><span style="color:#B91C1C">{{ wzErr.desc }}</span><span style="color:#6A6A6A;white-space:nowrap">{{ wzDescCount }}</span></div>
+                  </label>
+                </sc-if>
+                <sc-if value="{{ wzS4 }}" hint-placeholder-val="{{ false }}">
+                  <div style="border:1px solid #DDDDDD;border-radius:14px;overflow:hidden">
+                    <div style="aspect-ratio:16/9;background:repeating-linear-gradient(135deg,#F2F2F2 0 12px,#F7F7F7 12px 24px);display:flex;align-items:center;justify-content:center"><span style="font:400 11px/1.4 'DM Mono',monospace;color:#6A6A6A;background:#FFFFFF;padding:4px 10px;border-radius:999px">portada · {{ wzReview.name }}</span></div>
+                    <div style="padding:16px;display:flex;flex-direction:column;gap:4px">
+                      <span style="font:600 16px/1.3 'DM Sans'">{{ wzReview.name }}</span>
+                      <span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A">{{ wzReview.meta }}</span>
+                      <span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A">{{ wzReview.zona }} · {{ wzReview.fotos }}</span>
+                      <span style="font:400 14px/1.4 'DM Sans';color:#3F3F3F;margin-top:4px">{{ wzReview.salud }}</span>
+                    </div>
+                  </div>
+                  <div style="background:#F7F7F7;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:flex-start">
+                    <i class="icon-shield-check" style="font-size:22px;line-height:1"></i>
+                    <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 16px/1.3 'DM Sans'">Lo revisamos en minutos para evitar fraudes</span><span style="font:400 14px/1.5 'DM Sans';color:#3F3F3F">Te avisamos cuando esté publicada o si hay que corregir algo.</span></div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font:400 14px/1.4 'DM Sans';color:#3F3F3F">Tienes {{ activeCount }} de {{ limit }} publicaciones activas</span>
+                    <div style="height:4px;border-radius:999px;background:#F2F2F2;overflow:hidden"><div style="height:100%;width:{{ quotaW }};background:#222222"></div></div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ wzErr.hasStep }}" hint-placeholder-val="{{ false }}"><span role="alert" style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>{{ wzErr.step }}</span></sc-if>
+              </div>
+              <div style="flex:none;padding:12px 16px;border-top:1px solid #DDDDDD;display:flex;gap:12px;align-items:center">
+                <sc-if value="{{ wzCanBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ wzBack }}" style="height:48px;border:0;background:none;padding:0 8px;font:500 16px 'DM Sans';text-decoration:underline;cursor:pointer;color:#222222">Atrás</button></sc-if>
+                <button onClick="{{ wzNext }}" style="flex:1;height:48px;border:0;border-radius:8px;background:#C2410C;color:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer" style-active="background:#9A3412">{{ wzNextLabel }}</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- 7 · Mis publicaciones -->
+        <sc-if value="{{ isMine }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="flex:none;padding:16px 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <h1 style="margin:0;font:600 22px/1.3 'DM Sans'">Mis publicaciones</h1>
+              <span style="height:24px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;background:#F2F2F2;color:#3F3F3F;font:600 11px/1 'DM Sans';white-space:nowrap">{{ activeCount }} de {{ limit }} activas</span>
+            </div>
+            <div style="flex:1;overflow:auto;min-height:0;padding:0 16px 24px;display:flex;flex-direction:column;gap:16px">
+              <sc-if value="{{ mine.skeleton }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:16px">{{ skelRows }}</div></sc-if>
+              <sc-if value="{{ mine.error }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:48px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+                  <span style="width:64px;height:64px;border-radius:999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center"><i class="icon-cloud-alert" style="font-size:28px;line-height:1"></i></span>
+                  <h2 style="margin:8px 0 0;font:600 20px/1.3 'DM Sans'">No pudimos cargar tus publicaciones</h2>
+                  <button onClick="{{ onRetry }}" style="margin-top:8px;height:48px;padding:0 24px;border:1px solid #222222;border-radius:8px;background:#FFFFFF;font:500 16px/1 'DM Sans';display:flex;align-items:center;gap:8px;cursor:pointer"><i class="icon-refresh-cw" style="font-size:18px;line-height:1"></i>Reintentar</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ mine.empty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:48px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+                  <span style="width:64px;height:64px;border-radius:999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center"><i class="icon-paw-print" style="font-size:28px;line-height:1"></i></span>
+                  <h2 style="margin:8px 0 0;font:600 20px/1.3 'DM Sans'">Aún no has publicado</h2>
+                  <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F">Cuando publiques, aquí verás el estado de cada peludo.</p>
+                  <button onClick="{{ toPublish }}" style="margin-top:8px;height:48px;padding:0 24px;border:0;border-radius:8px;background:#C2410C;color:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer">Publica a tu peludo</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ mine.list }}" hint-placeholder-val="{{ true }}">
+                <div style="background:#F7F7F7;border-radius:14px;padding:12px 16px;display:flex;gap:12px;align-items:flex-start">
+                  <i class="icon-info" style="font-size:18px;line-height:1.3"></i>
+                  <span style="font:400 14px/1.5 'DM Sans';color:#3F3F3F">Si editas una publicación activa, vuelve a revisión antes de mostrarse otra vez.</span>
+                </div>
+                <sc-for list="{{ posts }}" as="p" hint-placeholder-count="4">
+                  <article style="border:1px solid #DDDDDD;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px">
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                      <div style="width:64px;height:64px;border-radius:14px;flex:none;background:repeating-linear-gradient(135deg,#F2F2F2 0 8px,#F7F7F7 8px 16px)"></div>
+                      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+                        <span style="font:600 16px/1.3 'DM Sans';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span>
+                        <span style="align-self:flex-start;height:24px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;background:{{ p.pillBg }};color:{{ p.pillFg }};font:600 11px/1 'DM Sans'">{{ p.pill }}</span>
+                        <span style="font:400 13px/1.4 'DM Sans';color:#6A6A6A">{{ p.upd }}</span>
+                      </div>
+                    </div>
+                    <sc-if value="{{ p.hasMotivo }}"><div style="background:#FEE2E2;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:4px"><span style="font:600 14px/1.4 'DM Sans';color:#B91C1C">Motivo del rechazo</span><span style="font:400 14px/1.5 'DM Sans';color:#B91C1C">{{ p.motivo }}</span></div></sc-if>
+                    <sc-if value="{{ p.hasNote }}"><span style="font:400 13px/1.4 'DM Sans';color:#6A6A6A">{{ p.note }}</span></sc-if>
+                    <sc-if value="{{ p.hasPrimary }}"><button onClick="{{ p.onPrimary }}" style="height:48px;border:1px solid #222222;border-radius:8px;background:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer;color:#222222">{{ p.primary }}</button></sc-if>
+                    <sc-if value="{{ p.hasActions }}"><div style="display:flex;flex-wrap:wrap;column-gap:20px;border-top:1px solid #DDDDDD;margin:0 -16px -8px;padding:0 16px"><sc-for list="{{ p.actions }}" as="a"><button onClick="{{ a.onClick }}" style="height:48px;border:0;background:none;padding:0;font:500 14px 'DM Sans';text-decoration:underline;cursor:pointer;color:#222222">{{ a.label }}</button></sc-for></div></sc-if>
+                  </article>
+                </sc-for>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- 8 · Perfil -->
+        <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;overflow:auto;min-height:0;padding:16px 16px 24px;display:flex;flex-direction:column;gap:20px">
+            <h1 style="margin:0;font:600 22px/1.3 'DM Sans'">Perfil</h1>
+            <div style="display:flex;gap:16px;align-items:center">
+              <span style="width:72px;height:72px;border-radius:999px;background:repeating-linear-gradient(135deg,#F2F2F2 0 8px,#F7F7F7 8px 16px);border:1px solid #DDDDDD;display:flex;align-items:center;justify-content:center;font:600 20px/1 'DM Sans';flex:none">{{ meInitials }}</span>
+              <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                <span style="font:600 20px/1.3 'DM Sans'">{{ profile.nombre }}</span>
+                <span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A;display:flex;align-items:center;gap:4px"><i class="icon-map-pin" style="font-size:14px;line-height:1"></i>{{ profile.zona }}</span>
+              </div>
+            </div>
+            <div style="border:1px solid #DDDDDD;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font:600 16px/1.3 'DM Sans'">Tu plan</span><span style="height:24px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;background:#F2F2F2;color:#3F3F3F;font:600 11px/1 'DM Sans'">{{ planPill }}</span></div>
+              <span style="font:400 14px/1.5 'DM Sans';color:#3F3F3F">{{ planLine }}</span>
+              <div style="height:4px;border-radius:999px;background:#F2F2F2;overflow:hidden"><div style="height:100%;width:{{ quotaW }};background:#222222"></div></div>
+              <sc-if value="{{ isFree }}" hint-placeholder-val="{{ true }}"><button onClick="{{ onPro }}" style="align-self:flex-start;height:40px;border:0;background:none;padding:0;font:500 14px 'DM Sans';text-decoration:underline;cursor:pointer;color:#222222">Pásate a Pro: hasta 30 activas</button></sc-if>
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ profileRows }}" as="r">
+                <button onClick="{{ r.onClick }}" style="min-height:56px;border:0;border-bottom:1px solid #DDDDDD;background:none;padding:8px 0;display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;color:#222222">
+                  <i class="{{ r.icon }}" style="font-size:24px;line-height:1"></i>
+                  <span style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font:400 16px/1.3 'DM Sans'">{{ r.label }}</span><span style="font:400 13px/1.4 'DM Sans';color:#6A6A6A">{{ r.sub }}</span></span>
+                  <sc-if value="{{ r.hasPill }}"><span style="height:24px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;background:#FEF3C7;color:#B45309;font:600 11px/1 'DM Sans';white-space:nowrap">{{ r.pill }}</span></sc-if>
+                  <i class="icon-chevron-right" style="font-size:20px;line-height:1;color:#6A6A6A"></i>
+                </button>
+              </sc-for>
+            </div>
+            <button onClick="{{ onLogout }}" style="align-self:flex-start;height:48px;border:0;background:none;padding:0;font:500 16px 'DM Sans';text-decoration:underline;cursor:pointer;color:#222222">Cerrar sesión</button>
+          </div>
+        </sc-if>
+
+        <!-- Favoritos -->
+        <sc-if value="{{ isFavs }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="height:56px;display:flex;align-items:center;gap:4px;padding:0 4px;flex:none">
+              <button aria-label="Volver" onClick="{{ toProfile }}" style="width:48px;height:48px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><i class="icon-arrow-left" style="font-size:24px;line-height:1"></i></button>
+              <span style="font:600 16px/1 'DM Sans'">Favoritos</span>
+            </div>
+            <div style="flex:1;overflow:auto;min-height:0;padding:8px 16px 24px;display:flex;flex-direction:column;gap:12px">
+              <sc-if value="{{ favsEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:48px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+                  <span style="width:64px;height:64px;border-radius:999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center"><i class="icon-heart" style="font-size:28px;line-height:1"></i></span>
+                  <h2 style="margin:8px 0 0;font:600 20px/1.3 'DM Sans'">Aún no tienes favoritos</h2>
+                  <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F">Toca el corazón en cualquier peludo para guardarlo aquí.</p>
+                  <button onClick="{{ toExplore }}" style="margin-top:8px;height:48px;padding:0 24px;border:1px solid #222222;border-radius:8px;background:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer">Explorar peludos</button>
+                </div>
+              </sc-if>
+              <sc-for list="{{ favCards }}" as="c">
+                <button onClick="{{ c.onOpen }}" style="border:1px solid #DDDDDD;border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center;background:#FFFFFF;cursor:pointer;text-align:left">
+                  <span style="width:72px;height:72px;border-radius:14px;flex:none;background:repeating-linear-gradient(135deg,#F2F2F2 0 8px,#F7F7F7 8px 16px)"></span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font:600 16px/1.3 'DM Sans';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#222222">{{ c.name }}</span><span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A">{{ c.meta }}</span><span style="font:400 14px/1.4 'DM Sans';color:#6A6A6A">{{ c.zona }}</span></span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <!-- Tab bar -->
+      <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ false }}">
+        <nav style="flex:none;height:64px;border-top:1px solid #DDDDDD;display:flex;background:#FFFFFF;padding:0 4px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+            <button onClick="{{ t.onClick }}" aria-current="{{ t.current }}" style="flex:1 1 auto;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:{{ t.color }};padding:0 6px">
+              <i class="{{ t.icon }}" style="font-size:24px;line-height:1"></i>
+              <span style="font:{{ t.weight }} 13px/1 'DM Sans';white-space:nowrap">{{ t.label }}</span>
+            </button>
+          </sc-for>
+        </nav>
+      </sc-if>
+
+      <!-- Bottom sheet: filtros -->
+      <sc-if value="{{ sheetFilters }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;justify-content:flex-end">
+          <button aria-label="Cerrar" onClick="{{ closeSheet }}" style="position:absolute;inset:0;border:0;background:rgba(0,0,0,.5);cursor:pointer"></button>
+          <div role="dialog" aria-label="Filtros" style="position:relative;background:#FFFFFF;border-radius:14px 14px 0 0;box-shadow:0 0 0 1px rgba(0,0,0,.02),0 2px 6px rgba(0,0,0,.04),0 4px 8px rgba(0,0,0,.10);max-height:92%;display:flex;flex-direction:column">
+            <div style="height:56px;flex:none;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid #DDDDDD">
+              <button aria-label="Cerrar" onClick="{{ closeSheet }}" style="position:absolute;left:4px;width:48px;height:48px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><i class="icon-x" style="font-size:22px;line-height:1"></i></button>
+              <span style="font:600 16px/1 'DM Sans'">Filtros</span>
+            </div>
+            <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:24px">
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font:600 16px/1.3 'DM Sans'">Especie</span>
+                <div style="display:flex;background:#F2F2F2;border-radius:999px;padding:4px;gap:4px"><sc-for list="{{ fEsp }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;height:40px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.color }};font:{{ o.weight }} 14px/1 'DM Sans';cursor:pointer">{{ o.label }}</button></sc-for></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font:600 16px/1.3 'DM Sans'">Sexo</span>
+                <div style="display:flex;background:#F2F2F2;border-radius:999px;padding:4px;gap:4px"><sc-for list="{{ fSexo }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;height:40px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.color }};font:{{ o.weight }} 14px/1 'DM Sans';cursor:pointer">{{ o.label }}</button></sc-for></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px"><span style="font:600 16px/1.3 'DM Sans'">Tamaño</span>
+                <div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ fTam }}" as="o"><button onClick="{{ o.onClick }}" aria-pressed="{{ o.on }}" style="height:48px;border:0;background:none;padding:0;cursor:pointer"><span style="height:36px;display:flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};font:{{ o.weight }} 14px/1 'DM Sans';color:#222222">{{ o.label }}</span></button></sc-for></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font:600 16px/1.3 'DM Sans'">Edad</span>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <label style="display:flex;flex-direction:column;gap:4px"><span style="font:400 13px/1 'DM Sans';color:#6A6A6A">Desde</span><div style="position:relative"><select value="{{ fMin }}" onChange="{{ onFMin }}" style="width:100%;appearance:none;height:48px;border:1px solid #DDDDDD;border-radius:8px;padding:0 40px 0 12px;font:400 16px 'DM Sans';background:#FFFFFF"><sc-for list="{{ edadOptsMin }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><i class="icon-chevron-down" style="position:absolute;right:12px;top:14px;font-size:20px;line-height:1;pointer-events:none"></i></div></label>
+                  <label style="display:flex;flex-direction:column;gap:4px"><span style="font:400 13px/1 'DM Sans';color:#6A6A6A">Hasta</span><div style="position:relative"><select value="{{ fMax }}" onChange="{{ onFMax }}" style="width:100%;appearance:none;height:48px;border:1px solid #DDDDDD;border-radius:8px;padding:0 40px 0 12px;font:400 16px 'DM Sans';background:#FFFFFF"><sc-for list="{{ edadOptsMax }}" as="o"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select><i class="icon-chevron-down" style="position:absolute;right:12px;top:14px;font-size:20px;line-height:1;pointer-events:none"></i></div></label>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font:600 16px/1.3 'DM Sans'">Zona</span>
+                <button onClick="{{ openZoneFilters }}" style="height:48px;border:1px solid #DDDDDD;border-radius:8px;padding:0 12px;background:#FFFFFF;display:flex;align-items:center;gap:8px;cursor:pointer;text-align:left"><i class="icon-map-pin" style="font-size:20px;line-height:1;color:#6A6A6A"></i><span style="flex:1;font:400 16px 'DM Sans';color:#222222">{{ fZonaLabel }}</span><i class="icon-chevron-down" style="font-size:20px;line-height:1"></i></button>
+              </div>
+            </div>
+            <div style="flex:none;padding:12px 16px;border-top:1px solid #DDDDDD;display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <button onClick="{{ onFClear }}" style="height:48px;border:0;background:none;padding:0 4px;font:500 16px 'DM Sans';text-decoration:underline;cursor:pointer;color:#222222">Limpiar</button>
+              <button onClick="{{ onFApply }}" style="height:48px;padding:0 24px;border:0;border-radius:8px;background:{{ fApplyBg }};color:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer">{{ fApplyLabel }}</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Bottom sheet: zona -->
+      <sc-if value="{{ sheetZone }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:flex-end">
+          <button aria-label="Cerrar" onClick="{{ closeZone }}" style="position:absolute;inset:0;border:0;background:rgba(0,0,0,.5);cursor:pointer"></button>
+          <div role="dialog" aria-label="Elige tu zona" style="position:relative;background:#FFFFFF;border-radius:14px 14px 0 0;box-shadow:0 0 0 1px rgba(0,0,0,.02),0 2px 6px rgba(0,0,0,.04),0 4px 8px rgba(0,0,0,.10);max-height:85%;display:flex;flex-direction:column">
+            <div style="height:56px;flex:none;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid #DDDDDD">
+              <button aria-label="Cerrar" onClick="{{ closeZone }}" style="position:absolute;left:4px;width:48px;height:48px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><i class="icon-x" style="font-size:22px;line-height:1"></i></button>
+              <span style="font:600 16px/1 'DM Sans'">Municipio</span>
+            </div>
+            <div role="radiogroup" style="flex:1;overflow:auto;padding:4px 16px 16px">
+              <sc-for list="{{ zoneRows }}" as="z">
+                <button role="radio" aria-checked="{{ z.on }}" onClick="{{ z.onClick }}" style="width:100%;height:52px;border:0;border-bottom:1px solid #DDDDDD;background:none;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font:{{ z.weight }} 16px/1 'DM Sans';color:#222222;padding:0">
+                  {{ z.label }}
+                  <span style="width:22px;height:22px;box-sizing:border-box;border-radius:999px;border:{{ z.ring }};display:flex;align-items:center;justify-content:center"></span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Bottom sheet: solicitud (10) -->
+      <sc-if value="{{ sheetRequest }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;justify-content:flex-end">
+          <button aria-label="Cerrar" onClick="{{ closeSheet }}" style="position:absolute;inset:0;border:0;background:rgba(0,0,0,.5);cursor:pointer"></button>
+          <div role="dialog" aria-label="Solicitud de adopción" style="position:relative;background:#FFFFFF;border-radius:14px 14px 0 0;box-shadow:0 0 0 1px rgba(0,0,0,.02),0 2px 6px rgba(0,0,0,.04),0 4px 8px rgba(0,0,0,.10);max-height:92%;display:flex;flex-direction:column">
+            <div style="height:56px;flex:none;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid #DDDDDD">
+              <button aria-label="Cerrar" onClick="{{ closeSheet }}" style="position:absolute;left:4px;width:48px;height:48px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><i class="icon-x" style="font-size:22px;line-height:1"></i></button>
+              <span style="font:600 16px/1 'DM Sans'">Solicitud de adopción</span>
+            </div>
+            <sc-if value="{{ reqForm }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:20px">
+                <span style="font:400 16px/1.5 'DM Sans';color:#3F3F3F">Cuéntale a {{ d.pubName }} un poco sobre ti para adoptar a {{ d.short }}.</span>
+                <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 14px/1.4 'DM Sans'">¿Dónde vivirá?</span>
+                  <div style="display:flex;background:#F2F2F2;border-radius:999px;padding:4px;gap:4px"><sc-for list="{{ reqViv }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;height:40px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.color }};font:{{ o.weight }} 14px/1 'DM Sans';cursor:pointer">{{ o.label }}</button></sc-for></div>
+                  <sc-if value="{{ reqErr.hasViv }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>Elige una opción.</span></sc-if>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 14px/1.4 'DM Sans'">¿Tienes otras mascotas?</span>
+                  <div style="display:flex;background:#F2F2F2;border-radius:999px;padding:4px;gap:4px"><sc-for list="{{ reqOtras }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;height:40px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.color }};font:{{ o.weight }} 14px/1 'DM Sans';cursor:pointer">{{ o.label }}</button></sc-for></div>
+                  <sc-if value="{{ reqErr.hasOtras }}"><span style="display:flex;gap:4px;align-items:center;font:400 13px/1.4 'DM Sans';color:#B91C1C"><i class="icon-circle-alert" style="font-size:16px;line-height:1"></i>Elige una opción.</span></sc-if>
+                </div>
+                <label style="display:flex;flex-direction:column;gap:8px">
+                  <span style="font:500 14px/1.4 'DM Sans'">¿Por qué quieres adoptar?</span>
+                  <textarea value="{{ req.motivo }}" onChange="{{ onReqMotivo }}" maxlength="500" placeholder="Tu rutina, quién vive contigo, cómo lo cuidarías…" style="height:120px;box-sizing:border-box;border:1px solid {{ reqErr.motivoB }};border-radius:8px;padding:12px;font:400 16px/1.5 'DM Sans';resize:none;outline:none" style-focus="outline:2px solid #222222;outline-offset:-1px"></textarea>
+                  <div style="display:flex;justify-content:space-between;gap:8px;font:400 13px/1.4 'DM Sans'"><span style="color:#B91C1C">{{ reqErr.motivo }}</span><span style="color:#6A6A6A">{{ reqCount }}</span></div>
+                </label>
+                <span style="display:flex;gap:8px;font:400 14px/1.5 'DM Sans';color:#3F3F3F"><i class="icon-lock" style="font-size:16px;line-height:1.4;color:#222222"></i>Compartimos tu nombre y zona. Tu WhatsApp solo si aprueban la solicitud.</span>
+              </div>
+              <div style="flex:none;padding:12px 16px;border-top:1px solid #DDDDDD">
+                <button onClick="{{ onReqSend }}" style="width:100%;height:48px;border:0;border-radius:8px;background:#C2410C;color:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer" style-active="background:#9A3412">Enviar solicitud</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ reqDone }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:32px 16px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+                <span style="width:64px;height:64px;border-radius:999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center"><i class="icon-send" style="font-size:28px;line-height:1"></i></span>
+                <h2 style="margin:8px 0 0;font:600 20px/1.3 'DM Sans'">¡Solicitud enviada!</h2>
+                <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F;text-wrap:pretty">{{ d.pubName }} la va a revisar. Si la aprueba, verás su WhatsApp en la publicación de {{ d.short }}.</p>
+                <button onClick="{{ closeSheet }}" style="margin-top:12px;width:100%;height:48px;border:1px solid #222222;border-radius:8px;background:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer;color:#222222">Seguir explorando</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Bottom sheet: confirmar edición -->
+      <sc-if value="{{ sheetEdit }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;justify-content:flex-end">
+          <button aria-label="Cerrar" onClick="{{ closeSheet }}" style="position:absolute;inset:0;border:0;background:rgba(0,0,0,.5);cursor:pointer"></button>
+          <div role="dialog" style="position:relative;background:#FFFFFF;border-radius:14px 14px 0 0;box-shadow:0 0 0 1px rgba(0,0,0,.02),0 2px 6px rgba(0,0,0,.04),0 4px 8px rgba(0,0,0,.10);padding:24px 16px 16px;display:flex;flex-direction:column;gap:12px">
+            <h2 style="margin:0;font:600 20px/1.3 'DM Sans';text-wrap:pretty">¿Editar a {{ editName }}?</h2>
+            <p style="margin:0;font:400 16px/1.5 'DM Sans';color:#3F3F3F">Al guardar los cambios, la publicación vuelve a revisión y no se mostrará en el catálogo hasta que la aprobemos. Suele tardar unos minutos.</p>
+            <button onClick="{{ onConfirmEdit }}" style="margin-top:8px;height:48px;border:0;border-radius:8px;background:#C2410C;color:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer">Editar y enviar a revisión</button>
+            <button onClick="{{ closeSheet }}" style="height:48px;border:1px solid #222222;border-radius:8px;background:#FFFFFF;font:500 16px/1 'DM Sans';cursor:pointer;color:#222222">Cancelar</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+        <div role="status" style="position:absolute;left:16px;right:16px;bottom:80px;z-index:40;background:#222222;color:#FFFFFF;border-radius:8px;padding:14px 16px;font:400 14px/1.4 'DM Sans'">{{ toast }}</div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;estadoRed&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;normal&quot;,&quot;cargando&quot;,&quot;vacio&quot;,&quot;error&quot;,&quot;sin-conexion&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Estados&quot;},&quot;plan&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Gratis&quot;,&quot;Pro&quot;],&quot;default&quot;:&quot;Gratis&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Estados&quot;}}">
+const ZONAS=['Libertador','Chacao','Baruta','Sucre','El Hatillo','Vargas','Los Salias','Carrizal','Guaicaipuro','Plaza','Zamora'];
+const PUBS=[{name:'Refugio Patas del Ávila',zona:'Libertador',ver:true,n:18},{name:'Huellitas de Baruta',zona:'Baruta',ver:true,n:11},{name:'María Alejandra Rodríguez Peñaloza',zona:'El Hatillo',ver:false,n:1},{name:'José Gregorio Pérez',zona:'Libertador',ver:false,n:2},{name:'Daniela Contreras',zona:'Los Salias',ver:false,n:1}];
+const HAND=[
+{name:'Toby',esp:'Perro',m:14,sexo:'Macho',tam:'Mediano',zona:'Chacao',pub:0,fotos:5,vac:1,est:1,desc:'Toby es un pana: tranquilo en casa y feliz en la calle. Lo rescatamos en Los Palos Grandes y ya camina bien con correa. Se la lleva bien con otros perros; con gatos todavía estamos viendo.'},
+{name:'Luna',esp:'Gato',m:3,sexo:'Hembra',tam:'Pequeño',zona:'Baruta',pub:1,fotos:3,vac:1,est:0,desc:'Luna llegó con sus hermanitos y es la más curiosa de todos. Come solita, usa su arenero y se duerme encima de quien la cargue. Buscamos familia paciente y con malla en las ventanas.'},
+{name:'Princesa Margarita del Ávila',esp:'Gato',m:38,sexo:'Hembra',tam:'Pequeño',zona:'Guaicaipuro',pub:1,fotos:4,vac:1,est:1,desc:'La Princesa Margarita hace honor a su nombre: ella elige dónde dormir y quién la acaricia. Está esterilizada, convive con otros gatos y le encanta que le hablen. Ideal para una casa tranquila, sin perros, donde la dejen ser la reina.'},
+{name:'Canela',esp:'Perro',m:24,sexo:'Hembra',tam:'Grande',zona:'El Hatillo',pub:2,fotos:4,vac:1,est:1,desc:'Canela es grandota pero muy consentida. Necesita espacio y paseos largos, ideal para casa con patio. Me voy del país y quiero dejarla con alguien que la quiera como yo.'},
+{name:'Pelusa',esp:'Gato',m:60,sexo:'Hembra',tam:'Pequeño',zona:'Libertador',pub:3,fotos:2,vac:0,est:0,desc:'Pelusa es una gata adulta, tranquila y muy limpia. Le gusta la ventana y el sol de la mañana. No tiene vacunas, pero está sana; te acompaño al veterinario si la adoptas.'},
+{name:'Rocky',esp:'Perro',m:8,sexo:'Macho',tam:'Grande',zona:'Sucre',pub:0,fotos:5,vac:1,est:0,desc:'Rocky es un cachorro con muchísima energía y todavía está aprendiendo a no morder los zapatos. Lo encontramos en Petare y ya tiene sus primeras vacunas.'},
+{name:'Nala',esp:'Perro',m:12,sexo:'Hembra',tam:'Mediano',zona:'Los Salias',pub:4,fotos:3,vac:1,est:1,desc:'Nala es dulce y algo tímida al principio. Ya está esterilizada y vacunada. Perfecta para apartamento si la sacas a pasear dos veces al día.'}];
+const EXTRA='Bruno M P,Mía H G,Simón M G,Kiara H P,Chispa H P,Oreo M G,Max M P,Lola H P,Coco M P,Nieve H G,Tango M P,Mostaza H P,Zeus M P,Frida H G,Pancho M P,Arepa H P,Bombón M G,Caramelo M P,Duque M P,Estrella H G,Galleta H P,Hércules M P,India H P,Kira H G,Manchas M P,Negrita H G,Pirata M P,Rubí H P,Sombra H G,Tomasa H G,Yuca H P,Zafiro M G,Gordo M G'.split(',');
+const DP=[(n,a)=>`${n} es cariños${a} y le encanta salir a pasear. Ya hace sus necesidades afuera y busca una familia con tiempo para jugar.`,(n,a)=>`Encontramos a ${n} cerca de la autopista y hoy está san${a} y con mucha energía. Se la lleva bien con niños y con otros perros.`,(n,a)=>`${n} es tranquil${a}, ideal para apartamento. Duerme mucho, come bien y te va a seguir por toda la casa.`];
+const DG=[(n,a)=>`A ${n} le encanta perseguir pelotitas y dormir al sol. Usa su arenero sin problema y busca un hogar con malla en las ventanas.`,(n,a)=>`${n} es independiente pero muy cariños${a} cuando agarra confianza. Convive bien con otros gatos.`];
+const PETS=HAND.concat(EXTRA.map((s,i)=>{const [n,sx,e]=s.split(' ');const esp=e==='G'?'Gato':'Perro';const sexo=sx==='H'?'Hembra':'Macho';const a=sx==='H'?'a':'o';
+  return {name:n,esp,m:[2,5,9,14,18,26,40,72][i%8],sexo,tam:esp==='Gato'?(i%3?'Pequeño':'Mediano'):['Pequeño','Mediano','Grande'][i%3],zona:ZONAS[(i*4+1)%11],pub:i%5,fotos:1+(i%5),vac:i%4!==3?1:0,est:i%3===0?1:0,desc:(esp==='Gato'?DG[i%2]:DP[i%3])(n,a)};})).map((p,i)=>Object.assign({},p,{id:i}));
+const DEF_F={esp:'Todos',sexo:'Todos',tams:[],edadMin:0,edadMax:999,zona:''};
+const EDADES=[{v:0,l:'0 meses'},{v:6,l:'6 meses'},{v:12,l:'1 año'},{v:24,l:'2 años'},{v:60,l:'5 años'},{v:999,l:'10+ años'}];
+const STATUS={borrador:['Borrador','#6A6A6A','#F2F2F2'],revision:['En revisión','#B45309','#FEF3C7'],publicada:['Publicada','#15803D','#DCFCE7'],rechazada:['Rechazada','#B91C1C','#FEE2E2'],pausada:['Pausada','#3F3F3F','#EBEBEB'],adoptada:['Adoptada','#9A3412','#FFEDD5']};
+const POSTS=[{id:'m1',name:'Toby',status:'publicada',upd:'Publicada hace 3 días'},{id:'m2',name:'Canela',status:'revision',upd:'Enviada hace 12 min'},{id:'m3',name:'Rocky',status:'rechazada',upd:'Revisada hoy, 8:40 a. m.',motivo:'Las fotos aparecen en otras páginas de internet. Sube fotos tomadas por ti para confirmar que Rocky está contigo.'},{id:'m4',name:'Pelusa',status:'pausada',upd:'Pausada hace 1 semana'},{id:'m5',name:'Nala',status:'adoptada',upd:'Adoptada el 14 de octubre'},{id:'m6',name:'Bartolomé Fernando "Barto" Rivas Castellanos',status:'borrador',upd:'Falta la descripción'}];
+const FULL_PROFILE={foto:true,nombre:'Andreína Márquez',zona:'Baruta',wa:'0414 987 6543',errors:{}};
+function edadTxt(m){m=+m;if(m<12)return m+(m===1?' mes':' meses');const y=Math.floor(m/12),r=m%12;let s=y+(y===1?' año':' años');if(r)s+=' y '+r+(r===1?' mes':' meses');return s;}
+function edadLbl(v){return (EDADES.find(e=>e.v===v)||{}).l;}
+function initials(n){return (n||'?').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+function fmtWa(v){const d=v.replace(/\D/g,'').slice(0,11);return d.slice(0,4)+(d.length>4?' '+d.slice(4,7):'')+(d.length>7?' '+d.slice(7):'');}
+function adj(base,sexo){return base+(sexo==='Hembra'?'a':'o');}
+const newWz=z=>({step:1,photos:[],sel:null,esp:'Perro',nombre:'',anios:'0',meses:'3',sexo:'',tam:'',zona:z||'Baruta',salud:{},desc:'',errors:{},failedOnce:false,seq:0});
+
+class Component extends DCLogic {
+  state={screen:'welcome',tab:'explore',sub:null,detailId:0,photoIdx:0,filters:{...DEF_F},draft:{...DEF_F},shown:20,catLoading:false,loadingMore:false,netFixed:false,favs:{},requests:{},sheet:null,zoneFor:null,
+    auth:{mode:'login',nombre:'',correo:'',pass:'',show:false,errors:{}},profile:{foto:false,nombre:'',zona:'',wa:'',errors:{}},profileComplete:false,afterProfile:null,
+    req:{viv:'',otras:'',motivo:'',errors:{},sent:false},wz:newWz('Baruta'),posts:POSTS.map(p=>({...p})),editId:null,verifReq:false,toast:null};
+  componentDidMount(){this._tk=setInterval(()=>this.tick(),160);}
+  componentWillUnmount(){clearInterval(this._tk);clearTimeout(this._tt);clearTimeout(this._rl);clearTimeout(this._lm);}
+  componentDidUpdate(pp){if(pp.estadoRed!==this.props.estadoRed&&this.state.netFixed)this.setState({netFixed:false});}
+  tick(){if(!this.state.wz.photos.some(p=>p.st==='up'))return;this.setState(s=>({wz:{...s.wz,photos:s.wz.photos.map(p=>{if(p.st!=='up')return p;const pr=Math.min(100,p.pr+9);if(p.fail&&pr>=60)return {...p,pr:60,st:'fail'};return {...p,pr,st:pr>=100?'ok':'up'};})}}));}
+  setW(patch){this.setState(s=>({wz:{...s.wz,...patch}}));}
+  say(t){this.setState({toast:t});clearTimeout(this._tt);this._tt=setTimeout(()=>this.setState({toast:null}),2600);}
+  reload(ms){this.setState({catLoading:true,shown:20});clearTimeout(this._rl);this._rl=setTimeout(()=>this.setState({catLoading:false}),ms||700);}
+  filtered(f){f=f||this.state.filters;return PETS.filter(p=>(f.esp==='Todos'||p.esp===(f.esp==='Perros'?'Perro':'Gato'))&&(f.sexo==='Todos'||p.sexo===f.sexo)&&(!f.tams.length||f.tams.includes(p.tam))&&p.m>=f.edadMin&&p.m<=f.edadMax&&(!f.zona||p.zona===f.zona));}
+  limit(){return (this.props.plan??'Gratis')==='Pro'?30:3;}
+  active(){return this.state.posts.filter(p=>p.status==='publicada'||p.status==='revision').length;}
+  toTabs(tab,extra){this.setState({screen:'tabs',tab,sub:null,sheet:null,zoneFor:null,...(extra||{})});}
+  ensureProfile(){if(!this.state.profileComplete)this.setState({profile:{...FULL_PROFILE},profileComplete:true});}
+  loadMore(){const total=this.filtered().length;if(this.state.loadingMore||this.state.catLoading||this.state.shown>=total)return;this.setState({loadingMore:true});this._lm=setTimeout(()=>this.setState(s=>({shown:s.shown+20,loadingMore:false})),1100);}
+  seg(opts,cur,pick){return opts.map(o=>{const on=o===cur;return {label:o,onClick:()=>pick(o),bg:on?'#FFFFFF':'transparent',border:on?'#DDDDDD':'transparent',color:on?'#222222':'#3F3F3F',weight:on?600:500};});}
+  chip(label,on,click,icon){return {label,on,onClick:click,icon:icon||'',bg:on?'#F2F2F2':'#FFFFFF',border:on?'#222222':'#DDDDDD',weight:on?600:400};}
+  wzValidate(){const w=this.state.wz,e={};
+    if(w.step===1){if(!w.photos.length)e.step='Sube al menos una foto.';else if(w.photos.some(p=>p.st==='up'))e.step='Espera a que terminen de subir las fotos.';else if(w.photos.some(p=>p.st==='fail'))e.step='Reintenta o quita la foto que no se subió.';}
+    if(w.step===2){if(!w.nombre.trim())e.nombre='Escribe su nombre.';if(!w.sexo)e.sexo='Elige el sexo.';if(!w.tam)e.tam='Elige un tamaño.';}
+    if(w.step===3){if(w.desc.trim().length<30)e.desc='Escribe al menos 30 caracteres.';}
+    return e;}
+  wzNext(){const e=this.wzValidate();if(Object.keys(e).length){this.setW({errors:e});return;}const w=this.state.wz;
+    if(w.step<4){this.setW({step:w.step+1,errors:{},sel:null});return;}
+    const name=w.nombre.trim();this.setState(s=>({posts:[{id:'n'+Date.now(),name,status:'revision',upd:'Enviada hace un momento'}].concat(s.posts),wz:newWz(s.profile.zona),tab:'mine'}));this.say(`Enviamos a ${name} a revisión. Te avisamos en minutos.`);}
+  mvPhoto(i,to){this.setState(s=>{const ph=s.wz.photos.slice();const [x]=ph.splice(i,1);ph.splice(to,0,x);return {wz:{...s.wz,photos:ph,sel:x.id}};});}
+  jump(k){
+    const m={bienvenida:()=>this.setState({screen:'welcome',sheet:null}),entrar:()=>this.setState({screen:'auth',sheet:null}),
+      completa:()=>this.setState({screen:'profileSetup',profile:{foto:true,nombre:'Andreína Márquez',zona:'',wa:'',errors:{}},afterProfile:null,sheet:null}),
+      catalogo:()=>{this.ensureProfile();this.toTabs('explore');this.reload(1200);},
+      detalle:()=>{this.ensureProfile();this.toTabs('explore',{sub:'detail',detailId:0,photoIdx:0});},
+      publicar:()=>{this.ensureProfile();this.toTabs('publish');},
+      bloqueado:()=>{this.ensureProfile();this.setState(s=>({posts:s.posts.map(p=>p.id==='m4'?{...p,status:'publicada',upd:'Publicada hace 1 hora'}:p)}));this.toTabs('publish');},
+      mis:()=>{this.ensureProfile();this.toTabs('mine');},perfil:()=>{this.ensureProfile();this.toTabs('profile');}};
+    m[k]();}
+  renderVals(){
+    const S=this.state,net=S.netFixed?'normal':(this.props.estadoRed??'normal'),lim=this.limit(),act=this.active();
+    const inTabs=S.screen==='tabs';
+    const isCatalog=inTabs&&S.tab==='explore'&&S.sub!=='detail',isDetail=inTabs&&S.tab==='explore'&&S.sub==='detail';
+    const isPublish=inTabs&&S.tab==='publish',isMine=inTabs&&S.tab==='mine',isProfile=inTabs&&S.tab==='profile'&&S.sub!=='favs',isFavs=inTabs&&S.tab==='profile'&&S.sub==='favs';
+    const cur=isCatalog||isDetail?'catalogo':isPublish?(act>=lim?'bloqueado':'publicar'):isMine?'mis':(isProfile||isFavs)?'perfil':S.screen==='welcome'?'bienvenida':S.screen==='auth'?'entrar':'completa';
+    const jumps=[['bienvenida','1 · Bienvenida'],['entrar','1 · Entrar / registro'],['completa','2 · Completa tu perfil'],['catalogo','3–4 · Catálogo y filtros'],['detalle','5 · Detalle + solicitud'],['publicar','6 · Publicar'],['bloqueado','6 · Publicar (límite)'],['mis','7 · Mis publicaciones'],['perfil','8 · Perfil']].map(([k,l])=>({label:l,onClick:()=>this.jump(k),bg:k===cur?'#FFFFFF':'transparent',weight:k===cur?600:400}));
+    const sk=st=>React.createElement('div',{style:Object.assign({background:'#F2F2F2',borderRadius:8,animation:'pz-pulse 1.4s ease-in-out infinite'},st)});
+    const skCard=k=>React.createElement('div',{key:k,style:{display:'flex',flexDirection:'column',gap:8}},sk({height:246,borderRadius:14}),sk({height:16,width:'55%',marginTop:4}),sk({height:14,width:'75%'}),sk({height:14,width:'40%'}));
+    const skRow=k=>React.createElement('div',{key:k,style:{border:'1px solid #DDDDDD',borderRadius:14,padding:16,display:'flex',gap:12}},sk({width:64,height:64,borderRadius:14,flex:'none'}),React.createElement('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:8}},sk({height:16,width:'60%'}),sk({height:20,width:80,borderRadius:999}),sk({height:12,width:'45%'})));
+    const F=S.filters,list=this.filtered();
+    const skel=S.catLoading||net==='cargando';
+    const cat={skeleton:skel,error:!skel&&net==='error',offline:!skel&&net==='sin-conexion',empty:!skel&&(net==='vacio'||(net==='normal'&&!list.length))};
+    cat.list=!skel&&net==='normal'&&list.length>0;cat.loadingMore=S.loadingMore;cat.end=cat.list&&S.shown>=list.length&&!S.loadingMore;
+    const favToggle=id=>this.setState(s=>{const f={...s.favs};if(f[id])delete f[id];else f[id]=true;return {favs:f};});
+    const openDetail=id=>this.setState({sub:'detail',detailId:id,photoIdx:0,tab:'explore',screen:'tabs'});
+    const meta=p=>`${edadTxt(p.m)} · ${p.sexo} · ${p.tam}`;
+    const cards=list.slice(0,S.shown).map(p=>({name:p.name,meta:meta(p),zona:p.zona,verified:PUBS[p.pub].ver,fotos:p.fotos,photoLabel:`foto · ${p.name.split(' ')[0].toLowerCase()} (${p.esp.toLowerCase()})`,aria:`Ver a ${p.name}`,favAria:S.favs[p.id]?`Quitar a ${p.name} de favoritos`:`Guardar a ${p.name} en favoritos`,heartFill:S.favs[p.id]?'#C2410C':'rgba(0,0,0,0.5)',onOpen:()=>openDetail(p.id),onFav:()=>favToggle(p.id)}));
+    const setSp=v=>{this.setState(s=>({filters:{...s.filters,esp:s.filters.esp===v?'Todos':v}}));this.reload(600);};
+    const speciesPill=[['Perros','icon-dog'],['Gatos','icon-cat']].map(([l,ic])=>({label:l,icon:ic,checked:F.esp===l?'true':'false',bg:F.esp===l?'#F2F2F2':'transparent',weight:F.esp===l?600:500,onClick:()=>setSp(l)}));
+    const nAct=(F.esp!=='Todos')+(F.sexo!=='Todos')+(F.tams.length>0)+(F.edadMin!==0||F.edadMax!==999)+(!!F.zona);
+    const openF=()=>this.setState(s=>({sheet:'filters',draft:{...s.filters,tams:s.filters.tams.slice()}}));
+    const ch=(label,on)=>({label,isMain:false,isSub:true,hasCount:false,onClick:openF,bg:on?'#F2F2F2':'#FFFFFF',border:on?'#222222':'#DDDDDD',weight:on?600:400});
+    const filterChips=[{label:'Filtros',isMain:true,isSub:false,hasCount:nAct>0,count:nAct,onClick:openF,bg:nAct?'#F2F2F2':'#FFFFFF',border:nAct?'#222222':'#DDDDDD',weight:nAct?600:400},
+      ch(F.esp==='Todos'?'Especie':F.esp,F.esp!=='Todos'),ch(F.tams.length?F.tams.join(', '):'Tamaño',F.tams.length>0),ch(F.edadMin!==0||F.edadMax!==999?`${edadLbl(F.edadMin)} – ${edadLbl(F.edadMax)}`:'Edad',F.edadMin!==0||F.edadMax!==999),ch(F.sexo==='Todos'?'Sexo':F.sexo,F.sexo!=='Todos'),ch(F.zona||'Zona',!!F.zona)];
+    const D=S.draft,dCount=this.filtered(D).length,setD=patch=>this.setState(s=>({draft:{...s.draft,...patch}}));
+    const p=PETS[S.detailId]||PETS[0],pub=PUBS[p.pub],requested=!!S.requests[p.id];
+    const d={name:p.name,short:p.name.split(' ')[0],zona:p.zona,desc:p.desc,idx:`${S.photoIdx+1}/${p.fotos}`,photoLabel:`foto ${S.photoIdx+1} de ${p.fotos} · ${p.name.split(' ')[0].toLowerCase()}`,
+      prev:()=>this.setState(s=>({photoIdx:(s.photoIdx-1+p.fotos)%p.fotos})),next:()=>this.setState(s=>({photoIdx:(s.photoIdx+1)%p.fotos})),back:()=>this.setState({sub:null}),
+      onFav:()=>favToggle(p.id),favAria:S.favs[p.id]?'Quitar de favoritos':'Guardar en favoritos',heartFill:S.favs[p.id]?'#C2410C':'none',heartStroke:S.favs[p.id]?'#C2410C':'#222222',
+      facts:[{k:'Edad',v:edadTxt(p.m)},{k:'Sexo',v:p.sexo},{k:'Tamaño',v:p.tam}],
+      health:[p.vac?{icon:'icon-syringe',label:adj('Vacunad',p.sexo)}:{icon:'icon-circle-dashed',label:'Sin vacunas'},p.est?{icon:'icon-circle-check',label:adj('Esterilizad',p.sexo)}:{icon:'icon-circle-dashed',label:'Sin esterilizar'},{icon:'icon-circle-check',label:adj('Desparasitad',p.sexo)}],
+      pubName:pub.name,pubZona:pub.zona,pubCount:pub.n===1?'1 publicación':pub.n+' publicaciones',pubInitials:initials(pub.name),pubVerified:pub.ver,pubParticular:!pub.ver,
+      lockNote:requested?'Tu solicitud está pendiente. El WhatsApp se muestra cuando el publicador la apruebe.':'El WhatsApp se muestra cuando el publicador apruebe tu solicitud.',
+      onReport:()=>this.say('Gracias. Revisaremos esta publicación.'),canRequest:!requested,requested,cta:p.sexo==='Hembra'?'Quiero adoptarla':'Quiero adoptarlo',
+      onRequest:()=>{if(!S.profileComplete){this.setState({screen:'profileSetup',afterProfile:'request',profile:{...S.profile,errors:{}}});return;}this.setState({sheet:'request',req:{viv:'',otras:'',motivo:'',errors:{},sent:false}});}};
+    const R=S.req,setR=patch=>this.setState(s=>({req:{...s.req,...patch}}));
+    const w=S.wz,we=w.errors||{},bd=e=>e?'#B91C1C':'#DDDDDD';
+    const wzTiles=w.photos.map((ph,i)=>({label:`foto ${i+1}`,isCover:i===0&&ph.st!=='fail',up:ph.st==='up',fail:ph.st==='fail',pct:ph.pr+'%',outline:w.sel===ph.id?'2px solid #222222':'0 solid transparent',aria:`Foto ${i+1}${i===0?', portada':''}`,
+      onSel:()=>this.setW({sel:w.sel===ph.id?null:ph.id}),onRetry:()=>this.setState(s=>({wz:{...s.wz,photos:s.wz.photos.map(x=>x.id===ph.id?{...x,st:'up',pr:0,fail:false}:x)}}))}));
+    const si=w.photos.findIndex(x=>x.id===w.sel);
+    const wzSelActions=si<0?[]:[si>0&&{icon:'icon-star',text:'Portada',label:'Hacer portada',onClick:()=>this.mvPhoto(si,0)},si>0&&{icon:'icon-arrow-left',text:'',label:'Mover a la izquierda',onClick:()=>this.mvPhoto(si,si-1)},si<w.photos.length-1&&{icon:'icon-arrow-right',text:'',label:'Mover a la derecha',onClick:()=>this.mvPhoto(si,si+1)},{icon:'icon-trash-2',text:'Quitar',label:'Quitar foto',onClick:()=>this.setState(s=>({wz:{...s.wz,photos:s.wz.photos.filter(x=>x.id!==w.sel),sel:null}}))}].filter(Boolean);
+    const wAge=(+w.anios)*12+(+w.meses);
+    const salud=[['vac','Vacunado'],['est','Esterilizado'],['desp','Desparasitado']];
+    const posts=S.posts.map(po=>{const st=STATUS[po.status];const setSt=(status,upd,msg)=>{this.setState(s=>({posts:s.posts.map(x=>x.id===po.id?{...x,status,upd,motivo:status==='rechazada'?x.motivo:undefined}:x)}));if(msg)this.say(msg);};
+      const edit={label:'Editar',onClick:()=>this.setState({sheet:'edit',editId:po.id})};const adopt={label:'Marcar como adoptada',onClick:()=>setSt('adoptada','Adoptada hoy',`¡Qué alegría! ${po.name} encontró hogar.`)};
+      let actions=[],primary=null,note=null;
+      if(po.status==='publicada')actions=[edit,{label:'Pausar',onClick:()=>setSt('pausada','Pausada ahora','Pausamos la publicación. No se muestra en el catálogo.')},adopt];
+      if(po.status==='pausada')actions=[{label:'Reanudar',onClick:()=>{if(this.active()>=lim){this.say(`Llegaste al límite de ${lim} activas. Pausa otra primero.`);return;}setSt('publicada','Publicada ahora','Publicación reanudada.');}},edit,adopt];
+      if(po.status==='revision')note='La revisión suele tardar unos minutos. Te avisamos al terminar.';
+      if(po.status==='rechazada')primary={label:'Editar y reenviar',onClick:()=>setSt('revision','Enviada hace un momento',`Reenviamos a ${po.name} a revisión.`)};
+      if(po.status==='borrador'){primary={label:'Continuar borrador',onClick:()=>this.setState(s=>({tab:'publish',wz:{...newWz(s.profile.zona),step:2,nombre:po.name,photos:[{id:1,st:'ok',pr:100}],seq:1,failedOnce:true}}))};actions=[{label:'Eliminar',onClick:()=>{this.setState(s=>({posts:s.posts.filter(x=>x.id!==po.id)}));this.say('Borrador eliminado.');}}];}
+      if(po.status==='adoptada')note='Gracias por ayudar a que encontrara familia.';
+      return {name:po.name,pill:st[0],pillFg:st[1],pillBg:st[2],upd:po.upd,hasMotivo:!!po.motivo&&po.status==='rechazada',motivo:po.motivo,hasNote:!!note,note,hasPrimary:!!primary,primary:primary&&primary.label,onPrimary:primary&&primary.onClick,hasActions:actions.length>0,actions};});
+    const mSk=net==='cargando';
+    const mine={skeleton:mSk,error:!mSk&&net==='error',empty:!mSk&&(net==='vacio'||!S.posts.length)};mine.list=!mSk&&!mine.error&&!mine.empty;
+    const pr=S.profile,pe=pr.errors||{},setP=patch=>this.setState(s=>({profile:{...s.profile,...patch}}));
+    const A=S.auth,ae=A.errors||{},setA=patch=>this.setState(s=>({auth:{...s.auth,...patch}}));
+    const zf=S.zoneFor,zCur=zf==='filters'?D.zona:zf==='profile'?pr.zona:w.zona;
+    const zoneOpts=zf==='filters'?['Toda Gran Caracas'].concat(ZONAS):ZONAS;
+    const favList=PETS.filter(x=>S.favs[x.id]);
+    const tabs=[['explore','Explorar','icon-compass'],['publish','Publicar','icon-circle-plus'],['mine','Mis publicaciones','icon-layout-list'],['profile','Perfil','icon-circle-user']].map(([k,l,ic])=>({label:l,icon:ic,current:S.tab===k?'page':'false',color:S.tab===k?'#C2410C':'#6A6A6A',weight:S.tab===k?600:500,onClick:()=>{if(k==='explore'&&S.tab!=='explore')this.reload(900);this.toTabs(k);}}));
+    return {
+      jumps,wifiIcon:net==='sin-conexion'?'icon-wifi-off':'icon-wifi',showOfflineBanner:net==='sin-conexion'&&S.screen!=='welcome'&&!isCatalog,
+      isWelcome:S.screen==='welcome',isAuth:S.screen==='auth',isProfileSetup:S.screen==='profileSetup',isCatalog,isDetail,isPublish,isMine,isProfile,isFavs,showTabs:inTabs&&!isDetail,
+      onGoogle:()=>this.setState({screen:'profileSetup',profile:{foto:true,nombre:'Andreína Márquez',zona:'',wa:'',errors:{}},afterProfile:null}),onEmail:()=>this.setState({screen:'auth'}),toWelcome:()=>this.setState({screen:'welcome'}),
+      auth:A,isLogin:A.mode==='login',isRegister:A.mode==='register',authTitle:A.mode==='login'?'Entra a Petzo':'Crea tu cuenta',authCta:A.mode==='login'?'Entrar':'Crear cuenta',
+      authTabs:this.seg(['Entrar','Crear cuenta'],A.mode==='login'?'Entrar':'Crear cuenta',o=>setA({mode:o==='Entrar'?'login':'register',errors:{}})),
+      authErr:{nombre:ae.nombre,hasNombre:!!ae.nombre,nombreB:bd(ae.nombre),correo:ae.correo,hasCorreo:!!ae.correo,correoB:bd(ae.correo),pass:ae.pass,hasPass:!!ae.pass,passB:bd(ae.pass)},
+      onAuthNombre:e=>setA({nombre:e.target.value}),onAuthCorreo:e=>setA({correo:e.target.value}),onAuthPass:e=>setA({pass:e.target.value}),
+      passType:A.show?'text':'password',passIcon:A.show?'icon-eye-off':'icon-eye',passAria:A.show?'Ocultar contraseña':'Mostrar contraseña',togglePass:()=>setA({show:!A.show}),
+      onAuthSubmit:()=>{const e={};if(A.mode==='register'&&!A.nombre.trim())e.nombre='Escribe tu nombre.';if(!/^\S+@\S+\.\S+$/.test(A.correo))e.correo=A.correo?'Ese correo no parece válido. Revisa que tenga @ y dominio.':'Escribe tu correo.';if(A.pass.length<8)e.pass='La contraseña debe tener al menos 8 caracteres.';
+        if(Object.keys(e).length){setA({errors:e});return;}if(A.mode==='register')this.setState({screen:'profileSetup',profile:{foto:false,nombre:A.nombre,zona:'',wa:'',errors:{}},afterProfile:null});else{this.setState({profile:{...FULL_PROFILE},profileComplete:true});this.toTabs('explore');this.reload(1200);}},
+      profile:pr,profileIntro:S.afterProfile==='request'?'Antes de enviar tu solicitud necesitamos algunos datos. Te toma un minuto.':'Lo necesitas para publicar o pedir una adopción. Te toma un minuto.',
+      fotoBg:pr.foto?'repeating-linear-gradient(135deg,#F2F2F2 0 8px,#F7F7F7 8px 16px)':'#FFFFFF',fotoIcon:pr.foto?'icon-user':'icon-camera',fotoCta:pr.foto?'Cambiar foto':'Agregar foto',toggleFoto:()=>setP({foto:!pr.foto}),
+      pErr:{nombre:pe.nombre,hasNombre:!!pe.nombre,nombreB:bd(pe.nombre),zona:pe.zona,hasZona:!!pe.zona,zonaB:bd(pe.zona),wa:pe.wa,hasWa:!!pe.wa,waB:bd(pe.wa)},
+      pZonaLabel:pr.zona||'Elige tu municipio',pZonaColor:pr.zona?'#222222':'#6A6A6A',onPNombre:e=>setP({nombre:e.target.value}),onPWa:e=>setP({wa:fmtWa(e.target.value)}),
+      openZoneProfile:()=>this.setState({zoneFor:'profile'}),onProfileBack:()=>this.setState(S.afterProfile==='request'||S.profileComplete?{screen:'tabs'}:{screen:'welcome'}),
+      onProfileSave:()=>{const e={};const dg=pr.wa.replace(/\D/g,'');if(!pr.nombre.trim())e.nombre='Escribe tu nombre.';if(!pr.zona)e.zona='Elige tu municipio.';if(!dg)e.wa='Escribe tu número de WhatsApp.';else if(dg.length<11||!/^04(12|14|16|22|24|26)/.test(dg))e.wa='Revisa el número: debe verse como 0412 123 4567.';
+        if(Object.keys(e).length){setP({errors:e});return;}const back=S.afterProfile==='request';this.setState(s=>({profileComplete:true,profile:{...s.profile,errors:{}},wz:{...s.wz,zona:s.profile.zona}}));
+        if(back)this.setState({screen:'tabs',sheet:'request',req:{viv:'',otras:'',motivo:'',errors:{},sent:false}});else{this.toTabs('explore');this.reload(1200);}this.say('¡Listo! Tu perfil está completo.');},
+      speciesPill,filterChips,cards,cat,resultLine:`${list.length} peludos en ${F.zona||'Gran Caracas'}`,skelCards:[0,1,2].map(skCard),skelMore:[0,1].map(skCard),skelRows:[0,1,2,3].map(skRow),
+      onCatScroll:e=>{const t=e.currentTarget;if(t.scrollTop+t.clientHeight>t.scrollHeight-500)this.loadMore();},
+      onRetry:()=>{this.setState({netFixed:true});this.reload(1000);},onClearFilters:()=>{this.setState({filters:{...DEF_F}});this.reload(600);},
+      sheetFilters:S.sheet==='filters',closeSheet:()=>this.setState({sheet:null}),
+      fEsp:this.seg(['Todos','Perros','Gatos'],D.esp,o=>setD({esp:o})),fSexo:this.seg(['Todos','Macho','Hembra'],D.sexo,o=>setD({sexo:o})),
+      fTam:['Pequeño','Mediano','Grande'].map(t=>this.chip(t,D.tams.includes(t),()=>setD({tams:D.tams.includes(t)?D.tams.filter(x=>x!==t):D.tams.concat(t)}))),
+      fMin:String(D.edadMin),fMax:String(D.edadMax),edadOptsMin:EDADES.filter(e=>e.v<999),edadOptsMax:EDADES.filter(e=>e.v>0),
+      onFMin:e=>{const v=+e.target.value;setD({edadMin:v,edadMax:Math.max(D.edadMax,v===0?6:EDADES[EDADES.findIndex(x=>x.v===v)+1].v)});},onFMax:e=>{const v=+e.target.value;setD({edadMax:v,edadMin:Math.min(D.edadMin,EDADES[EDADES.findIndex(x=>x.v===v)-1].v)});},
+      fZonaLabel:D.zona||'Toda Gran Caracas',openZoneFilters:()=>this.setState({zoneFor:'filters'}),
+      onFClear:()=>setD({...DEF_F,tams:[]}),fApplyLabel:dCount?`Ver ${dCount} resultados`:'Sin resultados',fApplyBg:dCount?'#C2410C':'#FBD5C5',
+      onFApply:()=>{if(!dCount)return;this.setState(s=>({filters:{...s.draft},sheet:null}));this.reload(800);},
+      sheetZone:!!zf,closeZone:()=>this.setState({zoneFor:null}),
+      zoneRows:zoneOpts.map(z=>{const on=z===zCur||(z==='Toda Gran Caracas'&&!zCur);return {label:z,on:on?'true':'false',weight:on?600:400,ring:on?'7px solid #222222':'2px solid #DDDDDD',onClick:()=>{const v=z==='Toda Gran Caracas'?'':z;if(zf==='filters')setD({zona:v});else if(zf==='profile')setP({zona:v,errors:{...pe,zona:undefined}});else this.setW({zona:v});this.setState({zoneFor:null});}};}),
+      d,sheetRequest:S.sheet==='request',req:R,reqForm:!R.sent,reqDone:R.sent,reqCount:`${R.motivo.length}/500`,
+      reqViv:this.seg(['Casa','Apartamento','Otro'],R.viv,o=>setR({viv:o})),reqOtras:this.seg(['Sí','No'],R.otras,o=>setR({otras:o})),
+      reqErr:{hasViv:!!(R.errors||{}).viv,hasOtras:!!(R.errors||{}).otras,motivo:(R.errors||{}).motivo||'',motivoB:bd((R.errors||{}).motivo)},onReqMotivo:e=>setR({motivo:e.target.value}),
+      onReqSend:()=>{const e={};if(!R.viv)e.viv=1;if(!R.otras)e.otras=1;if(R.motivo.trim().length<20)e.motivo='Escribe al menos 20 caracteres.';if(Object.keys(e).length){setR({errors:e});return;}this.setState(s=>({req:{...s.req,sent:true,errors:{}},requests:{...s.requests,[p.id]:'pending'}}));},
+      limit:lim,activeCount:act,quotaW:Math.min(100,Math.round(act/lim*100))+'%',pubBlocked:act>=lim,pubWizard:act<lim,toMine:()=>this.toTabs('mine'),toPublish:()=>this.toTabs('publish'),onPro:()=>this.say('El plan Pro llega pronto. Te avisamos.'),
+      wz:w,wzProg:[1,2,3,4].map(i=>({bg:i<=w.step?'#222222':'#DDDDDD'})),wzStepTitle:['Fotos','Datos','Salud y descripción','Revisar y enviar'][w.step-1],
+      wzS1:w.step===1,wzS2:w.step===2,wzS3:w.step===3,wzS4:w.step===4,wzTiles,wzCanAdd:w.photos.length<5,wzCount:`${w.photos.length}/5 fotos`,wzHasSel:si>=0,wzSelActions,
+      wzAdd:()=>this.setState(s=>{const W=s.wz;const fail=!W.failedOnce&&W.photos.length===1;return {wz:{...W,seq:W.seq+1,failedOnce:W.failedOnce||fail,errors:{},photos:W.photos.concat({id:W.seq+1,st:'up',pr:0,fail})}};}),
+      wzEsp:this.seg(['Perro','Gato'],w.esp,o=>this.setW({esp:o})),wzSexo:this.seg(['Macho','Hembra'],w.sexo,o=>this.setW({sexo:o,errors:{...we,sexo:undefined}})),
+      wzTam:['Pequeño','Mediano','Grande'].map(t=>this.chip(t,w.tam===t,()=>this.setW({tam:t,errors:{...we,tam:undefined}}))),
+      wzSalud:salud.map(([k,l])=>{const on=!!w.salud[k];return {...this.chip(w.sexo==='Hembra'?l.slice(0,-1)+'a':l,on,()=>this.setW({salud:{...w.salud,[k]:!on}})),icon:on?'icon-check':'icon-plus',on:on?'true':'false'};}),
+      wzErr:{nombre:we.nombre,hasNombre:!!we.nombre,nombreB:bd(we.nombre),sexo:we.sexo,hasSexo:!!we.sexo,tam:we.tam,hasTam:!!we.tam,desc:we.desc||'',descB:bd(we.desc),step:we.step,hasStep:!!we.step},
+      wzNombre:e=>this.setW({nombre:e.target.value}),wzAnios:e=>this.setW({anios:e.target.value}),wzMeses:e=>this.setW({meses:e.target.value}),wzDesc:e=>this.setW({desc:e.target.value}),wzDescCount:`${w.desc.length}/1000`,
+      yearOpts:Array.from({length:16},(_,i)=>({v:String(i),l:i===1?'1 año':i+' años'})),monthOpts:Array.from({length:12},(_,i)=>({v:String(i),l:i===1?'1 mes':i+' meses'})),
+      openZoneWizard:()=>this.setState({zoneFor:'wizard'}),
+      wzReview:{name:w.nombre||'Sin nombre',meta:`${edadTxt(wAge)} · ${w.sexo||'—'} · ${w.tam||'—'}`,zona:w.zona,fotos:w.photos.length===1?'1 foto':w.photos.length+' fotos',salud:salud.filter(([k])=>w.salud[k]).map(([,l])=>w.sexo==='Hembra'?l.slice(0,-1)+'a':l).join(' · ')||'Sin datos de salud'},
+      wzCanBack:w.step>1,wzBack:()=>this.setW({step:w.step-1,errors:{}}),wzNext:()=>this.wzNext(),wzNextLabel:w.step===4?'Enviar a revisión':'Continuar',
+      posts,mine,sheetEdit:S.sheet==='edit',editName:(S.posts.find(x=>x.id===S.editId)||{}).name,
+      onConfirmEdit:()=>{const po=S.posts.find(x=>x.id===S.editId);this.setState(s=>({sheet:null,posts:s.posts.map(x=>x.id===s.editId?{...x,status:'revision',upd:'Enviada hace un momento'}:x)}));this.say(`Guardamos los cambios. ${po.name} está en revisión.`);},
+      meInitials:initials(pr.nombre),isFree:lim===3,planPill:lim===3?'Gratis':'Pro',planLine:`${act} de ${lim} publicaciones activas`,
+      profileRows:[{icon:'icon-phone',label:'WhatsApp',sub:'+58 '+(pr.wa||'—')+' · solo visible al aprobar',hasPill:false,onClick:()=>this.setState({screen:'profileSetup',afterProfile:null})},
+        {icon:'icon-badge-check',label:'Solicitar verificación de fundación',sub:S.verifReq?'Te escribiremos por correo en 48 horas':'Para refugios y fundaciones registradas',hasPill:S.verifReq,pill:'En revisión',onClick:()=>{if(!S.verifReq){this.setState({verifReq:true});this.say('Recibimos tu solicitud de verificación.');}}},
+        {icon:'icon-heart',label:'Favoritos',sub:favList.length===1?'1 peludo guardado':favList.length+' peludos guardados',hasPill:false,onClick:()=>this.setState({sub:'favs'})},
+        {icon:'icon-pencil',label:'Editar perfil',sub:'Nombre, foto y zona',hasPill:false,onClick:()=>this.setState({screen:'profileSetup',afterProfile:null})}],
+      onLogout:()=>this.setState({screen:'welcome',profileComplete:false,favs:{},requests:{}}),
+      favsEmpty:!favList.length,favCards:favList.map(x=>({name:x.name,meta:meta(x),zona:x.zona,onOpen:()=>openDetail(x.id)})),toProfile:()=>this.setState({sub:null}),toExplore:()=>this.toTabs('explore'),
+      tabs,hasToast:!!S.toast,toast:S.toast};
+  }
+}
+</script>
+</body>
+</html>
