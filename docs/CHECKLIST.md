@@ -9,7 +9,7 @@ Estado de implementación por sprint (SPEC §16). `[x]` hecho y probado · `[ ]`
 - [x] Bucket público `pet-photos` + seed de 11 municipios
 - [x] Migraciones probadas en local y aplicadas en la nube
 - [x] `.env.example` por app, `CLAUDE.md`, logs de skills y agentes
-- [~] Google OAuth configurado y probado en Supabase (Cris)
+- [x] Google OAuth configurado y probado en Supabase (usuario Google creado en `auth.users`)
 
 ## S1 API core (HU-02, 03, 05, 10)
 - [ ] Middleware JWT + middleware admin
