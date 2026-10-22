@@ -12,14 +12,16 @@ Estado de implementación por sprint (SPEC §16). `[x]` hecho y probado · `[ ]`
 - [x] Google OAuth configurado y probado en Supabase (usuario Google creado en `auth.users`)
 
 ## S1 API core (HU-02, 03, 05, 10)
-- [ ] Middleware JWT + middleware admin
-- [ ] Perfil: ver/editar (zona, WhatsApp), alta del perfil
-- [ ] CRUD de mascotas (crear, editar, pausar, adoptada)
-- [ ] URLs firmadas de subida de fotos (1 a 5)
-- [ ] Catálogo con filtros y paginación (20)
-- [ ] Límite de plan (free 3 / pro 30)
-- [ ] Swagger
-- [ ] Endpoints probados con requests reales
+- [x] Middleware JWT + middleware admin
+- [x] Perfil: ver/editar (zona, WhatsApp), alta del perfil
+- [x] CRUD de mascotas (crear, editar, pausar, adoptada)
+- [x] URLs firmadas de subida de fotos (1 a 5)
+- [x] Catálogo con filtros y paginación (20)
+- [x] Límite de plan (free 3 / pro 30)
+- [x] Swagger
+- [x] Endpoints probados con requests reales (`npm run smoke`, Supabase local)
+- [ ] Verificar `SUPABASE_SERVICE_ROLE_KEY` en `apps/api/.env` contra la nube (Cris: quitar espacios alrededor de `=`)
+- [ ] Supabase nube: desactivar "Confirm email" o configurar SMTP propio (el SMTP por defecto solo manda unos pocos correos por hora) (Cris)
 
 ## S2 App base (HU-01, 02, 03, 05, 10)
 - [ ] Login correo + Google
@@ -41,6 +43,7 @@ Estado de implementación por sprint (SPEC §16). `[x]` hecho y probado · `[ ]`
 - [ ] Flujo 1: moderación
 - [ ] Flujo 2: notificaciones por correo
 - [ ] Fallback: si n8n o IA fallan, queda `pending_review`
+- [ ] Callbacks de moderación solo aplican si `status = pending_review` y `updated_at` coincide con lo evaluado
 
 ## S5 Panel (HU-12, 13)
 - [ ] Login admin

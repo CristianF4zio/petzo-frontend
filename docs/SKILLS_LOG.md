@@ -5,3 +5,6 @@
 | S0 | anthropic-skills:docs | Leer la spec desde el Claude Doc y exportarla a `docs/SPEC.md` | SPEC.md generado (§1–§17) |
 | S0 | architect | Decidir si el esquema/RLS necesitaba diseño antes de migrar | No-architecture-decision: §14/§15 ya fijan el modelo; solo `sex` (male/female) quedó a criterio |
 | S0 | agents-md | Redactar `CLAUDE.md` breve con stack, comandos y reglas | `CLAUDE.md` < 60 líneas |
+| S1 | api-and-interface-design | Definir forma de errores, validación en el borde, paginación y nombres de rutas | Errores `{error:{code,message,details}}`, zod en cada entrada, catálogo `{data,pagination}`; transiciones de estado en un solo `PATCH /pets/:id/status` |
+| S1 | ponytail:ponytail-audit | Auditoría completa del repo tras S1 (bugs, seguridad, escala, tests) | 15 hallazgos (3 críticos: pausa→edición salta moderación, avatar con URL arbitraria, catálogo filtraba `risk_score`); 14 corregidos en código con prueba en el smoke, 1 es configuración de la nube |
+| S1 | ponytail:ponytail-review | Revisar los cambios de S1 + correcciones de la auditoría antes del commit | 2 hallazgos (fotos abandonadas bloqueaban la mascota; usuario borrado recibía 422 en vez de 401), ambos corregidos con prueba; se eliminó el error `TOO_MANY_UPLOADS` que quedó sin uso |

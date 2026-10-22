@@ -10,7 +10,7 @@ Dog and cat adoption app for Gran Caracas. Source of truth: `docs/SPEC.md` — r
 - AI: Claude Haiku 5.5 (`claude-haiku-5-5`) via `@anthropic-ai/sdk`. n8n: flow 1 moderation, flow 2 notifications. Stagehand: Instagram import worker.
 
 ## Commands
-- API: `cd apps/api && npm run dev` (tsx watch, loads `.env`) · `npm run typecheck`
+- API: `cd apps/api && npm run dev` (tsx watch, loads `.env`; Swagger at `/docs`) · `npm run typecheck` · `npm run smoke` (E2E against local Supabase, must be running)
 - Mobile: `cd apps/mobile && npx expo start` · `npx tsc --noEmit`
 - Admin: `cd apps/admin && npm run dev` · `npm run build`
 - DB local: `npx supabase start` · `npx supabase db reset` (reapplies migrations). Ports are 553xx (543xx taken by another local project).
