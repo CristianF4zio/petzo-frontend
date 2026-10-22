@@ -21,7 +21,7 @@ Estado de implementación por sprint (SPEC §16). `[x]` hecho y probado · `[ ]`
 - [x] Swagger
 - [x] Endpoints probados con requests reales (`npm run smoke`, Supabase local)
 - [x] Verificar `SUPABASE_SERVICE_ROLE_KEY` en `apps/api/.env` contra la nube (catálogo y municipios responden)
-- [ ] Supabase nube: desactivar "Confirm email" o configurar SMTP propio (el SMTP por defecto solo manda unos pocos correos por hora) (Cris)
+- [x] Supabase nube: "Confirm email" desactivado (`mailer_autoconfirm: true`)
 
 ## S2 App base (HU-01, 02, 03, 05, 10)
 - [ ] Login correo + Google
