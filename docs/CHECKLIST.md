@@ -1,7 +1,7 @@
 # Checklist
 
 Estado por sprint según SPEC §16 (D-21, D-27). `[x]` hecho y probado · `[~]` parcial o depende de Cris · `[ ]` pendiente.
-El backend (B0–B4) vive en el repo `petzo-backend`; su detalle está en su propio `docs/CHECKLIST.md`.
+Repos: `petzo-backend` (B0–B4, detalle en su `docs/CHECKLIST.md`), `petzo-frontend` (este: F1 y F3) y `petzo-web` (F2, panel admin).
 
 ## Backend (resumen; detalle en petzo-backend)
 - [x] B0 Supabase + modelo: Flyway V1 (baseline) + V2 (trigger de perfiles); un registro nuevo crea su perfil
@@ -21,7 +21,7 @@ El backend (B0–B4) vive en el repo `petzo-backend`; su detalle está en su pro
 - [ ] Quitar `apps/api` y `supabase/` (legado previo a D-22/D-25)
 - [ ] Flujo completo en Expo Go contra producción
 
-## F2 Panel admin (React + Vite)
+## F2 Panel admin (React + Vite, repo `petzo-web`)
 - [ ] Login admin (Supabase Auth) y guardia por rol
 - [ ] Cola de moderación con motivo y riesgo; aprobar / rechazar con motivo
 - [ ] Fundaciones (verificar / rechazar) y plan Gratis/Pro
@@ -35,7 +35,8 @@ El backend (B0–B4) vive en el repo `petzo-backend`; su detalle está en su pro
 - [ ] READMEs y evidencias
 
 ## Pendientes de Cris
-- [ ] Repo vacío `petzo-backend` en GitHub (URL para hacer push)
+- [x] Repos `petzo-backend` y `petzo-web` en GitHub (código subido)
+- [ ] Renombrar en GitHub `petz0` → `petzo-frontend`
 - [ ] `ANTHROPIC_API_KEY` en `petzo-backend/.env`
 - [ ] Servicio Docker en Render con las variables del `.env`
 - [ ] Importar los 2 flujos de n8n y pasar sus URLs de producción
