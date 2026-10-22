@@ -26,15 +26,17 @@ Estado de implementación por sprint (SPEC §16). `[x]` hecho y probado · `[ ]`
 ## S2 App base (HU-01, 02, 03, 05, 10 + HU-11, HU-16 del diseño)
 - [x] Migración: columna `dewormed` (desparasitado) + API (local y nube)
 - [x] API: favoritos, eliminar borrador, reportar, conteo de publicaciones del publicador (smoke 16/16)
-- [ ] Expo Router + tema (DM Sans, Lucide) + cliente Supabase/API
-- [ ] Login correo + Google
-- [ ] Completa tu perfil (zona, WhatsApp, foto)
-- [ ] Catálogo con filtros, scroll infinito y estados
-- [ ] Detalle con galería, publicador y reporte
-- [ ] Publicar / editar (asistente 4 pasos, fotos comprimidas ~500 KB)
-- [ ] Mis publicaciones (acciones por estado)
-- [ ] Perfil y favoritos
-- [ ] Flujo completo en Expo Go (iPhone) contra la API local
+- [~] Expo Router + tema (DM Sans, Lucide) + cliente Supabase/API
+- [~] Login correo + Google
+- [~] Completa tu perfil (zona, WhatsApp, foto)
+- [~] Catálogo con filtros, scroll infinito y estados
+- [~] Detalle con galería, publicador y reporte
+- [~] Publicar / editar (asistente 4 pasos, fotos comprimidas ~500 KB)
+- [~] Mis publicaciones (acciones por estado)
+- [~] Perfil y favoritos
+- [ ] Flujo completo en Expo Go (iPhone) contra la API local (Cris)
+
+`[~]` en S2 = implementado, typecheck + bundle iOS + expo-doctor OK; falta la prueba en el iPhone.
 
 ## S3 Solicitudes + IA (HU-06, 07, 08, 09)
 - [ ] Cliente Haiku 5.5 + `ai_logs` + tope diario

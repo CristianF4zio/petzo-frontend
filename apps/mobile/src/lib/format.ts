@@ -51,3 +51,7 @@ export function timeAgo(iso: string) {
   const d = Math.round(h / 24);
   return `hace ${d} ${d === 1 ? 'día' : 'días'}`;
 }
+
+// Mirrors the API rule (RF-07): pending_review + approved count toward the plan
+export const PLAN_LIMITS = { free: 3, pro: 30 } as const;
+export const isActive = (s: PetStatus) => s === 'pending_review' || s === 'approved';
