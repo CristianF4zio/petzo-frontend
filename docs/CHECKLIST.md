@@ -20,7 +20,7 @@ Estado de implementación por sprint (SPEC §16). `[x]` hecho y probado · `[ ]`
 - [x] Límite de plan (free 3 / pro 30)
 - [x] Swagger
 - [x] Endpoints probados con requests reales (`npm run smoke`, Supabase local)
-- [ ] Verificar `SUPABASE_SERVICE_ROLE_KEY` en `apps/api/.env` contra la nube (Cris: quitar espacios alrededor de `=`)
+- [x] Verificar `SUPABASE_SERVICE_ROLE_KEY` en `apps/api/.env` contra la nube (catálogo y municipios responden)
 - [ ] Supabase nube: desactivar "Confirm email" o configurar SMTP propio (el SMTP por defecto solo manda unos pocos correos por hora) (Cris)
 
 ## S2 App base (HU-01, 02, 03, 05, 10)
