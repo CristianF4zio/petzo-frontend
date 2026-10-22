@@ -158,6 +158,8 @@ test('API core flow (HU-02, 03, 05, 10)', async (t) => {
     assert.ok(!(await api('GET', '/pets?species=cat')).body.data.some((p: { id: string }) => p.id === first));
     assert.deepEqual((await api('GET', '/pets?page=999')).body.data, []);
     assert.equal((await api('GET', '/pets?size=huge')).status, 422);
+    assert.ok((await api('GET', '/pets?size=small,medium')).body.data.some((p: { id: string }) => p.id === first));
+    assert.ok(!(await api('GET', '/pets?size=small,large')).body.data.some((p: { id: string }) => p.id === first));
   });
 
   await t.test('favorites, reports, publisher count and draft deletion', async () => {

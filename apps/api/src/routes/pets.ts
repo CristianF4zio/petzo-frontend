@@ -39,7 +39,12 @@ export const UpdatePet = PetFields.partial()
 
 export const CatalogQuery = z.object({
   species: z.enum(['dog', 'cat']).optional(),
-  size: z.enum(['small', 'medium', 'large']).optional(),
+  // size=small or size=small,medium
+  size: z
+    .string()
+    .transform((v) => v.split(','))
+    .pipe(z.array(z.enum(['small', 'medium', 'large'])).max(3))
+    .optional(),
   sex: z.enum(['male', 'female']).optional(),
   municipality_id: z.coerce.number().int().positive().optional(),
   min_age_months: z.coerce.number().int().min(0).optional(),
@@ -108,7 +113,7 @@ router.get('/pets', async (req, res) => {
     .eq('status', 'approved')
     .eq('publisher.is_suspended', false);
   if (q.species) query = query.eq('species', q.species);
-  if (q.size) query = query.eq('size', q.size);
+  if (q.size) query = query.in('size', q.size);
   if (q.sex) query = query.eq('sex', q.sex);
   if (q.municipality_id) query = query.eq('municipality_id', q.municipality_id);
   if (q.min_age_months !== undefined) query = query.gte('age_months', q.min_age_months);
