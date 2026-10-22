@@ -11,14 +11,14 @@ export const PLAN_LIMITS = { free: 3, pro: 30 } as const;
 
 const MAX_STORED_FILES = MAX_PHOTOS * 2;
 
-const PUBLIC_PET_COLUMNS =
-  'id, owner_id, species, name, age_months, sex, size, municipality_id, vaccinated, sterilized, description, status, source, created_at, updated_at';
+export const PUBLIC_PET_COLUMNS =
+  'id, owner_id, species, name, age_months, sex, size, municipality_id, vaccinated, sterilized, dewormed, description, status, source, created_at, updated_at';
 // Owner/admin only: moderation signals must not reach the public catalog
 const PET_COLUMNS = `${PUBLIC_PET_COLUMNS}, moderation_reason, risk_score, source_url`;
 // Public slice of the publisher: never whatsapp (RNF-04). !inner lets us hide suspended publishers.
 const PUBLISHER_FIELDS = 'id, full_name, avatar_url, municipality_id, account_type, foundation_name, verification_status';
-const PUBLISHER = `publisher:profiles!owner_id!inner(${PUBLISHER_FIELDS})`;
-const PHOTOS = 'pet_photos(storage_path, position)';
+export const PUBLISHER = `publisher:profiles!owner_id!inner(${PUBLISHER_FIELDS})`;
+export const PHOTOS = 'pet_photos(storage_path, position)';
 
 const PetFields = z.object({
   species: z.enum(['dog', 'cat']),
@@ -29,9 +29,10 @@ const PetFields = z.object({
   municipality_id: z.number().int().positive(),
   vaccinated: z.boolean(),
   sterilized: z.boolean(),
+  dewormed: z.boolean(),
   description: z.string().trim().max(1000),
 });
-export const CreatePet = PetFields.partial({ vaccinated: true, sterilized: true, description: true }).strict();
+export const CreatePet = PetFields.partial({ vaccinated: true, sterilized: true, dewormed: true, description: true }).strict();
 export const UpdatePet = PetFields.partial()
   .strict()
   .refine((body) => Object.keys(body).length > 0, 'Sin cambios');
@@ -71,7 +72,7 @@ function statusAfterEdit(status: string) {
 
 type PetRow = Record<string, unknown> & { pet_photos?: { storage_path: string; position: number }[] };
 
-const withPhotos = ({ pet_photos = [], ...pet }: PetRow) => ({
+export const withPhotos = ({ pet_photos = [], ...pet }: PetRow) => ({
   ...pet,
   photos: [...pet_photos].sort((a, b) => a.position - b.position).map((p) => photoUrl(p.storage_path)),
 });
@@ -137,7 +138,34 @@ router.get('/pets/:id', optionalAuth, async (req, res) => {
   // Many-to-one embed is an object at runtime; without generated DB types it is typed as an array
   const { is_suspended, ...publisher } = pet.publisher as unknown as { is_suspended: boolean };
   if (pet.owner_id !== req.user?.id && (pet.status !== 'approved' || is_suspended)) throw notFound();
-  res.json(withPhotos({ ...pet, publisher }));
+  const { count } = await db
+    .from('pets')
+    .select('id', { count: 'exact', head: true })
+    .eq('owner_id', pet.owner_id)
+    .eq('status', 'approved');
+  res.json(withPhotos({ ...pet, publisher: { ...publisher, pets_count: count ?? 0 } }));
+});
+
+// Only drafts can be deleted; anything that was public keeps its history (pause or adopt instead)
+router.delete('/pets/:id', auth, async (req, res) => {
+  const pet = await ownPet(parse(z.uuid(), req.params.id), req.user!);
+  if (pet.status !== 'draft') throw new HttpError(409, 'INVALID_STATUS', 'Solo se pueden eliminar borradores');
+  const bucket = db.storage.from(PHOTO_BUCKET);
+  const files = check(await bucket.list(`pets/${pet.id}`, { limit: 100 })).map((f) => `pets/${pet.id}/${f.name}`);
+  check(await db.from('pets').delete().eq('id', pet.id));
+  if (files.length) await bucket.remove(files);
+  res.status(204).end();
+});
+
+export const ReportBody = z.object({ reason: z.string().trim().min(3).max(500) }).strict();
+
+router.post('/pets/:id/reports', auth, async (req, res) => {
+  const id = parse(z.uuid(), req.params.id);
+  const { reason } = parse(ReportBody, req.body);
+  const pet = check(await db.from('pets').select('id, status').eq('id', id).maybeSingle());
+  if (!pet || pet.status !== 'approved') throw notFound();
+  check(await db.from('reports').insert({ pet_id: id, reporter_id: req.user!.id, reason }));
+  res.status(201).json({ ok: true });
 });
 
 router.get('/me/pets', auth, async (req, res) => {

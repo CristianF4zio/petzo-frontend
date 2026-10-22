@@ -23,7 +23,8 @@ async function api(method: string, path: string, token?: string, body?: unknown)
     headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  return { status: res.status, body: (await res.json()) as any };
+  const text = await res.text(); // 204 has no body
+  return { status: res.status, body: (text ? JSON.parse(text) : null) as any };
 }
 
 async function signUp(name: string) {
@@ -157,6 +158,32 @@ test('API core flow (HU-02, 03, 05, 10)', async (t) => {
     assert.ok(!(await api('GET', '/pets?species=cat')).body.data.some((p: { id: string }) => p.id === first));
     assert.deepEqual((await api('GET', '/pets?page=999')).body.data, []);
     assert.equal((await api('GET', '/pets?size=huge')).status, 422);
+  });
+
+  await t.test('favorites, reports, publisher count and draft deletion', async () => {
+    const detail = await api('GET', `/pets/${first}`);
+    assert.equal(detail.body.dewormed, false);
+    assert.equal(detail.body.publisher.pets_count, 1);
+
+    assert.equal((await api('PUT', `/me/favorites/${first}`, other.token)).status, 204);
+    assert.equal((await api('PUT', `/me/favorites/${first}`, other.token)).status, 204); // idempotent
+    assert.deepEqual((await api('GET', '/me/favorites', other.token)).body.map((p: { id: string }) => p.id), [first]);
+    assert.equal((await api('DELETE', `/me/favorites/${first}`, other.token)).status, 204);
+    assert.deepEqual((await api('GET', '/me/favorites', other.token)).body, []);
+
+    assert.equal((await api('POST', `/pets/${first}/reports`, other.token, { reason: 'x' })).status, 422);
+    assert.equal((await api('POST', `/pets/${first}/reports`, other.token, { reason: 'Fotos de internet' })).status, 201);
+
+    const draft = await api('POST', '/pets', owner.token, { ...PET, name: 'Borrador', dewormed: true });
+    assert.equal(draft.body.dewormed, true);
+    assert.equal((await api('PUT', `/me/favorites/${draft.body.id}`, other.token)).status, 404);
+    assert.equal((await api('POST', `/pets/${draft.body.id}/reports`, other.token, { reason: 'Fotos de internet' })).status, 404);
+    await withPhotos(owner, draft.body.id);
+    assert.equal((await api('DELETE', `/pets/${draft.body.id}`, other.token)).status, 404);
+    assert.equal((await api('DELETE', `/pets/${draft.body.id}`, owner.token)).status, 204);
+    const { data: left } = await db.storage.from('pet-photos').list(`pets/${draft.body.id}`);
+    assert.equal(left!.length, 0);
+    assert.equal((await api('DELETE', `/pets/${first}`, owner.token)).body.error.code, 'INVALID_STATUS');
   });
 
   let second = { id: '', submit: async () => ({}) as Awaited<ReturnType<typeof api>> };

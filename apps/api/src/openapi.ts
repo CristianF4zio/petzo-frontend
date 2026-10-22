@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { UpdateProfile } from './routes/profile.js';
-import { CatalogQuery, CreatePet, SetPhotosBody, StatusBody, UpdatePet, UploadUrlsBody } from './routes/pets.js';
+import { CatalogQuery, CreatePet, ReportBody, SetPhotosBody, StatusBody, UpdatePet, UploadUrlsBody } from './routes/pets.js';
 
 const body = (schema: z.ZodType) => ({
   required: true,
@@ -48,7 +48,8 @@ export const openapi = {
       },
     },
     '/pets/{id}': {
-      get: { summary: 'Detalle (aprobada o propia)', parameters: idParam, responses: { 200: ok('Mascota'), 404: ok('No encontrada') } },
+      get: { summary: 'Detalle (aprobada o propia); publisher.pets_count = publicadas', parameters: idParam, responses: { 200: ok('Mascota'), 404: ok('No encontrada') } },
+      delete: { summary: 'Eliminar borrador', security: secured, parameters: idParam, responses: { 204: ok('Eliminado'), 409: ok('INVALID_STATUS') } },
       patch: {
         summary: 'Editar: aprobada → pending_review; pausada o rechazada → draft',
         security: secured,
@@ -83,6 +84,30 @@ export const openapi = {
         parameters: idParam,
         requestBody: body(StatusBody),
         responses: { 200: ok('Mascota'), 409: ok('INVALID_STATUS | PLAN_LIMIT | PHOTOS_REQUIRED | PROFILE_INCOMPLETE') },
+      },
+    },
+    '/pets/{id}/reports': {
+      post: {
+        summary: 'Reportar una publicación (HU-11)',
+        security: secured,
+        parameters: idParam,
+        requestBody: body(ReportBody),
+        responses: { 201: ok('{ ok }'), 404: ok('No encontrada') },
+      },
+    },
+    '/me/favorites': { get: { summary: 'Mis favoritos (solo los aún visibles)', security: secured, responses: { 200: ok('Lista') } } },
+    '/me/favorites/{petId}': {
+      put: {
+        summary: 'Guardar en favoritos',
+        security: secured,
+        parameters: [{ name: 'petId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { 204: ok('Guardado'), 404: ok('No encontrada') },
+      },
+      delete: {
+        summary: 'Quitar de favoritos',
+        security: secured,
+        parameters: [{ name: 'petId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { 204: ok('Quitado') },
       },
     },
     '/admin/pets': {

@@ -23,13 +23,18 @@ Estado de implementación por sprint (SPEC §16). `[x]` hecho y probado · `[ ]`
 - [x] Verificar `SUPABASE_SERVICE_ROLE_KEY` en `apps/api/.env` contra la nube (catálogo y municipios responden)
 - [x] Supabase nube: "Confirm email" desactivado (`mailer_autoconfirm: true`)
 
-## S2 App base (HU-01, 02, 03, 05, 10)
+## S2 App base (HU-01, 02, 03, 05, 10 + HU-11, HU-16 del diseño)
+- [x] Migración: columna `dewormed` (desparasitado) + API (local y nube)
+- [x] API: favoritos, eliminar borrador, reportar, conteo de publicaciones del publicador (smoke 16/16)
+- [ ] Expo Router + tema (DM Sans, Lucide) + cliente Supabase/API
 - [ ] Login correo + Google
-- [ ] Perfil
-- [ ] Catálogo y detalle
-- [ ] Publicar con fotos (compresión ~500 KB)
-- [ ] Mis publicaciones
-- [ ] Flujo completo en Expo Go contra la API local
+- [ ] Completa tu perfil (zona, WhatsApp, foto)
+- [ ] Catálogo con filtros, scroll infinito y estados
+- [ ] Detalle con galería, publicador y reporte
+- [ ] Publicar / editar (asistente 4 pasos, fotos comprimidas ~500 KB)
+- [ ] Mis publicaciones (acciones por estado)
+- [ ] Perfil y favoritos
+- [ ] Flujo completo en Expo Go (iPhone) contra la API local
 
 ## S3 Solicitudes + IA (HU-06, 07, 08, 09)
 - [ ] Cliente Haiku 5.5 + `ai_logs` + tope diario
