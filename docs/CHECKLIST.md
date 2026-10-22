@@ -18,7 +18,7 @@ Repos: `petzo-backend` (B0–B4, detalle en su `docs/CHECKLIST.md`), `petzo-fron
 - [ ] Solicitudes recibidas (resumen IA y puntaje) + aprobar/rechazar
 - [ ] Cuestionario de estilo de vida + recomendados (match)
 - [ ] Reportar publicación y solicitar verificación de fundación
-- [ ] Quitar `apps/api` y `supabase/` (legado previo a D-22/D-25)
+- [x] Quitar `apps/api` y `supabase/` (legado previo a D-22/D-25)
 - [ ] Flujo completo en Expo Go contra producción
 
 ## F2 Panel admin (React + Vite, repo `petzo-web`)

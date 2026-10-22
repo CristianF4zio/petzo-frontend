@@ -17,7 +17,6 @@ Mobile app of Petzo (dog/cat adoption, Gran Caracas). This repo is `petzo-fronte
 - WhatsApp is shown only through `GET /api/requests/{id}/contact` after approval (RNF-04).
 - Photos: compress (≤ ~500 KB, RNF-06) → `POST /api/pets/{id}/photos/upload-url` → upload to the signed URL → `POST /api/pets/{id}/photos`.
 - UI text in Spanish; code, names and commits in English. Secrets only in `.env` (each app has `.env.example`).
-- Legacy: `apps/api` (Node) and `supabase/` belong to the plan before D-22/D-25; the schema now lives in Flyway in `petzo-backend`. Do not modify them; they are removed in F1.
 
 ## Workflow
 - Sprints per SPEC §16: F1 mobile and F3 delivery here (backend B0–B4 in `petzo-backend`, admin F2 in `petzo-web`). On "Arranca Fx" do only that sprint: short plan (≤10 lines), wait for OK.
