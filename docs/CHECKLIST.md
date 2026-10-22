@@ -36,7 +36,7 @@ Repos: `petzo-backend` (B0–B4, detalle en su `docs/CHECKLIST.md`), `petzo-fron
 
 ## Pendientes de Cris
 - [x] Repos `petzo-backend` y `petzo-web` en GitHub (código subido)
-- [ ] Renombrar en GitHub `petz0` → `petzo-frontend`
+- [x] Repo renombrado en GitHub a `petzo-frontend`
 - [ ] `ANTHROPIC_API_KEY` en `petzo-backend/.env`
 - [ ] Servicio Docker en Render con las variables del `.env`
 - [ ] Importar los 2 flujos de n8n y pasar sus URLs de producción
