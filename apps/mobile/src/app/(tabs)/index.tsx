@@ -1,6 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
-import { Cat, CloudAlert, Dog, RefreshCw, SearchX, SlidersHorizontal, WifiOff } from 'lucide-react-native';
+import { Cat, CloudAlert, Dog, RefreshCw, SearchX, SlidersHorizontal, Sparkles, WifiOff } from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -106,6 +106,7 @@ export default function Catalog() {
         </View>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipBar}>
+        <Chip label="Para ti" icon={Sparkles} onPress={() => router.push('/match')} />
         <Chip label="Filtros" icon={SlidersHorizontal} on={n > 0} count={n} onPress={() => setSheet(true)} />
         {chips.map((c) => (
           <Chip key={c.label} label={c.label} on={c.on} onPress={() => setSheet(true)} />

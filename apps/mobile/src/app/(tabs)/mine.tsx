@@ -58,21 +58,22 @@ export default function Mine() {
   const edit = (pet: Pet) => router.push({ pathname: '/publish', params: { editId: pet.id } });
 
   function actionsFor(p: Pet) {
+    const requests = { label: 'Ver solicitudes', run: () => router.push(`/requests/${p.id}`) };
     const adopt = { label: 'Marcar como adoptada', run: () => setStatus(p, 'adopted', `¡Qué alegría! ${p.name} encontró hogar.`) };
     const confirmEdit = { label: 'Editar', run: () => setEditing(p) };
     switch (p.status) {
       case 'approved':
-        return { actions: [confirmEdit, { label: 'Pausar', run: () => setStatus(p, 'paused', 'Pausamos la publicación. No se muestra en el catálogo.') }, adopt] };
+        return { primary: requests, actions: [confirmEdit, { label: 'Pausar', run: () => setStatus(p, 'paused', 'Pausamos la publicación. No se muestra en el catálogo.') }, adopt] };
       case 'paused':
-        return { actions: [{ label: 'Reanudar', run: () => setStatus(p, 'approved', 'Publicación reanudada.') }, confirmEdit, adopt] };
+        return { primary: requests, actions: [{ label: 'Reanudar', run: () => setStatus(p, 'approved', 'Publicación reanudada.') }, confirmEdit, adopt] };
       case 'pending_review':
-        return { note: 'La revisión suele tardar unos minutos. Te avisamos al terminar.' };
+        return { note: 'La revisión suele tardar unos minutos. Te avisamos al terminar.', actions: [requests] };
       case 'rejected':
-        return { primary: { label: 'Editar y reenviar', run: () => edit(p) } };
+        return { primary: { label: 'Editar y reenviar', run: () => edit(p) }, actions: [requests] };
       case 'draft':
         return { primary: { label: 'Continuar borrador', run: () => edit(p) }, actions: [{ label: 'Eliminar', run: () => remove(p) }] };
       case 'adopted':
-        return { note: 'Gracias por ayudar a que encontrara familia.' };
+        return { note: 'Gracias por ayudar a que encontrara familia.', primary: requests };
     }
   }
 

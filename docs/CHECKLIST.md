@@ -1,41 +1,62 @@
 # Checklist
 
-Estado por sprint según SPEC §16 (D-21, D-27). `[x]` hecho y probado · `[~]` parcial o depende de Cris · `[ ]` pendiente.
+Estado por sprint según SPEC §16 (D-21, D-27), con cada ítem atado a su historia de usuario (SPEC §7) y requerimiento (§5).
+`[x]` hecho y probado (`tsc` + bundle de Metro + endpoint con test en verde en el backend) · `[~]` parcial o depende de Cris · `[ ]` pendiente.
+La prueba manual en el teléfono (Expo Go contra la API local) va aparte, al final de F1.
 Repos: `petzo-backend` (B0–B4, detalle en su `docs/CHECKLIST.md`), `petzo-frontend` (este: F1 y F3) y `petzo-web` (F2, panel admin).
 
 ## Backend (resumen; detalle en petzo-backend)
 - [x] B0 Supabase + modelo: Flyway V1 (baseline) + V2 (trigger de perfiles); un registro nuevo crea su perfil
 - [x] B1 API core: JWT, perfiles, mascotas, fotos, catálogo, límite de plan, admin, Swagger (tests en verde)
-- [~] B2 Solicitudes + IA: implementado y probado con IA simulada; falta probar con `ANTHROPIC_API_KEY` real
-- [~] B3 Automatizaciones: `/internal/*`, flujos n8n y worker Stagehand listos; falta importarlos en n8n y una corrida real
-- [~] B4 API lista: tests (20/20), Dockerfile y colección `.http` listos; falta deploy en Render y correr la colección contra producción
+- [~] B2 Solicitudes + IA: implementado y probado con IA simulada; falta `ANTHROPIC_API_KEY` para probar con IA real
+- [~] B3 Automatizaciones: `/internal/*`, flujos n8n y worker Stagehand listos; faltan las URLs de n8n en `.env` (sin ellas las publicaciones quedan en revisión para el admin, RNF-08)
+- [~] B4 API lista: tests (20/20), Dockerfile y colección `.http` listos; corre en local (`:8090`); el deploy en Render es opcional mientras la demo sea local
 
 ## F1 App móvil (Expo)
-- [x] Base: Expo Router, tokens del diseño (DM Sans, Lucide), cliente Supabase Auth
-- [x] Pantallas construidas: login correo + Google, completar perfil, catálogo con filtros, detalle, publicar (4 pasos), mis publicaciones, perfil, favoritos
-- [x] Adaptar el cliente al contrato de la API Java (`/api/...`, camelCase, ProblemDetail, galería con `PUT /photos`, D-28); `tsc` y bundle de Metro OK
-- [ ] Solicitud de adopción + estado + botón de WhatsApp (contacto tras aprobar)
-- [ ] Solicitudes recibidas (resumen IA y puntaje) + aprobar/rechazar
-- [ ] Cuestionario de estilo de vida + recomendados (match)
-- [ ] Reportar publicación y solicitar verificación de fundación
+Base
+- [x] Expo Router, tokens del diseño (DM Sans, Lucide), cliente Supabase Auth
+- [x] Cliente alineado al contrato de la API Java (`/api/...`, camelCase, ProblemDetail, galería con `PUT /photos`, D-28)
 - [x] Quitar `apps/api` y `supabase/` (legado previo a D-22/D-25)
-- [ ] Flujo completo en Expo Go contra producción
+
+Historias Must
+- [x] HU-01 Registro e inicio de sesión con correo o Google; la sesión persiste (RF-01, RF-02)
+- [x] HU-02 Completar perfil con zona y WhatsApp; sin eso no se publica ni se solicita (RF-04)
+- [x] HU-03 Publicar con 1 a 5 fotos comprimidas, queda en revisión y respeta el límite del plan (RF-06, RF-07, RNF-06)
+- [x] HU-04 Estado y motivo de rechazo en "Mis publicaciones" (RF-08; el correo lo envía n8n, RF-18)
+- [x] HU-05 Catálogo de aprobadas con filtros combinables y paginado de 20 (RF-10, RF-11)
+- [x] HU-07 Enviar solicitud (formulario + motivación), una activa por mascota; estado en "Mis solicitudes" (RF-15)
+- [x] HU-09 Aprobar o rechazar solicitudes; al aprobar, ambos ven el botón de WhatsApp (RF-17, RNF-04)
+- [x] HU-10 Marcar como adoptada: sale del catálogo y libera cupo (RF-09)
+
+Historias Should / Could
+- [x] HU-06 Cuestionario de estilo de vida y hasta 10 recomendados con % y razón; se puede repetir (RF-12, RF-13)
+- [x] HU-08 Resumen IA y puntaje 0-100 en cada solicitud; sin IA se ve la solicitud sin resumen (RF-16)
+- [x] HU-11 Reportar una publicación (RF-23)
+- [x] HU-12 Solicitar cuenta de fundación verificada; badge al verificarse (RF-05)
+- [x] HU-16 Favoritos: agregar, quitar y lista en el perfil (RF-14)
+
+Prueba en el teléfono
+- [ ] Flujo completo en Expo Go contra la API local: registro → perfil → publicar → aprobar (panel o n8n) → solicitar → aprobar → WhatsApp
+
+Fuera de la app (otros repos o v2)
+- HU-13, HU-14, HU-15 son del panel admin (F2, `petzo-web`)
+- Visitante sin cuenta viendo el catálogo (§4): hoy la app pide sesión para todo; pendiente de decidir si entra en el MVP
 
 ## F2 Panel admin (repo `petzo-web`)
 - [ ] Detalle en `petzo-web/docs/CHECKLIST.md`
 
 ## F3 Entrega
-- [ ] APK con EAS apuntando a la API pública
+- [ ] APK con EAS (opcional mientras la demo sea local)
 - [ ] Prueba de punta a punta
 - [ ] READMEs y evidencias
 
 ## Pendientes de Cris
 - [x] Repos `petzo-backend` y `petzo-web` en GitHub (código subido)
 - [x] Repo renombrado en GitHub a `petzo-frontend`
-- [ ] `ANTHROPIC_API_KEY` en `petzo-backend/.env`
-- [ ] Servicio Docker en Render con las variables del `.env`
-- [ ] Importar los 2 flujos de n8n y pasar sus URLs de producción
-- [ ] Sesión del CLI de Expo (`npx expo login` o `EXPO_TOKEN`) para EAS
+- [ ] `ANTHROPIC_API_KEY` en `petzo-backend/.env` (pre-evaluación y match)
+- [ ] Importar los 2 flujos de n8n y poner sus URLs en `petzo-backend/.env` (moderación automática y correos)
+- [ ] Servicio Docker en Render (solo si la demo deja de ser local)
+- [ ] Sesión del CLI de Expo (`npx expo login` o `EXPO_TOKEN`) para EAS (solo para el APK)
 
 ## Recortables (en este orden, si hay atraso)
 - [ ] HU-15 dashboard → HU-16 favoritos → HU-11 reportes → HU-06 match

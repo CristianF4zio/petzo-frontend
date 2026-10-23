@@ -14,6 +14,9 @@ function Routes() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="pet/[id]" />
         <Stack.Screen name="favorites" />
+        <Stack.Screen name="requests/[petId]" />
+        <Stack.Screen name="my-requests" />
+        <Stack.Screen name="match" />
         <Stack.Screen name="profile-setup" />
       </Stack.Protected>
       <Stack.Protected guard={!session}>

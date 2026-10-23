@@ -1,13 +1,14 @@
 import { Image } from 'expo-image';
-import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, CircleCheck, CircleDashed, CloudAlert, Flag, Lock, MapPin, RefreshCw, Syringe } from 'lucide-react-native';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft, CircleCheck, CircleDashed, Clock, CloudAlert, Flag, Lock, MapPin, MessageCircle, RefreshCw, Syringe } from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { HEART, isVerified } from '@/components/PetCard';
+import { RequestSheet } from '@/components/RequestSheet';
 import { Button, Chip, Footer, Sheet, Skeleton, StateView, VerifiedBadge } from '@/components/ui';
-import { ApiError, api, type Pet } from '@/lib/api';
+import { ApiError, api, openContact, type MyRequest, type Pet } from '@/lib/api';
 import { SEX, SIZE, ageText, gendered, initials } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { color, font, radius, type } from '@/lib/theme';
@@ -18,18 +19,31 @@ const REASONS = ['Fotos de internet', 'Parece una venta', 'Datos falsos', 'Otro 
 export default function PetDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
-  const { zoneName, favIds, toggleFav, profile } = useSession();
+  const { zoneName, favIds, toggleFav, profile, isComplete } = useSession();
   const say = useToast();
   const [pet, setPet] = useState<Pet | null>(null);
   const [failed, setFailed] = useState(false);
   const [idx, setIdx] = useState(0);
   const [reporting, setReporting] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const [myReq, setMyReq] = useState<MyRequest | null>(null); // latest own request for this pet
 
   const load = useCallback(() => {
     setFailed(false);
     api<Pet>(`/pets/${id}`).then(setPet, () => setFailed(true));
   }, [id]);
   useEffect(load, [load]);
+
+  // shortcut: reads the whole /me/requests list to find this pet; add GET /pets/{id}/my-request if histories grow
+  const loadRequest = useCallback(() => {
+    api<MyRequest[]>('/me/requests').then((rs) => setMyReq(rs.find((r) => r.petId === id) ?? null), () => {});
+  }, [id]);
+  useFocusEffect(loadRequest);
+
+  const openWhatsapp = (requestId: string, petName: string) =>
+    openContact(requestId, (name) => `Hola${name ? ` ${name}` : ''}, aprobaron mi solicitud en Petzo para adoptar a ${petName}.`).catch((e) =>
+      say(e instanceof ApiError ? e.message : 'No pudimos abrir WhatsApp.'),
+    );
 
   const report = async (reason: string) => {
     setReporting(false);
@@ -169,10 +183,19 @@ export default function PetDetail() {
       </ScrollView>
       {own ? null : (
         <Footer>
-          {/* S3: adoption request sheet */}
-          <Button label={pet.sex === 'female' ? 'Quiero adoptarla' : 'Quiero adoptarlo'} onPress={() => say('Las solicitudes de adopción llegan muy pronto.')} />
+          {myReq?.status === 'approved' ? (
+            <Button label="Escribir por WhatsApp" icon={MessageCircle} onPress={() => openWhatsapp(myReq.id, pet.name)} />
+          ) : myReq?.status === 'pending' ? (
+            <Button label="Solicitud enviada · pendiente" icon={Clock} variant="secondary" disabled onPress={() => {}} />
+          ) : (
+            <Button
+              label={pet.sex === 'female' ? 'Quiero adoptarla' : 'Quiero adoptarlo'}
+              onPress={() => (isComplete ? setAsking(true) : router.push('/profile-setup'))}
+            />
+          )}
         </Footer>
       )}
+      <RequestSheet visible={asking} petId={pet.id} petName={short} pubName={pubName} onClose={() => setAsking(false)} onSent={loadRequest} />
       <Sheet visible={reporting} title="Reportar publicación" onClose={() => setReporting(false)}>
         <Text style={type.body}>¿Qué notaste? Lo revisamos y, si hace falta, la retiramos.</Text>
         <View style={styles.wrap}>

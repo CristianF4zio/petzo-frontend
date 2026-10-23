@@ -1,4 +1,4 @@
-import type { PetStatus, Sex, Size, Species } from './api';
+import type { PetStatus, RequestStatus, Sex, Size, Species } from './api';
 
 export const SPECIES: Record<Species, string> = { dog: 'Perro', cat: 'Gato' };
 export const SEX: Record<Sex, string> = { male: 'Macho', female: 'Hembra' };
@@ -55,3 +55,24 @@ export function timeAgo(iso: string) {
 // Mirrors the API rule (RF-07): pending_review + approved count toward the plan
 export const PLAN_LIMITS = { free: 3, pro: 30 } as const;
 export const isActive = (s: PetStatus) => s === 'pending_review' || s === 'approved';
+
+// [label, text color, background]
+export const REQUEST_STATUS: Record<RequestStatus, [string, string, string]> = {
+  pending: ['Pendiente', '#B45309', '#FEF3C7'],
+  approved: ['Aprobada', '#15803D', '#DCFCE7'],
+  rejected: ['Rechazada', '#B91C1C', '#FEE2E2'],
+  withdrawn: ['Retirada', '#3F3F3F', '#EBEBEB'],
+};
+
+export const HOUSING = [
+  { value: 'casa', label: 'Casa' },
+  { value: 'apartamento', label: 'Apartamento' },
+  { value: 'otro', label: 'Otro' },
+] as const;
+export const YES_NO = [
+  { value: 'si', label: 'Sí' },
+  { value: 'no', label: 'No' },
+] as const;
+
+// AI score 0-100 → [text, background]: green from 70, amber from 40
+export const scoreColors = (s: number): [string, string] => (s >= 70 ? ['#15803D', '#DCFCE7'] : s >= 40 ? ['#B45309', '#FEF3C7'] : ['#B91C1C', '#FEE2E2']);

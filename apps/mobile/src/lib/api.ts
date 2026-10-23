@@ -1,3 +1,4 @@
+import { Linking } from 'react-native';
 import { supabase } from './supabase';
 
 export type Species = 'dog' | 'cat';
@@ -102,4 +103,32 @@ export async function uploadSigned(path: string, token: string, base64: string) 
   const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
   const { error } = await supabase.storage.from('pet-photos').uploadToSignedUrl(path, token, bytes, { contentType: 'image/jpeg' });
   if (error) throw new ApiError(0, 'UPLOAD_FAILED', 'No se subió la foto');
+}
+
+export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn';
+
+// GET /me/requests (adopter side)
+export type MyRequest = { id: string; status: RequestStatus; petId: string; petName: string; petPhoto: string | null; createdAt: string; decidedAt: string | null };
+
+// GET /pets/{id}/requests (publisher side); aiSummary/aiScore stay null if the AI failed (HU-08)
+export type AdoptionRequest = {
+  id: string;
+  petId: string;
+  status: RequestStatus;
+  adopter: { id: string; name: string | null; avatarUrl: string | null; municipalityId: number | null };
+  answers: Record<string, unknown> | null;
+  motivation: string;
+  aiSummary: string | null;
+  aiScore: number | null;
+  createdAt: string;
+  decidedAt: string | null;
+};
+
+export type Lifestyle = { housing: 'casa' | 'apartamento' | 'otro'; timeAtHome: 'poco' | 'medio' | 'mucho'; kids: boolean; otherPets: boolean; experience: 'ninguna' | 'algo' | 'mucha' };
+
+// RNF-04: the other side's WhatsApp only comes back for an approved request; opens wa.me with a prefilled message
+export async function openContact(requestId: string, message: (name: string | null) => string) {
+  const c = await api<{ name: string | null; whatsapp: string | null }>(`/requests/${requestId}/contact`);
+  if (!c.whatsapp) throw new ApiError(0, 'NO_WHATSAPP', 'Esta persona aún no registró su WhatsApp.');
+  await Linking.openURL(`https://wa.me/${c.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message(c.name))}`);
 }
