@@ -10,7 +10,7 @@ Repos: `petzo-backend` (B0–B4, detalle en su `docs/CHECKLIST.md`), `petzo-fron
 - [x] B1 API core: JWT, perfiles, mascotas, fotos, catálogo, límite de plan, admin, Swagger (tests en verde)
 - [~] B2 Solicitudes + IA: implementado y probado con IA simulada; falta `ANTHROPIC_API_KEY` para probar con IA real
 - [~] B3 Automatizaciones: `/internal/*`, flujos n8n y worker Stagehand listos; faltan las URLs de n8n en `.env` (sin ellas las publicaciones quedan en revisión para el admin, RNF-08)
-- [~] B4 API lista: tests (20/20), Dockerfile y colección `.http` listos; corre en local (`:8090`); el deploy en Render es opcional mientras la demo sea local
+- [~] B4 API lista: tests (24/24), Dockerfile y colección `.http` listos; corre en local (`:8090`); el deploy en Render es opcional mientras la demo sea local
 
 ## F1 App móvil (Expo)
 Base
