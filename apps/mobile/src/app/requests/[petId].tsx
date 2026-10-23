@@ -42,7 +42,7 @@ export default function PetRequests() {
   };
 
   const openWhatsapp = (r: AdoptionRequest) =>
-    openContact(r.id, (name) => `Hola${name ? ` ${name}` : ''}, aprobé tu solicitud en Petzo para adoptar a ${pet?.name ?? 'mi peludo'}.`).catch((e) =>
+    openContact(r.id, pet?.name ?? 'mi peludo', 'aprobé tu solicitud').catch((e) =>
       say(e instanceof ApiError ? e.message : 'No pudimos abrir WhatsApp.'),
     );
   const adopted = pet?.status === 'adopted';

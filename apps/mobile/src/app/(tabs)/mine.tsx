@@ -25,7 +25,7 @@ export default function Mine() {
   const say = useToast();
   const [pets, setPets] = useState<Pet[] | null>(null);
   const [failed, setFailed] = useState(false);
-  const [editing, setEditing] = useState<Pet | null>(null);
+  const [confirm, setConfirm] = useState<{ title: string; body: string; confirmLabel: string; run: () => void } | null>(null);
   const limit = PLAN_LIMITS[profile?.plan ?? 'free'];
   const active = (pets ?? []).filter((p) => isActive(p.status)).length;
 
@@ -59,8 +59,30 @@ export default function Mine() {
 
   function actionsFor(p: Pet) {
     const requests = { label: 'Ver solicitudes', run: () => router.push(`/requests/${p.id}`) };
-    const adopt = { label: 'Marcar como adoptada', run: () => setStatus(p, 'adopted', `¡Qué alegría! ${p.name} encontró hogar.`) };
-    const confirmEdit = { label: 'Editar', run: () => setEditing(p) };
+    const adopt = {
+      label: 'Marcar como adoptada',
+      run: () =>
+        setConfirm({
+          title: `¿Marcar a ${p.name} como adoptada?`,
+          body: 'Sale del catálogo y libera un cupo de tu plan. No se puede deshacer.',
+          confirmLabel: 'Marcar como adoptada',
+          run: () => setStatus(p, 'adopted', `¡Qué alegría! ${p.name} encontró hogar.`),
+        }),
+    };
+    const confirmEdit = {
+      label: 'Editar',
+      run: () =>
+        setConfirm({
+          title: `¿Editar a ${p.name}?`,
+          body: 'Al guardar los cambios, la publicación vuelve a revisión y no se mostrará en el catálogo hasta que la aprobemos. Suele tardar unos minutos.',
+          confirmLabel: 'Editar y enviar a revisión',
+          run: () => edit(p),
+        }),
+    };
+    const removeDraft = {
+      label: 'Eliminar',
+      run: () => setConfirm({ title: `¿Eliminar el borrador de ${p.name}?`, body: 'Se borran sus datos y fotos.', confirmLabel: 'Eliminar', run: () => remove(p) }),
+    };
     switch (p.status) {
       case 'approved':
         return { primary: requests, actions: [confirmEdit, { label: 'Pausar', run: () => setStatus(p, 'paused', 'Pausamos la publicación. No se muestra en el catálogo.') }, adopt] };
@@ -71,7 +93,7 @@ export default function Mine() {
       case 'rejected':
         return { primary: { label: 'Editar y reenviar', run: () => edit(p) }, actions: [requests] };
       case 'draft':
-        return { primary: { label: 'Continuar borrador', run: () => edit(p) }, actions: [{ label: 'Eliminar', run: () => remove(p) }] };
+        return { primary: { label: 'Continuar borrador', run: () => edit(p) }, actions: [removeDraft] };
       case 'adopted':
         return { note: 'Gracias por ayudar a que encontrara familia.', primary: requests };
     }
@@ -148,19 +170,18 @@ export default function Mine() {
         )}
       </ScrollView>
 
-      <Sheet visible={!!editing} onClose={() => setEditing(null)}>
-        <Text style={type.h2}>{`¿Editar a ${editing?.name}?`}</Text>
-        <Text style={type.body}>Al guardar los cambios, la publicación vuelve a revisión y no se mostrará en el catálogo hasta que la aprobemos. Suele tardar unos minutos.</Text>
+      <Sheet visible={!!confirm} onClose={() => setConfirm(null)}>
+        <Text style={type.h2}>{confirm?.title}</Text>
+        <Text style={type.body}>{confirm?.body}</Text>
         <View style={{ gap: 12 }}>
           <Button
-            label="Editar y enviar a revisión"
+            label={confirm?.confirmLabel ?? ''}
             onPress={() => {
-              const p = editing!;
-              setEditing(null);
-              edit(p);
+              confirm!.run();
+              setConfirm(null);
             }}
           />
-          <Button label="Cancelar" variant="secondary" onPress={() => setEditing(null)} />
+          <Button label="Cancelar" variant="secondary" onPress={() => setConfirm(null)} />
         </View>
       </Sheet>
     </SafeAreaView>

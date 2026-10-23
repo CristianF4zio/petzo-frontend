@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Cat, CloudAlert, Dog, RefreshCw, SearchX, SlidersHorizontal, Sparkles, WifiOff } from 'lucide-react-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FiltersSheet } from '@/components/FiltersSheet';
@@ -38,16 +38,21 @@ export default function Catalog() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [sheet, setSheet] = useState(false);
 
+  // Bumped on every load; a response with an older number belongs to filters that changed meanwhile
+  const req = useRef(0);
+
   const load = useCallback(async (f: Filters) => {
+    const seq = ++req.current;
     setStatus('loading');
     try {
       const r = await api<Page<Pet>>(toQuery(f, 1));
+      if (seq !== req.current) return;
       setItems(r.items);
       setTotal(r.total);
       setPage(1);
       setStatus('ready');
     } catch (e) {
-      setStatus(e instanceof ApiError && e.code === 'OFFLINE' ? 'offline' : 'error');
+      if (seq === req.current) setStatus(e instanceof ApiError && e.code === 'OFFLINE' ? 'offline' : 'error');
     }
   }, []);
 
@@ -57,13 +62,16 @@ export default function Catalog() {
 
   const loadMore = async () => {
     if (loadingMore || status !== 'ready' || items.length >= total) return;
+    const seq = req.current;
     setLoadingMore(true);
     try {
       const r = await api<Page<Pet>>(toQuery(filters, page + 1));
+      if (seq !== req.current) return;
       setItems((prev) => [...prev, ...r.items.filter((p) => !prev.some((x) => x.id === p.id))]);
+      setTotal(r.total);
       setPage(page + 1);
     } catch {
-      say('No pudimos cargar más peludos.');
+      if (seq === req.current) say('No pudimos cargar más peludos.');
     } finally {
       setLoadingMore(false);
     }

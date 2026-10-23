@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Check, Lock, MapPin, Plus, ShieldCheck, UserRound } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PhotoGrid, type Tile } from '@/components/PhotoGrid';
@@ -22,7 +22,7 @@ const HEALTH = [
 type Health = Record<(typeof HEALTH)[number][0], boolean>;
 
 type Form = { species: Species; name: string; years: number; months: number; sex: Sex | ''; size: Size | ''; zone: number | null; health: Health; description: string };
-type Errors = Partial<Record<'name' | 'sex' | 'size' | 'description' | 'step', string>>;
+type Errors = Partial<Record<'name' | 'sex' | 'size' | 'zone' | 'description' | 'step', string>>;
 
 const emptyForm = (zone: number | null): Form => ({
   species: 'dog',
@@ -38,7 +38,7 @@ const emptyForm = (zone: number | null): Form => ({
 
 export default function Publish() {
   const { editId } = useLocalSearchParams<{ editId?: string }>();
-  const { profile, isComplete, zoneName, municipalities } = useSession();
+  const { profile, isComplete, zoneName, municipalities, refreshProfile } = useSession();
   const say = useToast();
   const [step, setStep] = useState(1);
   const [tiles, setTiles] = useState<Tile[]>([]);
@@ -50,7 +50,14 @@ export default function Publish() {
   const [picker, setPicker] = useState<'years' | 'months' | 'zone' | null>(null);
   const [busy, setBusy] = useState(false);
   const limit = PLAN_LIMITS[profile?.plan ?? 'free'];
+  const missing = !profile || !municipalities.length; // startup load failed (offline)
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
+
+  // The tab can mount before the profile loads or gets its zone
+  const profileZone = profile?.municipalityId;
+  useEffect(() => {
+    if (profileZone) setForm((f) => (f.zone ? f : { ...f, zone: profileZone }));
+  }, [profileZone]);
 
   const reset = useCallback(() => {
     setStep(1);
@@ -64,6 +71,7 @@ export default function Publish() {
   useFocusEffect(
     useCallback(() => {
       api<Pet[]>('/me/pets').then((pets) => setActive(pets.filter((p) => isActive(p.status)).length), () => {});
+      if (missing) refreshProfile().catch(() => {});
       if (!editId || editId === petId) return;
       api<Pet>(`/pets/${editId}`).then(
         (p) => {
@@ -85,7 +93,7 @@ export default function Publish() {
         },
         () => say('No pudimos abrir la publicación.'),
       );
-    }, [editId, petId, say]),
+    }, [editId, petId, say, missing, refreshProfile]),
   );
 
   const addPhotos = async () => {
@@ -132,6 +140,7 @@ export default function Publish() {
       if (!form.name.trim()) e.name = 'Escribe su nombre.';
       if (!form.sex) e.sex = 'Elige el sexo.';
       if (!form.size) e.size = 'Elige un tamaño.';
+      if (!form.zone) e.zone = 'Elige el municipio.';
     }
     if (step === 3 && form.description.trim().length < 30) e.description = 'Escribe al menos 30 caracteres.';
     return e;
@@ -226,6 +235,18 @@ export default function Publish() {
           <Text style={type.h1}>{petId ? `Editar a ${form.name || 'tu peludo'}` : 'Publica a tu peludo'}</Text>
           <Text style={type.caption}>{`Paso ${step} de 4`}</Text>
         </View>
+        {petId ? (
+          <Button
+            label="Cancelar edición"
+            variant="text"
+            disabled={busy}
+            onPress={() => {
+              // params first, so the focus effect doesn't reload the pet in between
+              router.setParams({ editId: undefined });
+              reset();
+            }}
+          />
+        ) : null}
         <View style={styles.progress}>
           {[1, 2, 3, 4].map((i) => (
             <View key={i} style={[styles.bar, { backgroundColor: i <= step ? color.ink : color.hairline }]} />
@@ -322,8 +343,9 @@ export default function Publish() {
               </View>
               <View style={{ gap: 8 }}>
                 <Text style={type.label}>Zona</Text>
-                <SelectButton icon={MapPin} value={zoneName(form.zone)} placeholder="Elige el municipio" onPress={() => setPicker('zone')} />
+                <SelectButton icon={MapPin} value={zoneName(form.zone)} placeholder="Elige el municipio" onPress={() => setPicker('zone')} error={!!errors.zone} />
                 <Text style={type.caption}>Tomada de tu perfil. Cámbiala si el peludo está en otra zona.</Text>
+                <FieldError message={errors.zone} />
               </View>
             </>
           ) : null}
@@ -391,7 +413,7 @@ export default function Publish() {
         </ScrollView>
         <Footer>
           <View style={styles.footerRow}>
-            {step > 1 ? <Button label="Atrás" variant="text" onPress={() => (setStep(step - 1), setErrors({}))} /> : null}
+            {step > 1 && !busy ? <Button label="Atrás" variant="text" onPress={() => (setStep(step - 1), setErrors({}))} /> : null}
             <Button label={busy ? 'Enviando…' : step === 4 ? 'Enviar a revisión' : 'Continuar'} onPress={next} disabled={busy} style={{ flex: 1 }} />
           </View>
         </Footer>
@@ -418,7 +440,10 @@ export default function Publish() {
         title="Municipio"
         options={municipalities.map((m) => ({ value: String(m.id), label: m.name }))}
         value={String(form.zone ?? '')}
-        onPick={(v) => set({ zone: Number(v) })}
+        onPick={(v) => {
+          set({ zone: Number(v) });
+          setErrors((e) => ({ ...e, zone: undefined }));
+        }}
         onClose={() => setPicker(null)}
       />
     </SafeAreaView>

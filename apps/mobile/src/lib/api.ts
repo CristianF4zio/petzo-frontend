@@ -75,16 +75,23 @@ export async function api<T = unknown>(path: string, init: { method?: string; bo
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   let res: Response;
+  let text: string;
+  // A stalled request would otherwise hang forever; the abort surfaces as OFFLINE
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), 20000);
   try {
     res = await fetch(BASE + path, {
       method: init.method ?? 'GET',
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: init.body === undefined ? undefined : JSON.stringify(init.body),
+      signal: c.signal,
     });
+    text = await res.text();
   } catch {
     throw new ApiError(0, 'OFFLINE', 'Sin conexión. Revisa tus datos o el wifi.');
+  } finally {
+    clearTimeout(t);
   }
-  const text = await res.text();
   let json: any = null;
   try {
     json = text ? JSON.parse(text) : null;
@@ -127,8 +134,9 @@ export type AdoptionRequest = {
 export type Lifestyle = { housing: 'casa' | 'apartamento' | 'otro'; timeAtHome: 'poco' | 'medio' | 'mucho'; kids: boolean; otherPets: boolean; experience: 'ninguna' | 'algo' | 'mucha' };
 
 // RNF-04: the other side's WhatsApp only comes back for an approved request; opens wa.me with a prefilled message
-export async function openContact(requestId: string, message: (name: string | null) => string) {
+export async function openContact(requestId: string, petName: string, approved: 'aprobaron mi solicitud' | 'aprobé tu solicitud') {
   const c = await api<{ name: string | null; whatsapp: string | null }>(`/requests/${requestId}/contact`);
   if (!c.whatsapp) throw new ApiError(0, 'NO_WHATSAPP', 'Esta persona aún no registró su WhatsApp.');
-  await Linking.openURL(`https://wa.me/${c.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message(c.name))}`);
+  const message = `Hola${c.name ? ` ${c.name}` : ''}, ${approved} en Petzo para adoptar a ${petName}.`;
+  await Linking.openURL(`https://wa.me/${c.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`);
 }

@@ -17,6 +17,7 @@ Base
 - [x] Expo Router, tokens del diseño (DM Sans, Lucide), cliente Supabase Auth
 - [x] Cliente alineado al contrato de la API Java (`/api/...`, camelCase, ProblemDetail, galería con `PUT /photos`, D-28)
 - [x] Quitar `apps/api` y `supabase/` (legado previo a D-22/D-25)
+- [x] Auditoría ponytail corregida: timeout de 20 s en la API, teclado en iOS, zona al publicar, carreras del catálogo, reintento de perfil, confirmación al adoptar o borrar, galería estable al enviar, compresión secuencial, cancelar edición; `tsc` + bundle OK
 
 Historias Must
 - [x] HU-01 Registro e inicio de sesión con correo o Google; la sesión persiste (RF-01, RF-02)

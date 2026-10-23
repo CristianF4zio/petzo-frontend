@@ -65,9 +65,7 @@ export default function MyRequests() {
                     label="Escribir por WhatsApp"
                     icon={MessageCircle}
                     onPress={() =>
-                      openContact(r.id, (name) => `Hola${name ? ` ${name}` : ''}, aprobaron mi solicitud en Petzo para adoptar a ${r.petName}.`).catch((e) =>
-                        say(e instanceof ApiError ? e.message : 'No pudimos abrir WhatsApp.'),
-                      )
+                      openContact(r.id, r.petName, 'aprobaron mi solicitud').catch((e) => say(e instanceof ApiError ? e.message : 'No pudimos abrir WhatsApp.'))
                     }
                   />
                 ) : null}

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
-import { HEART, isVerified } from '@/components/PetCard';
+import { HEART } from '@/components/PetCard';
 import { RequestSheet } from '@/components/RequestSheet';
 import { Button, Chip, Footer, Sheet, Skeleton, StateView, VerifiedBadge } from '@/components/ui';
 import { ApiError, api, openContact, type MyRequest, type Pet } from '@/lib/api';
@@ -41,7 +41,7 @@ export default function PetDetail() {
   useFocusEffect(loadRequest);
 
   const openWhatsapp = (requestId: string, petName: string) =>
-    openContact(requestId, (name) => `Hola${name ? ` ${name}` : ''}, aprobaron mi solicitud en Petzo para adoptar a ${petName}.`).catch((e) =>
+    openContact(requestId, petName, 'aprobaron mi solicitud').catch((e) =>
       say(e instanceof ApiError ? e.message : 'No pudimos abrir WhatsApp.'),
     );
 
@@ -166,7 +166,7 @@ export default function PetDetail() {
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={type.title}>{pubName}</Text>
               <Text style={type.small}>{`${zoneName(pub?.municipalityId)} · ${pub?.petsCount === 1 ? '1 publicación' : `${pub?.petsCount ?? 0} publicaciones`}`}</Text>
-              {isVerified(pet) ? <VerifiedBadge /> : <Text style={[type.badge, styles.particular]}>Particular</Text>}
+              {pet.publisher.verified ? <VerifiedBadge /> : <Text style={[type.badge, styles.particular]}>Particular</Text>}
             </View>
           </View>
           <View style={styles.note}>

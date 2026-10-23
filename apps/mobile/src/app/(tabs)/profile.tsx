@@ -78,17 +78,19 @@ function FoundationSheet({ visible, onClose }: { visible: boolean; onClose: () =
 }
 
 export default function Profile() {
-  const { profile, zoneName, favIds, signOut } = useSession();
+  const { profile, municipalities, zoneName, favIds, refreshProfile, signOut } = useSession();
   const say = useToast();
   const [active, setActive] = useState(0);
   const [foundation, setFoundation] = useState(false);
   const verification = profile?.verificationStatus ?? 'none';
   const limit = PLAN_LIMITS[profile?.plan ?? 'free'];
+  const missing = !profile || !municipalities.length; // startup load failed (offline)
 
   useFocusEffect(
     useCallback(() => {
       api<Pet[]>('/me/pets').then((pets) => setActive(pets.filter((p) => isActive(p.status)).length), () => {});
-    }, []),
+      if (missing) refreshProfile().catch(() => {});
+    }, [missing, refreshProfile]),
   );
 
   const name = profile?.fullName || 'Sin nombre';

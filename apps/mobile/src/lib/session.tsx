@@ -33,10 +33,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     api<Municipality[]>('/municipalities').then(setMunicipalities, () => {});
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      if (!data.session) setReady(true);
-    });
+    supabase.auth.getSession().then(
+      ({ data }) => {
+        setSession(data.session);
+        if (!data.session) setReady(true);
+      },
+      () => setReady(true),
+    );
     const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => data.subscription.unsubscribe();
   }, []);
@@ -83,7 +86,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       municipalities,
       zoneName: (id) => municipalities.find((m) => m.id === id)?.name ?? '',
       isComplete: !!profile?.complete,
-      refreshProfile,
+      // Also retries the zone list if it failed at startup
+      refreshProfile: async () => {
+        if (!municipalities.length) api<Municipality[]>('/municipalities').then(setMunicipalities, () => {});
+        await refreshProfile();
+      },
       favIds,
       toggleFav,
       signOut: async () => {

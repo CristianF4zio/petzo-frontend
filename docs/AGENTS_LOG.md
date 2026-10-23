@@ -10,3 +10,4 @@
 | F1 | code-review (subagente en contexto aparte) | Revisar la migración del cliente al contrato Java | Revisión con ojos frescos sobre app + backend a la vez; detectó el flujo de fotos frágil, corregido con D-28 |
 | F1 | code-review (subagente en contexto aparte) | Revisar las pantallas de solicitudes, match y fundación contra el contrato del backend | Leyó app + servicios Java a la vez sin cargar mi contexto; sus 10 hallazgos se corrigieron antes del commit |
 | F1 | general-purpose (auditor ponytail de la app) | Auditar toda la app contra el contrato del backend | En paralelo con el auditor del backend; revisó `src/` completo y el código nativo de timeouts de React Native |
+| F1 | general-purpose (implementador) | Aplicar en paralelo los arreglos de la auditoría en la app (3, 4, 11–17, 20) mientras yo hacía los del backend | Los dos repos no comparten archivos; revisé su diff de `lib/` a mano antes del commit; `tsc` + bundle OK |

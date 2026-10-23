@@ -3,7 +3,9 @@ import { ArrowLeft, BadgeCheck, ChevronDown, CircleAlert, X, type LucideIcon } f
 import { useEffect, useRef, type ReactNode } from 'react';
 import {
   Animated,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -203,7 +205,7 @@ export function Sheet({ visible, title, onClose, children, footer }: { visible: 
   const { bottom } = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
-      <View style={styles.sheetRoot}>
+      <KeyboardAvoidingView style={styles.sheetRoot} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <Pressable accessibilityLabel="Cerrar" style={StyleSheet.absoluteFill} onPress={onClose}>
           <View style={[StyleSheet.absoluteFill, { backgroundColor: color.scrim }]} />
         </Pressable>
@@ -221,7 +223,7 @@ export function Sheet({ visible, title, onClose, children, footer }: { visible: 
           </ScrollView>
           {footer ? <View style={[styles.footer, { paddingBottom: 12 + bottom }]}>{footer}</View> : null}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -254,7 +256,7 @@ export function OptionSheet({ visible, title, options, value, onPick, onClose }:
   );
 }
 
-export const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   button: { height: 48, borderRadius: radius.sm, paddingHorizontal: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   buttonSecondary: { backgroundColor: color.canvas, borderWidth: 1, borderColor: color.ink },
   buttonText: { paddingHorizontal: 4, alignSelf: 'flex-start' },
