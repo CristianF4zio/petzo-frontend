@@ -18,3 +18,4 @@
 | F1 | vercel-react-native-skills | Pantallas nuevas de solicitudes, match y fundación | `expo-image`, `Pressable`, `StyleSheet.create`, `useFocusEffect` para refrescar estados, sin `&&` con falsy |
 | F1 | code-review | Revisar HU-06/07/08/09/12 antes del commit | 10 hallazgos: WhatsApp inaccesible tras adoptar la mascota, solicitudes ocultas en revisión, prefill que pisaba respuestas, aprobar sobre mascota adoptada, lógica duplicada; todos corregidos |
 | F1 | ponytail (nivel full, toda la sesión) | Cambio mínimo en la migración al contrato Java y en HU-06/07/08/09/12 | Se reusaron `Sheet`, `Segmented`, `Field`, `StateView` y `api()`; lógica compartida en `lib/` (`openContact`, `HOUSING`, `scoreColors`) en vez de duplicarla |
+| F1 | ponytail:ponytail-audit | Auditoría completa de `apps/mobile` (solo lectura) | 14 hallazgos; los más graves: `fetch` sin timeout (pantalla en blanco con red lenta) y el bug de edición compartido con el backend |
