@@ -10,7 +10,8 @@ function Routes() {
   if (!ready) return null;
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.canvas } }}>
-      <Stack.Protected guard={!!session}>
+      {/* without redirectTo the router falls back to GO_BACK, which has nowhere to go on launch */}
+      <Stack.Protected guard={!!session} redirectTo="/welcome">
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="pet/[id]" />
         <Stack.Screen name="favorites" />
@@ -19,7 +20,7 @@ function Routes() {
         <Stack.Screen name="match" />
         <Stack.Screen name="profile-setup" />
       </Stack.Protected>
-      <Stack.Protected guard={!session}>
+      <Stack.Protected guard={!session} redirectTo="/">
         <Stack.Screen name="welcome" />
         <Stack.Screen name="auth" />
       </Stack.Protected>
