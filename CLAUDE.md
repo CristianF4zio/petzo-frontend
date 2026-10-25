@@ -4,7 +4,7 @@ Mobile app of Petzo (dog/cat adoption, Gran Caracas). This repo is `petzo-fronte
 
 ## Stack
 - `apps/mobile`: React Native + Expo SDK 58 (TS), Expo Router in `src/app`. Delivered as EAS APK + Expo Go. Check the versioned Expo docs for the SDK in `package.json`; add packages with `npx expo install`. `android/` is generated (CNG): configure in `app.json`, never edit it by hand.
-- Auth: Supabase Auth SDK only (email/password + Google). Every data call goes to the REST API with `Authorization: Bearer <access token>`.
+- Auth: only through the API (`/api/auth/register`, `login`, `refresh`, `logout`); session tokens live in `expo-secure-store` and `api()` refreshes once on 401. Google: the app opens `/api/auth/google/start` (flow + PKCE-style challenge) with `expo-web-browser`, the backend handles the callback and redirects back without tokens, then the app claims the session with `POST /api/auth/google/claim`. Every data call sends `Authorization: Bearer <access token>`.
 - Design: `docs/design/Petzo.dc.html` (tokens + screens).
 
 ## Commands
@@ -12,10 +12,10 @@ Mobile app of Petzo (dog/cat adoption, Gran Caracas). This repo is `petzo-fronte
 - API for local dev: run `petzo-backend` (`./mvnw spring-boot:run`, port 8090). Swagger at `/swagger-ui.html`.
 
 ## Rules
-- The app never reads or writes tables directly: RLS is SELECT-only and the API is the only writer (D-19). Only the anon/publishable key ships in the app.
+- The app never talks to Supabase (no SDK, DB, Storage or Auth): only the backend does. No Supabase keys ship in the app.
 - Contract = the API's Swagger (D-27): camelCase JSON, ProblemDetail errors with `code`, paginated catalog `{items, page, pageSize, total}`.
 - WhatsApp is shown only through `GET /api/requests/{id}/contact` after approval (RNF-04).
-- Publish (D-28): `POST /api/pets` creates a draft → per new photo: compress (≤ ~500 KB, RNF-06), `POST /api/pets/{id}/photos/upload-url`, upload to the signed URL → `PUT /api/pets/{id}/photos {paths}` with the whole gallery in order (first = cover) → `PATCH /api/pets/{id}/status {"status":"pending_review"}`.
+- Publish (D-28): `POST /api/pets` creates a draft → per new photo: compress (≤ ~500 KB, RNF-06), multipart `POST /api/pets/{id}/photos/upload` (field `file`) → `{path}` → `PUT /api/pets/{id}/photos {paths}` with the whole gallery in order (first = cover) → `PATCH /api/pets/{id}/status {"status":"pending_review"}`.
 - UI text in Spanish; code, names and commits in English. Secrets only in `.env` (each app has `.env.example`).
 
 ## Workflow

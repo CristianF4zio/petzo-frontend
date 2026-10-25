@@ -1,5 +1,5 @@
+import * as SecureStore from 'expo-secure-store';
 import { Linking } from 'react-native';
-import { supabase } from './supabase';
 
 export type Species = 'dog' | 'cat';
 export type Sex = 'male' | 'female';
@@ -56,7 +56,9 @@ export type Municipality = { id: number; name: string };
 
 export type Page<T> = { items: T[]; page: number; pageSize: number; total: number };
 
-export type UploadUrl = { path: string; signedUrl: string; token: string };
+// What /auth/* returns; stored with an absolute expiry
+export type Tokens = { accessToken: string; refreshToken: string; expiresIn: number };
+export type Session = { accessToken: string; refreshToken: string; expiresAt: number };
 
 export class ApiError extends Error {
   constructor(
@@ -69,11 +71,78 @@ export class ApiError extends Error {
   }
 }
 
-const BASE = process.env.EXPO_PUBLIC_API_URL! + '/api';
+export const BASE = process.env.EXPO_PUBLIC_API_URL! + '/api';
 
-export async function api<T = unknown>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+const KEY = 'session';
+let session: Session | null = null;
+let onChange: (s: Session | null) => void = () => {};
+let refreshing: Promise<Session | null> | null = null;
+
+// Restores the stored session, then reports every change (sign in, refresh, sign out)
+export async function watchSession(listener: (s: Session | null) => void) {
+  onChange = listener;
+  try {
+    session = JSON.parse((await SecureStore.getItemAsync(KEY)) ?? 'null');
+  } catch {
+    session = null;
+  }
+  listener(session);
+}
+
+export async function saveSession(t: Tokens | null) {
+  session = t && { accessToken: t.accessToken, refreshToken: t.refreshToken, expiresAt: Date.now() + t.expiresIn * 1000 };
+  onChange(session);
+  if (session) await SecureStore.setItemAsync(KEY, JSON.stringify(session));
+  else await SecureStore.deleteItemAsync(KEY);
+}
+
+// One refresh at a time: parallel 401s share it. Only a rejected refresh token signs out; offline keeps the session.
+function refresh() {
+  refreshing ??= (async () => {
+    try {
+      await saveSession(await send<Tokens>('/auth/refresh', { method: 'POST', body: { refreshToken: session!.refreshToken } }));
+    } catch (e) {
+      if (e instanceof ApiError && e.status >= 400 && e.status < 500) await saveSession(null);
+    } finally {
+      refreshing = null;
+    }
+    return session;
+  })();
+  return refreshing;
+}
+
+export async function api<T = unknown>(path: string, init: Init = {}): Promise<T> {
+  if (session && session.expiresAt - Date.now() < 60000) await refresh();
+  const token = session?.accessToken;
+  try {
+    return await send<T>(path, init, token);
+  } catch (e) {
+    if (!(e instanceof ApiError) || e.status !== 401 || !token) throw e;
+    // Another call may have refreshed already
+    const s = session?.accessToken !== token ? session : await refresh();
+    if (!s) throw e;
+    return send<T>(path, init, s.accessToken);
+  }
+}
+
+// Multipart upload of a local JPEG; only the API talks to Storage
+export function upload<T>(path: string, uri: string) {
+  const body = new FormData();
+  body.append('file', { uri, name: 'photo.jpg', type: 'image/jpeg' } as unknown as Blob);
+  return api<T>(path, { method: 'POST', body });
+}
+
+export async function signOut() {
+  const token = session?.accessToken;
+  await saveSession(null);
+  // Best effort: the local session is gone even if the API can't be reached
+  if (token) send('/auth/logout', { method: 'POST' }, token).catch(() => {});
+}
+
+type Init = { method?: string; body?: unknown };
+
+async function send<T>(path: string, init: Init, token?: string): Promise<T> {
+  const form = init.body instanceof FormData;
   let res: Response;
   let text: string;
   // A stalled request would otherwise hang forever; the abort surfaces as OFFLINE
@@ -82,8 +151,9 @@ export async function api<T = unknown>(path: string, init: { method?: string; bo
   try {
     res = await fetch(BASE + path, {
       method: init.method ?? 'GET',
-      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+      // FormData: fetch sets the multipart boundary itself
+      headers: { ...(form ? {} : { 'Content-Type': 'application/json' }), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: init.body === undefined ? undefined : form ? (init.body as FormData) : JSON.stringify(init.body),
       signal: c.signal,
     });
     text = await res.text();
@@ -103,13 +173,6 @@ export async function api<T = unknown>(path: string, init: { method?: string; bo
     throw new ApiError(res.status, json?.code ?? 'INTERNAL', json?.detail ?? 'Algo falló. Intenta de nuevo.', json?.fields);
   }
   return json as T;
-}
-
-// Signed upload: the API issues the URL, the file goes straight to Storage
-export async function uploadSigned(path: string, token: string, base64: string) {
-  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-  const { error } = await supabase.storage.from('pet-photos').uploadToSignedUrl(path, token, bytes, { contentType: 'image/jpeg' });
-  if (error) throw new ApiError(0, 'UPLOAD_FAILED', 'No se subió la foto');
 }
 
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn';

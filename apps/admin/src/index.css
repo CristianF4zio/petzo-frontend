@@ -1,0 +1,50 @@
+:root {
+  --bg: #f6f5f2;
+  --card: #fff;
+  --text: #1f2328;
+  --muted: #6b6f76;
+  --line: #e2e0db;
+  --accent: #e8743b;
+  --danger: #c2372d;
+  color-scheme: light;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+body { margin: 0; }
+h1, h3 { margin: 0 0 8px; }
+h1 { font-size: 1.3rem; }
+p { margin: 4px 0; }
+
+header { display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: var(--card); border-bottom: 1px solid var(--line); }
+header .muted { margin-left: auto; }
+nav { display: flex; flex-wrap: wrap; gap: 4px; padding: 12px 24px 0; }
+main, body > div > p { padding: 16px 24px; }
+main { display: grid; gap: 12px; max-width: 1100px; }
+
+button { font: inherit; padding: 6px 14px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: default; }
+button.secondary, button.tab { background: transparent; color: var(--text); border-color: var(--line); }
+button.tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+button.danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+
+input, select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
+label { display: grid; gap: 4px; font-size: 0.9rem; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.muted { color: var(--muted); font-weight: normal; }
+.error { color: var(--danger); }
+.center { text-align: center; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.row { display: flex; align-items: end; gap: 8px; }
+.photos { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 8px; }
+.photos img { width: 140px; height: 140px; object-fit: cover; border-radius: 8px; }
+.login { display: grid; gap: 12px; width: min(360px, calc(100% - 32px)); margin: 15vh auto; box-sizing: border-box; }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.stats .card { display: grid; gap: 4px; }
+.stats strong { font-size: 2rem; }
+
+table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td .actions { margin: 0; }

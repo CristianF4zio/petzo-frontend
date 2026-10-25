@@ -1,20 +1,22 @@
+import * as Crypto from 'expo-crypto';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
-import { supabase } from './supabase';
+import { ApiError, BASE, api, type Tokens } from './api';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Returns false when the user closes the browser; throws on real errors
-export async function signInWithGoogle() {
-  // exp://<ip>:8081/--/ in Expo Go, petzo:/// in the APK (both allow-listed in Supabase)
-  const redirectTo = Linking.createURL('/');
-  const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo, skipBrowserRedirect: true } });
-  if (error) throw error;
-  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-  if (result.type !== 'success') return false;
-  const code = new URL(result.url).searchParams.get('code');
-  if (!code) throw new Error('Google no devolvió el código de acceso');
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-  if (exchangeError) throw exchangeError;
-  return true;
+const base64url = (b64: string) => b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+// The backend runs the whole Google flow; tokens never travel in a URL. The app proves it started
+// the flow by claiming it with the secret behind the challenge. Returns null when the user closes the browser.
+export async function googleTokens() {
+  const flow = Crypto.randomUUID();
+  const secret = base64url(btoa(String.fromCharCode(...Crypto.getRandomBytes(32))));
+  const challenge = base64url(await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, secret, { encoding: Crypto.CryptoEncoding.BASE64 }));
+  // exp://<ip>:8081/--/auth-callback in Expo Go, petzo://auth-callback in the APK
+  const returnUrl = Linking.createURL('auth-callback');
+  const result = await WebBrowser.openAuthSessionAsync(`${BASE}/auth/google/start?flow=${flow}&challenge=${challenge}&redirect=${encodeURIComponent(returnUrl)}`, returnUrl);
+  if (result.type !== 'success') return null;
+  if (Linking.parse(result.url).queryParams?.error) throw new ApiError(0, 'GOOGLE_FAILED', 'No pudimos entrar con Google. Intenta de nuevo.');
+  return api<Tokens>('/auth/google/claim', { method: 'POST', body: { flow, secret } });
 }

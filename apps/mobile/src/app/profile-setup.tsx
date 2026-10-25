@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Field, FieldError, Footer, Header, Input, OptionSheet, SelectButton } from '@/components/ui';
-import { ApiError, api, uploadSigned, type UploadUrl } from '@/lib/api';
+import { ApiError, api, upload } from '@/lib/api';
 import { formatWhatsapp, initials, localWhatsapp } from '@/lib/format';
 import { pickAvatar, type LocalPhoto } from '@/lib/photos';
 import { useSession } from '@/lib/session';
@@ -40,11 +40,7 @@ export default function ProfileSetup() {
 
     setBusy(true);
     try {
-      if (avatar) {
-        const up = await api<UploadUrl>('/me/avatar/upload-url', { method: 'POST' });
-        await uploadSigned(up.path, up.token, avatar.base64);
-        await api('/me/avatar', { method: 'PUT' });
-      }
+      if (avatar) await upload('/me/avatar', avatar.uri);
       await api('/me', { method: 'PUT', body: { fullName: nombre.trim(), municipalityId: Number(zona), whatsapp: digits } });
       await refreshProfile();
       say('¡Listo! Tu perfil está completo.');

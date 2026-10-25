@@ -3,20 +3,23 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Field, Header, Input, Segmented } from '@/components/ui';
-import { supabase } from '@/lib/supabase';
+import { ApiError } from '@/lib/api';
+import { useSession } from '@/lib/session';
 import { color, type } from '@/lib/theme';
 
 type Mode = 'login' | 'register';
 type Errors = Partial<Record<'nombre' | 'correo' | 'pass' | 'form', string>>;
 
-function authMessage(message: string) {
-  if (/invalid login/i.test(message)) return 'Correo o contraseña incorrectos.';
-  if (/already registered/i.test(message)) return 'Ya existe una cuenta con ese correo. Entra con tu contraseña.';
-  if (/network|fetch/i.test(message)) return 'Sin conexión. Revisa tus datos o el wifi.';
+function authMessage(e: unknown) {
+  if (!(e instanceof ApiError)) return 'No pudimos continuar. Intenta de nuevo.';
+  if (e.code === 'INVALID_CREDENTIALS') return 'Correo o contraseña incorrectos.';
+  if (e.code === 'EMAIL_TAKEN') return 'Ya existe una cuenta con ese correo. Entra con tu contraseña.';
+  if (e.code === 'OFFLINE') return e.message;
   return 'No pudimos continuar. Intenta de nuevo.';
 }
 
 export default function Auth() {
+  const { signIn, register } = useSession();
   const [mode, setMode] = useState<Mode>('login');
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
@@ -34,13 +37,16 @@ export default function Auth() {
     if (Object.keys(e).length) return;
 
     setBusy(true);
-    const { error } =
-      mode === 'login'
-        ? await supabase.auth.signInWithPassword({ email: correo.trim(), password: pass })
-        : await supabase.auth.signUp({ email: correo.trim(), password: pass, options: { data: { full_name: nombre.trim() } } });
-    setBusy(false);
-    // On success the session guard in _layout swaps to the app
-    if (error) setErrors({ form: authMessage(error.message) });
+    try {
+      // On success the session guard in _layout swaps to the app
+      if (mode === 'login') await signIn(correo.trim(), pass);
+      else await register(nombre.trim(), correo.trim(), pass);
+    } catch (err) {
+      const f = err instanceof ApiError ? err.fields : undefined;
+      setErrors({ nombre: f?.fullName, correo: f?.email, pass: f?.password, form: f?.fullName || f?.email || f?.password ? undefined : authMessage(err) });
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (

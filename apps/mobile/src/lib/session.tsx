@@ -1,7 +1,6 @@
-import type { Session } from '@supabase/supabase-js';
 import { createContext, use, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { api, type Municipality, type Pet, type Profile } from './api';
-import { supabase } from './supabase';
+import { api, saveSession, signOut, watchSession, type Municipality, type Pet, type Profile, type Session, type Tokens } from './api';
+import { googleTokens } from './google';
 
 type Ctx = {
   ready: boolean;
@@ -13,6 +12,10 @@ type Ctx = {
   refreshProfile: () => Promise<void>;
   favIds: Set<string>;
   toggleFav: (petId: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  register: (fullName: string, email: string, password: string) => Promise<void>;
+  // false when the user closed the browser
+  signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
 };
 
@@ -33,26 +36,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     api<Municipality[]>('/municipalities').then(setMunicipalities, () => {});
-    supabase.auth.getSession().then(
-      ({ data }) => {
-        setSession(data.session);
-        if (!data.session) setReady(true);
-      },
-      () => setReady(true),
-    );
-    const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
-    return () => data.subscription.unsubscribe();
+    watchSession((s) => {
+      setSession(s);
+      if (!s) setReady(true);
+    });
   }, []);
 
+  const signedIn = !!session;
   useEffect(() => {
-    if (!session) {
+    if (!signedIn) {
       setProfile(null);
       setFavIds(new Set());
       return;
     }
     // A failed /me (offline) still lets the app open; screens retry on their own
     refreshProfile().finally(() => setReady(true));
-  }, [session?.user.id, refreshProfile]);
+  }, [signedIn, refreshProfile]);
 
   const toggleFav = useCallback(
     async (petId: string) => {
@@ -93,9 +92,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       },
       favIds,
       toggleFav,
-      signOut: async () => {
-        await supabase.auth.signOut();
+      signIn: async (email, password) => saveSession(await api<Tokens>('/auth/login', { method: 'POST', body: { email, password } })),
+      register: async (fullName, email, password) => saveSession(await api<Tokens>('/auth/register', { method: 'POST', body: { email, password, fullName } })),
+      signInWithGoogle: async () => {
+        const t = await googleTokens();
+        if (t) await saveSession(t);
+        return !!t;
       },
+      signOut,
     }),
     [ready, session, profile, municipalities, refreshProfile, favIds, toggleFav],
   );

@@ -1,7 +1,7 @@
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 
-export type LocalPhoto = { uri: string; base64: string };
+export type LocalPhoto = { uri: string };
 
 // RNF-06: longer side capped at `max` px (never upscaled), JPEG 0.7 keeps a phone photo around 150–400 KB
 async function compress(a: ImagePicker.ImagePickerAsset, max: number): Promise<LocalPhoto> {
@@ -9,8 +9,8 @@ async function compress(a: ImagePicker.ImagePickerAsset, max: number): Promise<L
   const long = Math.max(a.width, a.height);
   // unknown size (0) falls back to capping the width
   const image = await (!long || long > max ? ctx.resize(a.width >= a.height ? { width: max } : { height: max }) : ctx).renderAsync();
-  const saved = await image.saveAsync({ compress: 0.7, format: SaveFormat.JPEG, base64: true });
-  return { uri: saved.uri, base64: saved.base64! };
+  const saved = await image.saveAsync({ compress: 0.7, format: SaveFormat.JPEG });
+  return { uri: saved.uri };
 }
 
 export async function pickPhotos(limit: number): Promise<LocalPhoto[]> {

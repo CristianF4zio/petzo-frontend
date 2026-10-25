@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, CircleAlert, ImagePlus, Star, Trash2 } from 'luc
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { color, font, radius, type } from '@/lib/theme';
 
-export type Tile = { key: string; uri: string; base64?: string; path?: string; status: 'local' | 'up' | 'ok' | 'fail' };
+export type Tile = { key: string; uri: string; path?: string; status: 'local' | 'up' | 'ok' | 'fail' };
 
 type Props = {
   tiles: Tile[];

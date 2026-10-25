@@ -6,7 +6,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PhotoGrid, type Tile } from '@/components/PhotoGrid';
 import { Button, Chip, Field, FieldError, Footer, IconCircle, Input, OptionSheet, Segmented, SelectButton } from '@/components/ui';
-import { ApiError, api, uploadSigned, type Pet, type Sex, type Size, type Species, type UploadUrl } from '@/lib/api';
+import { ApiError, api, upload as uploadFile, type Pet, type Sex, type Size, type Species } from '@/lib/api';
 import { PLAN_LIMITS, SEX, SIZE, ageText, gendered, isActive } from '@/lib/format';
 import { pickPhotos } from '@/lib/photos';
 import { useSession } from '@/lib/session';
@@ -99,23 +99,22 @@ export default function Publish() {
   const addPhotos = async () => {
     try {
       const picked = await pickPhotos(5 - tiles.length);
-      setTiles((t) => [...t, ...picked.map((p, i) => ({ key: `${Date.now()}-${i}`, uri: p.uri, base64: p.base64, status: 'local' as const }))]);
+      setTiles((t) => [...t, ...picked.map((p, i) => ({ key: `${Date.now()}-${i}`, uri: p.uri, status: 'local' as const }))]);
       setErrors({});
     } catch {
       say('No pudimos abrir tus fotos.');
     }
   };
 
-  // Uploads the given tiles straight to Storage; returns key → storage path for the ones that made it.
+  // Uploads the given tiles through the API; returns key → storage path for the ones that made it.
   // Nothing is saved on the pet until PUT /photos.
   const upload = async (id: string, keys: string[]): Promise<Record<string, string>> => {
     setTiles((t) => t.map((x) => (keys.includes(x.key) ? { ...x, status: 'up' } : x)));
     const results = await Promise.all(
       keys.map(async (key) => {
         try {
-          const url = await api<UploadUrl>(`/pets/${id}/photos/upload-url`, { method: 'POST' });
-          await uploadSigned(url.path, url.token, tiles.find((x) => x.key === key)!.base64!);
-          return [key, url.path] as const;
+          const { path } = await uploadFile<{ path: string }>(`/pets/${id}/photos/upload`, tiles.find((x) => x.key === key)!.uri);
+          return [key, path] as const;
         } catch {
           return [key, undefined] as const;
         }

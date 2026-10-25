@@ -4,20 +4,22 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui';
-import { signInWithGoogle } from '@/lib/google';
+import { ApiError } from '@/lib/api';
+import { useSession } from '@/lib/session';
 import { color, radius, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
 export default function Welcome() {
   const say = useToast();
+  const { signInWithGoogle } = useSession();
   const [busy, setBusy] = useState(false);
 
   const google = async () => {
     setBusy(true);
     try {
       await signInWithGoogle();
-    } catch {
-      say('No pudimos entrar con Google. Intenta de nuevo.');
+    } catch (e) {
+      say(e instanceof ApiError && e.code === 'OFFLINE' ? e.message : 'No pudimos entrar con Google. Intenta de nuevo.');
     } finally {
       setBusy(false);
     }
