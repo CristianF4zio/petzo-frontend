@@ -22,3 +22,4 @@
 | F2 (en petzo-web, antes de mudarlo) | ponytail (nivel full) | Limpiar el scaffold de Vite sin adelantar trabajo de F2 | Se borró la demo (assets, CSS, iconos) y quedó un `App.tsx` de 3 líneas; `build` y `lint` OK |
 | F2 (en petzo-web, antes de mudarlo) | ponytail:ponytail-audit | Revisar el scaffold | 1 hallazgo: `VITE_API_URL` apunta al puerto 3000 de la API de Node borrada |
 | Reto | vercel-react-native-skills | Sesión con `expo-secure-store`, subida multipart y Google con `expo-web-browser` + `expo-crypto` | Paquetes de Expo Go (sin módulos nativos extra); comprobado con `tsc` y el bundle |
+| Reto | playwright-cli | Probar el panel en un navegador real: login por la API con un usuario sin rol | Se vio "Tu cuenta no tiene permisos de administrador" y el backend respondió 403 en las 6 rutas admin; captura en `docs/evidencia/panel-no-admin.png` |
