@@ -52,7 +52,8 @@ Fuera de la app (otros repos o v2)
 - [x] HU-14 Importaciones: lanzar y ver el progreso (se refresca cada 5 s)
 - [x] HU-15 Métricas
 - [x] `npm run build` y `npm run lint` OK
-- [ ] Prueba en vivo con un usuario admin (Cris crea el admin con el SQL del README)
+- [x] Login en vivo por la API y guardia de rol: un usuario normal ve "Tu cuenta no tiene permisos de administrador" (`docs/evidencia/panel-no-admin.png`)
+- [ ] Probar las vistas con un admin real (Cris crea el admin con el SQL del README)
 
 ## F3 Entrega
 - [ ] APK con EAS (opcional mientras la demo sea local)
