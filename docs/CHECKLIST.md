@@ -8,9 +8,9 @@ Repos (exactamente dos, como pide el reto): `petzo-backend` (API, n8n, Stagehand
 ## Backend (resumen; detalle en petzo-backend)
 - [x] B0 Supabase + modelo: Flyway V1 (baseline) + V2 (trigger de perfiles); un registro nuevo crea su perfil
 - [x] B1 API core: JWT, perfiles, mascotas, fotos, catálogo, límite de plan, admin, Swagger (tests en verde)
-- [~] B2 Solicitudes + IA: implementado y probado con IA simulada; falta `ANTHROPIC_API_KEY` para probar con IA real
-- [~] B3 Automatizaciones: `/internal/*`, flujos n8n y worker Stagehand listos; faltan las URLs de n8n en `.env` (sin ellas las publicaciones quedan en revisión para el admin, RNF-08)
-- [~] B4 API lista: tests (24/24), Dockerfile y colección `.http` listos; corre en local (`:8090`); el deploy en Render es opcional mientras la demo sea local
+- [x] B2 Solicitudes + IA: IA real por OpenRouter (`gpt-4.1-mini`); match verificado en vivo el 25-oct
+- [~] B3 Automatizaciones: `/internal/*`, flujos n8n (OpenRouter + Gmail) y worker Stagehand listos; Stagehand corrió en Chrome real. Faltan importar y ejecutar los flujos en n8n staging (sin ellos las publicaciones quedan en revisión para el admin, RNF-08)
+- [~] B4 API lista: tests (27/27), Dockerfile y colección `.http` listos; corre en local (`:8090`); el deploy en Render es opcional mientras la demo sea local
 
 ## F1 App móvil (Expo)
 Base
