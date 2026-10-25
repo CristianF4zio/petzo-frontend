@@ -38,6 +38,20 @@ REACT_NATIVE_PACKAGER_HOSTNAME=<IP-de-tu-PC> npx expo start   # en PowerShell: $
 - Con Google: la app abre `/api/auth/google/start`. Google muestra su pantalla oficial, la API recibe el callback y devuelve el navegador a `exp://…/--/auth-callback` **sin tokens en la URL**. Luego la app pide la sesión con `POST /api/auth/google/claim`.
 - La sesión se guarda en el llavero del teléfono (`expo-secure-store`).
 
+### Android (emulador de Android Studio)
+
+Sin depender del wifi ni de la VPN: los puertos de Metro y de la API se pasan al emulador con `adb reverse`.
+
+```bash
+emulator -avd <tu-AVD>                         # o desde Android Studio → Device Manager
+adb reverse tcp:8086 tcp:8086 && adb reverse tcp:8090 tcp:8090
+# PowerShell: $env:REACT_NATIVE_PACKAGER_HOSTNAME="127.0.0.1"; $env:EXPO_PUBLIC_API_URL="http://localhost:8090"
+npx expo start --port 8086
+adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8086" host.exp.exponent
+```
+
+No uses `--localhost`: en Windows deja a Metro escuchando solo en IPv6 (`::1`), y `adb reverse` entra por IPv4. Probado el 25-oct-2026: Bienvenida, login por correo contra la API y catálogo con fotos servidas por la API.
+
 ## 3. Panel admin
 
 ```bash
@@ -70,6 +84,6 @@ Usa datos inventados y no publiques contraseñas.
 
 ## Limitaciones conocidas
 
-- Solo se probó en iOS (Expo Go). Android usa el mismo código, sin pruebas en dispositivo.
+- Probado en iOS (Expo Go, iPhone) y en el emulador de Android; no en un Android físico.
 - La app pide sesión para todo; el visitante sin cuenta queda para v2.
 - Con Expo Go, la IP de la PC cambia según la red: hay que actualizar `.env` y las Redirect URLs de Supabase.
