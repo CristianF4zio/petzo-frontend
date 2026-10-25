@@ -3,7 +3,7 @@
 Estado por sprint según SPEC §16 (D-21, D-27), con cada ítem atado a su historia de usuario (SPEC §7) y requerimiento (§5).
 `[x]` hecho y probado (`tsc` + bundle de Metro + endpoint con test en verde en el backend) · `[~]` parcial o depende de Cris · `[ ]` pendiente.
 La prueba manual en el teléfono (Expo Go contra la API local) va aparte, al final de F1.
-Repos: `petzo-backend` (B0–B4, detalle en su `docs/CHECKLIST.md`), `petzo-frontend` (este: F1 y F3) y `petzo-web` (F2, panel admin).
+Repos (exactamente dos, como pide el reto): `petzo-backend` (API, n8n, Stagehand; estado del reto en su `docs/CHECKLIST.md`) y `petzo-frontend` (este: app en `apps/mobile`, panel en `apps/admin`).
 
 ## Backend (resumen; detalle en petzo-backend)
 - [x] B0 Supabase + modelo: Flyway V1 (baseline) + V2 (trigger de perfiles); un registro nuevo crea su perfil
@@ -14,7 +14,7 @@ Repos: `petzo-backend` (B0–B4, detalle en su `docs/CHECKLIST.md`), `petzo-fron
 
 ## F1 App móvil (Expo)
 Base
-- [x] Expo Router, tokens del diseño (DM Sans, Lucide), cliente Supabase Auth
+- [x] Expo Router, tokens del diseño (DM Sans, Lucide); sesión por la API guardada en `expo-secure-store` (sin SDK de Supabase)
 - [x] Cliente alineado al contrato de la API Java (`/api/...`, camelCase, ProblemDetail, galería con `PUT /photos`, D-28)
 - [x] Quitar `apps/api` y `supabase/` (legado previo a D-22/D-25)
 - [x] Auditoría ponytail corregida: timeout de 20 s en la API, teclado en iOS, zona al publicar, carreras del catálogo, reintento de perfil, confirmación al adoptar o borrar, galería estable al enviar, compresión secuencial, cancelar edición; `tsc` + bundle OK
@@ -40,11 +40,19 @@ Prueba en el teléfono
 - [ ] Flujo completo en Expo Go contra la API local: registro → perfil → publicar → aprobar (panel o n8n) → solicitar → aprobar → WhatsApp
 
 Fuera de la app (otros repos o v2)
-- HU-13, HU-14, HU-15 son del panel admin (F2, `petzo-web`)
+- HU-13, HU-14, HU-15 están en el panel admin (`apps/admin`, F2)
 - Visitante sin cuenta viendo el catálogo (§4): hoy la app pide sesión para todo; pendiente de decidir si entra en el MVP
 
-## F2 Panel admin (repo `petzo-web`)
-- [ ] Detalle en `petzo-web/docs/CHECKLIST.md`
+## F2 Panel admin (`apps/admin`)
+- [x] Mudado desde `petzo-web`; login por la API (correo y Google con `flow` + `secret`), sesión en memoria y `sessionStorage`
+- [x] Guardia por rol: si `/api/me` no es admin muestra el aviso; el backend responde 403 en `/api/admin/**`
+- [x] HU-13 Cola de moderación con motivo y riesgo; aprobar (con `version`) o rechazar con motivo
+- [x] HU-12 / RF-21 Fundaciones: verificar o rechazar; plan Gratis o Pro
+- [x] RF-22 Usuarios (suspender o reactivar) y reportes (descartar o retirar la publicación)
+- [x] HU-14 Importaciones: lanzar y ver el progreso (se refresca cada 5 s)
+- [x] HU-15 Métricas
+- [x] `npm run build` y `npm run lint` OK
+- [ ] Prueba en vivo con un usuario admin (Cris crea el admin con el SQL del README)
 
 ## F3 Entrega
 - [ ] APK con EAS (opcional mientras la demo sea local)
@@ -52,7 +60,8 @@ Fuera de la app (otros repos o v2)
 - [ ] READMEs y evidencias
 
 ## Pendientes de Cris
-- [x] Repos `petzo-backend` y `petzo-web` en GitHub (código subido)
+- [x] Repos `petzo-backend` y `petzo-frontend` en GitHub
+- [ ] Archivar `petzo-web` en GitHub (el panel ya vive en `apps/admin`)
 - [x] Repo renombrado en GitHub a `petzo-frontend`
 - [ ] `ANTHROPIC_API_KEY` en `petzo-backend/.env` (pre-evaluación y match)
 - [ ] Importar los 2 flujos de n8n y poner sus URLs en `petzo-backend/.env` (moderación automática y correos)

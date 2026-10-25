@@ -2,7 +2,7 @@
 
 > Etiquetas: B0–B4, F1–F3 son los sprints de SPEC §16. "Legado S0/S1" fueron sprints del plan anterior (API en Node + migraciones del CLI de Supabase, borrados en D-22/D-25); "F1 (S2)" es trabajo del plan anterior que sigue vivo en la app (diseño y pantallas).
 
-| Sprint | Skill | Para qué la usaste | Resultado |
+| Sprint | Skill | Para qué la usaste | Resultado y cómo lo comprobé |
 | --- | --- | --- | --- |
 | Legado S0 | anthropic-skills:docs | Leer la spec desde el Claude Doc y exportarla a `docs/SPEC.md` | SPEC.md generado (§1–§17) |
 | Legado S0 | architect | Decidir si el esquema/RLS necesitaba diseño antes de migrar | No-architecture-decision: §14/§15 ya fijan el modelo; solo `sex` (male/female) quedó a criterio |
@@ -19,3 +19,6 @@
 | F1 | code-review | Revisar HU-06/07/08/09/12 antes del commit | 10 hallazgos: WhatsApp inaccesible tras adoptar la mascota, solicitudes ocultas en revisión, prefill que pisaba respuestas, aprobar sobre mascota adoptada, lógica duplicada; todos corregidos |
 | F1 | ponytail (nivel full, toda la sesión) | Cambio mínimo en la migración al contrato Java y en HU-06/07/08/09/12 | Se reusaron `Sheet`, `Segmented`, `Field`, `StateView` y `api()`; lógica compartida en `lib/` (`openContact`, `HOUSING`, `scoreColors`) en vez de duplicarla |
 | F1 | ponytail:ponytail-audit | Auditoría completa de `apps/mobile` (solo lectura) | 14 hallazgos; los más graves: `fetch` sin timeout (pantalla en blanco con red lenta) y el bug de edición compartido con el backend |
+| F2 (en petzo-web, antes de mudarlo) | ponytail (nivel full) | Limpiar el scaffold de Vite sin adelantar trabajo de F2 | Se borró la demo (assets, CSS, iconos) y quedó un `App.tsx` de 3 líneas; `build` y `lint` OK |
+| F2 (en petzo-web, antes de mudarlo) | ponytail:ponytail-audit | Revisar el scaffold | 1 hallazgo: `VITE_API_URL` apunta al puerto 3000 de la API de Node borrada |
+| Reto | vercel-react-native-skills | Sesión con `expo-secure-store`, subida multipart y Google con `expo-web-browser` + `expo-crypto` | Paquetes de Expo Go (sin módulos nativos extra); comprobado con `tsc` y el bundle |

@@ -2,7 +2,7 @@
 
 > Etiquetas: B0–B4, F1–F3 son los sprints de SPEC §16. "Legado S0/S1" fueron sprints del plan anterior (API en Node + migraciones del CLI de Supabase, borrados en D-22/D-25); "F1 (S2)" es trabajo del plan anterior que sigue vivo en la app (diseño y pantallas).
 
-| Sprint | Agente | Tarea | Por qué un agente y no hacerlo directo |
+| Sprint | Agente | Qué le encargué | Por qué un agente y cómo comprobé su resultado |
 | --- | --- | --- | --- |
 | Legado S0 | general-purpose (revisor) | Revisar las 3 migraciones contra SPEC §14/§15 | Corre en paralelo mientras baja Supabase local, y su contexto queda limpio para revisar solo esas secciones. Encontró 2 detalles menores (FK de `import_jobs`, falta `seed.sql`), ya corregidos |
 | Legado S1 | general-purpose (revisor de seguridad) | Revisar la API (IDOR, escalada por body, fugas de WhatsApp, rutas de fotos, transiciones) | Corre en paralelo mientras actualizo checklist y logs; contexto limpio enfocado en buscar fallos, no en defender el código que acabo de escribir |
@@ -11,3 +11,6 @@
 | F1 | code-review (subagente en contexto aparte) | Revisar las pantallas de solicitudes, match y fundación contra el contrato del backend | Leyó app + servicios Java a la vez sin cargar mi contexto; sus 10 hallazgos se corrigieron antes del commit |
 | F1 | general-purpose (auditor ponytail de la app) | Auditar toda la app contra el contrato del backend | En paralelo con el auditor del backend; revisó `src/` completo y el código nativo de timeouts de React Native |
 | F1 | general-purpose (implementador) | Aplicar en paralelo los arreglos de la auditoría en la app (3, 4, 11–17, 20) mientras yo hacía los del backend | Los dos repos no comparten archivos; revisé su diff de `lib/` a mano antes del commit; `tsc` + bundle OK |
+| F2 (en petzo-web, antes de mudarlo) | general-purpose (implementador) | Corregir `VITE_API_URL` (hallazgo 18) junto con los arreglos de la app | Mismo agente que la app; `build` + `lint` OK |
+| Reto | general-purpose (migración de la app) | Quitar el SDK de Supabase: auth, Google y fotos solo por la API, sesión en `expo-secure-store` | En paralelo con el backend y el panel. Comprobé `tsc`, el bundle de Metro, `grep supabase` vacío y el recorrido real contra la API (registro, login, foto, proxy) |
+| Reto | general-purpose (panel admin) | Mudar `petzo-web` a `apps/admin` y construir moderación, fundaciones, usuarios, reportes, importaciones y métricas | En paralelo con la app; leyó los controladores Java para no inventar endpoints y reportó 2 huecos del contrato que corregí. Comprobé `npm run build` + `lint` |

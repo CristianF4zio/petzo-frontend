@@ -11,6 +11,7 @@ export type Profile = {
   foundationBio: string | null
   verificationStatus: 'none' | 'pending' | 'verified' | 'rejected'
   plan: 'free' | 'pro'
+  suspended: boolean
 }
 
 type Pet = {
@@ -154,8 +155,11 @@ export function Users() {
                   </td>
                   <td>
                     <div className="actions">
-                      <button className="danger" disabled={act.busy} onClick={() => suspend(u, true)}>Suspender</button>
-                      <button disabled={act.busy} onClick={() => suspend(u, false)}>Reactivar</button>
+                      {u.suspended ? (
+                        <button disabled={act.busy} onClick={() => suspend(u, false)}>Reactivar</button>
+                      ) : (
+                        <button className="danger" disabled={act.busy} onClick={() => suspend(u, true)}>Suspender</button>
+                      )}
                     </div>
                   </td>
                 </tr>
