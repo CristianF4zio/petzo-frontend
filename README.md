@@ -4,7 +4,7 @@ Clientes de **Petzo**, adopción de perros y gatos en Gran Caracas. Los dos cons
 
 | Carpeta | Qué es |
 | --- | --- |
-| `apps/mobile` | App React Native + Expo (TypeScript, Expo Router). **Plataforma elegida: iOS con Expo Go** en un iPhone físico; el mismo código corre en Android |
+| `apps/mobile` | App React Native + Expo (TypeScript, Expo Router). **Plataforma elegida: iOS con Expo Go** en un iPhone físico, porque es el teléfono donde probé de verdad y Expo Go no pide cuenta de desarrollador ni tiendas. El mismo código corre en Android (probado en emulador) |
 | `apps/admin` | **Panel admin web** React + Vite: moderación, fundaciones y planes, usuarios, reportes, importaciones (Stagehand) y métricas |
 | `docs/` | Checklist, diseño y logs de skills y agentes |
 
@@ -17,7 +17,7 @@ Node ≥ 22.18 · Expo SDK 58 (React Native, `expo-router` 58, `expo-secure-stor
 
 ## 1. Arrancar la API
 
-En `petzo-backend`: `./mvnw spring-boot:run` → `http://localhost:8090`. Antes, en Supabase → Redirect URLs, agrega `http://localhost:8090/**` y `http://<IP-de-tu-PC>:8090/**` (ver el README del backend).
+En `petzo-backend`: `./mvnw spring-boot:run` → `http://localhost:8090`. Antes, en Supabase → Authentication → URL Configuration, pon como **Site URL** `http://<IP-de-tu-PC>:8090` y agrega `http://localhost:8090/**` y `http://<IP-de-tu-PC>:8090/**` a Redirect URLs (detalle y flujo de Google sin tokens en el [README del backend](https://github.com/CristianF4zio/petzo-backend#login-con-google-regreso-sin-tokens-en-urls-ni-logs)).
 
 ## 2. App móvil (iOS con Expo Go)
 
@@ -86,4 +86,4 @@ Usa datos inventados y no publiques contraseñas.
 
 - Probado en iOS (Expo Go, iPhone) y en el emulador de Android; no en un Android físico.
 - La app pide sesión para todo; el visitante sin cuenta queda para v2.
-- Con Expo Go, la IP de la PC cambia según la red: hay que actualizar `.env` y las Redirect URLs de Supabase.
+- Con Expo Go, la IP de la PC cambia según la red: hay que actualizar `.env` y la Site URL de Supabase.
