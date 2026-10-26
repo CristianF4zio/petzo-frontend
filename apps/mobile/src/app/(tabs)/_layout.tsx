@@ -1,8 +1,18 @@
 import { Tabs, router } from 'expo-router';
-import { CirclePlus, CircleUser, Compass, LayoutList } from 'lucide-react-native';
+import { CirclePlus, CircleUser, Compass, LayoutList, type LucideIcon } from 'lucide-react-native';
 import { useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useSession } from '@/lib/session';
-import { color, font } from '@/lib/theme';
+import { color, font, radius } from '@/lib/theme';
+
+// Active tab: brand icon on a brandSoft pill, ink label
+const icon =
+  (Icon: LucideIcon) =>
+  ({ focused }: { focused: boolean }) => (
+    <View style={[styles.pill, focused && { backgroundColor: color.brandSoft }]}>
+      <Icon size={22} color={focused ? color.brand : color.muted} strokeWidth={focused ? 2.4 : 2} />
+    </View>
+  );
 
 export default function TabsLayout() {
   const { profile, isComplete } = useSession();
@@ -19,18 +29,22 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: color.brand,
+        tabBarActiveTintColor: color.ink,
         tabBarInactiveTintColor: color.muted,
-        tabBarLabelStyle: { fontFamily: font.semibold, fontSize: 12 },
+        tabBarLabelStyle: { fontFamily: font.semibold, fontSize: 12, marginTop: 4 },
         tabBarStyle: { backgroundColor: color.canvas, borderTopColor: color.hairline, borderTopWidth: 1, elevation: 0, shadowOpacity: 0 },
-        tabBarItemStyle: { paddingTop: 4 },
-        sceneStyle: { backgroundColor: color.canvas },
+        tabBarItemStyle: { paddingTop: 6 },
+        sceneStyle: { backgroundColor: color.cream },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Explorar', tabBarIcon: ({ color: c, focused }) => <Compass size={24} color={c} strokeWidth={focused ? 2.4 : 2} /> }} />
-      <Tabs.Screen name="publish" options={{ title: 'Publicar', tabBarIcon: ({ color: c, focused }) => <CirclePlus size={24} color={c} strokeWidth={focused ? 2.4 : 2} /> }} />
-      <Tabs.Screen name="mine" options={{ title: 'Mis publicaciones', tabBarIcon: ({ color: c, focused }) => <LayoutList size={24} color={c} strokeWidth={focused ? 2.4 : 2} /> }} />
-      <Tabs.Screen name="profile" options={{ title: 'Perfil', tabBarIcon: ({ color: c, focused }) => <CircleUser size={24} color={c} strokeWidth={focused ? 2.4 : 2} /> }} />
+      <Tabs.Screen name="index" options={{ title: 'Explorar', tabBarIcon: icon(Compass) }} />
+      <Tabs.Screen name="publish" options={{ title: 'Publicar', tabBarIcon: icon(CirclePlus) }} />
+      <Tabs.Screen name="mine" options={{ title: 'Mis publicaciones', tabBarIcon: icon(LayoutList) }} />
+      <Tabs.Screen name="profile" options={{ title: 'Perfil', tabBarIcon: icon(CircleUser) }} />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  pill: { width: 56, height: 30, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
+});

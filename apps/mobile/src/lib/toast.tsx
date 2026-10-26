@@ -1,6 +1,6 @@
 import { createContext, use, useCallback, useRef, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { color, radius, type } from './theme';
+import { color, radius, shadow, type } from './theme';
 
 const ToastContext = createContext<(message: string) => void>(() => {});
 
@@ -19,7 +19,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       {message ? (
         <View accessibilityRole="alert" style={styles.toast} pointerEvents="none">
-          <Text style={[type.small, styles.text]}>{message}</Text>
+          <Text style={[type.label, styles.text]}>{message}</Text>
         </View>
       ) : null}
     </ToastContext>
@@ -29,6 +29,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 export const useToast = () => use(ToastContext);
 
 const styles = StyleSheet.create({
-  toast: { position: 'absolute', left: 16, right: 16, bottom: 96, backgroundColor: color.ink, borderRadius: radius.md, padding: 16 },
+  toast: { position: 'absolute', left: 20, right: 20, bottom: 100, backgroundColor: color.ink, borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: 16, ...shadow, shadowOpacity: 0.2 },
   text: { color: color.canvas },
 });

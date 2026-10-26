@@ -24,7 +24,7 @@ export function PhotoGrid({ tiles, selected, onSelect, onMove, onRemove, onRetry
     return (
       <Pressable accessibilityRole="button" accessibilityLabel="Agregar fotos" onPress={onAdd} style={({ pressed }) => [styles.drop, pressed && { opacity: 0.7 }]}>
         <View style={styles.dropIcon}>
-          <Camera size={24} color={color.brand} />
+          <Camera size={28} color={color.brand} />
         </View>
         <Text style={type.title}>Agrega hasta 5 fotos</Text>
         <Text style={[type.small, { textAlign: 'center' }]}>Tomadas por ti. La primera será la portada.</Text>
@@ -58,6 +58,7 @@ export function PhotoGrid({ tiles, selected, onSelect, onMove, onRemove, onRetry
             {selected === t.key ? <View style={styles.ring} pointerEvents="none" /> : null}
             {i === 0 && t.status !== 'fail' ? (
               <View style={styles.cover} pointerEvents="none">
+                <Star size={12} color={color.brand} fill={color.brand} />
                 <Text style={[type.badge, { color: color.ink }]}>Portada</Text>
               </View>
             ) : null}
@@ -91,7 +92,7 @@ export function PhotoGrid({ tiles, selected, onSelect, onMove, onRemove, onRetry
         ))}
         {tiles.length < 5 ? (
           <Pressable accessibilityRole="button" accessibilityLabel="Agregar fotos" onPress={onAdd} style={({ pressed }) => [styles.add, { width: size, height: size }, pressed && { opacity: 0.7 }]}>
-            <ImagePlus size={24} color={color.ink} />
+            <ImagePlus size={24} color={color.brand} />
             <Text style={[type.caption, { color: color.ink, fontFamily: font.medium }]}>Agregar</Text>
           </Pressable>
         ) : null}
@@ -99,7 +100,7 @@ export function PhotoGrid({ tiles, selected, onSelect, onMove, onRemove, onRetry
       {actions.length ? (
         <View style={styles.actions}>
           {actions.map((a) => (
-            <Pressable key={a.label} accessibilityRole="button" accessibilityLabel={a.label} onPress={a.run} style={({ pressed }) => [styles.action, pressed && { backgroundColor: color.strong }]}>
+            <Pressable key={a.label} accessibilityRole="button" accessibilityLabel={a.label} onPress={a.run} style={({ pressed }) => [styles.action, pressed && { backgroundColor: color.sand }]}>
               <a.Icon size={18} color={color.ink} />
               {a.text ? <Text style={styles.actionText}>{a.text}</Text> : null}
             </Pressable>
@@ -111,19 +112,19 @@ export function PhotoGrid({ tiles, selected, onSelect, onMove, onRemove, onRetry
 }
 
 const styles = StyleSheet.create({
-  drop: { height: 196, borderRadius: radius.md, borderWidth: 1.5, borderStyle: 'dashed', borderColor: color.muted, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 24 },
-  dropIcon: { width: 56, height: 56, borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  drop: { height: 196, borderRadius: radius.md, borderWidth: 2, borderStyle: 'dashed', borderColor: color.hairline, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 24 },
+  dropIcon: { width: 64, height: 64, borderRadius: radius.full, backgroundColor: color.brandSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tile: { borderRadius: radius.md, overflow: 'hidden', backgroundColor: color.strong },
+  tile: { borderRadius: radius.md, overflow: 'hidden', backgroundColor: color.sand },
   ring: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, borderRadius: radius.md, borderWidth: 3, borderColor: color.ink },
-  cover: { position: 'absolute', bottom: 8, left: 8, backgroundColor: color.canvas, borderRadius: radius.full, paddingVertical: 6, paddingHorizontal: 10 },
+  cover: { position: 'absolute', bottom: 6, left: 6, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: color.canvas, borderRadius: radius.full, paddingVertical: 4, paddingHorizontal: 8 },
   overlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: color.scrim, alignItems: 'center', justifyContent: 'center', gap: 6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   failed: { backgroundColor: color.errorBg, justifyContent: 'flex-end', gap: 2, paddingHorizontal: 4 }, // stays clear of the remove button
   retry: { height: 44, justifyContent: 'center' },
   removeHit: { position: 'absolute', top: -4, right: -4, width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   remove: { width: 26, height: 26, borderRadius: radius.full, backgroundColor: color.ink, alignItems: 'center', justifyContent: 'center' },
-  add: { borderRadius: radius.md, borderWidth: 1.5, borderStyle: 'dashed', borderColor: color.muted, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center', gap: 6 },
+  add: { borderRadius: radius.md, borderWidth: 2, borderStyle: 'dashed', borderColor: color.hairline, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center', gap: 6 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   action: { height: 44, paddingHorizontal: 16, borderWidth: 1, borderColor: color.hairline, backgroundColor: color.canvas, borderRadius: radius.full, flexDirection: 'row', alignItems: 'center', gap: 6 },
   actionText: { fontFamily: font.medium, fontSize: 14, color: color.ink },

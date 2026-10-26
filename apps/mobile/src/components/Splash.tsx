@@ -1,7 +1,7 @@
 import { PawPrint } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
-import { color, font, radius, type } from '@/lib/theme';
+import { AccessibilityInfo, Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { color, font, radius, shadow, type } from '@/lib/theme';
 
 type Props = { fonts: boolean; ready: boolean; onDone: () => void };
 
@@ -62,32 +62,36 @@ export function Splash({ fonts, ready, onDone }: Props) {
           style={[
             styles.pulse,
             reduce
-              ? { opacity: 0.7 }
+              ? { opacity: 0.35 }
               : {
-                  opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.8, 0] }),
-                  transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1.5] }) }],
+                  opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.6, 0] }),
+                  transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.75, 1.45] }) }],
                 },
           ]}
         />
         <Animated.View style={[styles.logo, { opacity: logo, transform: [{ scale: logo.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }] }]}>
-          <PawPrint size={48} color={color.canvas} strokeWidth={2.2} />
+          <PawPrint size={52} color={color.brand} strokeWidth={2.4} />
         </Animated.View>
       </View>
       {fonts ? (
         <>
           <Animated.Text style={[type.display, styles.word, rise(word)]}>Petzo</Animated.Text>
-          <Animated.Text style={[styles.tag, rise(tag)]}>Adopción responsable en Caracas</Animated.Text>
+          <Animated.View style={[styles.tagPill, rise(tag)]}>
+            <Text style={styles.tag}>Adopción responsable en Caracas</Text>
+          </Animated.View>
         </>
       ) : null}
     </Animated.View>
   );
 }
 
+// White on hero blue only for bold >= 24px; the tagline sits on a heroDeep pill to keep 4.5:1
 const styles = StyleSheet.create({
-  root: { backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center', zIndex: 10 },
-  mark: { width: 180, height: 180, alignItems: 'center', justifyContent: 'center' },
-  pulse: { position: 'absolute', width: 160, height: 160, borderRadius: radius.full, backgroundColor: color.peach },
-  logo: { width: 96, height: 96, borderRadius: radius.lg, backgroundColor: color.brand, alignItems: 'center', justifyContent: 'center' },
-  word: { marginTop: 8 },
-  tag: { fontFamily: font.regular, fontSize: 16, lineHeight: 22, color: color.muted, marginTop: 4 },
+  root: { backgroundColor: color.hero, alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+  mark: { width: 200, height: 200, alignItems: 'center', justifyContent: 'center' },
+  pulse: { position: 'absolute', width: 168, height: 168, borderRadius: radius.full, borderWidth: 3, borderColor: color.canvas, backgroundColor: color.heroDeep },
+  logo: { width: 112, height: 112, borderRadius: radius.xl, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center', ...shadow, shadowOpacity: 0.18, elevation: 8 },
+  word: { marginTop: 4, fontSize: 44, lineHeight: 52, color: color.canvas },
+  tagPill: { marginTop: 12, backgroundColor: color.heroDeep, borderRadius: radius.full, paddingVertical: 8, paddingHorizontal: 16 },
+  tag: { fontFamily: font.medium, fontSize: 15, lineHeight: 20, color: color.canvas },
 });

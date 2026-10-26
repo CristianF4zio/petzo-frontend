@@ -2,13 +2,13 @@ import { FlashList } from '@shopify/flash-list';
 import { router, useFocusEffect } from 'expo-router';
 import { CloudAlert, Heart, RefreshCw, Search } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PetCard } from '@/components/PetCard';
 import { Button, Header, Skeleton, StateView } from '@/components/ui';
 import { api, type Pet } from '@/lib/api';
 import { useSession } from '@/lib/session';
-import { color, radius } from '@/lib/theme';
+import { color, radius, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
 function SkeletonCard() {
@@ -39,7 +39,13 @@ export default function Favorites() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
-      <Header title="Favoritos" />
+      <Header />
+      <View style={styles.head}>
+        <Text style={type.h1} accessibilityRole="header">
+          Favoritos
+        </Text>
+        {pets?.length ? <Text style={type.small}>{favIds.size === 1 ? '1 peludo guardado' : `${favIds.size} peludos guardados`}</Text> : null}
+      </View>
       {pets?.length && !failed ? (
         <FlashList
           data={pets}
@@ -76,7 +82,8 @@ export default function Favorites() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
+  root: { flex: 1, backgroundColor: color.cream },
+  head: { paddingHorizontal: 20, paddingBottom: 12, gap: 2 },
   body: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24 },
   skeletonRow: { flexDirection: 'row', gap: 16 },
   left: { paddingRight: 8, paddingBottom: 20 },

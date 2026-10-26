@@ -8,7 +8,7 @@ import { Button, Chip, Pill, Sheet, Skeleton, StateView } from '@/components/ui'
 import { ApiError, api, type Pet, type PetStatus } from '@/lib/api';
 import { PLAN_LIMITS, STATUS, isActive, timeAgo } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { color, font, radius, type } from '@/lib/theme';
+import { color, font, radius, shadow, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
 const UPDATED: Record<PetStatus, string> = {
@@ -20,14 +20,7 @@ const UPDATED: Record<PetStatus, string> = {
   adopted: 'Adoptada',
 };
 
-const TONE: Record<PetStatus, string> = {
-  draft: color.soft,
-  pending_review: color.butter,
-  approved: color.mint,
-  rejected: color.errorBg,
-  paused: color.sky,
-  adopted: color.peach,
-};
+const REJECTED = STATUS.rejected[1]; // dark red: color.error is under 4.5:1 on errorBg
 
 const PLURAL: Record<PetStatus, string> = {
   draft: 'Borradores',
@@ -163,7 +156,7 @@ export default function Mine() {
               </ScrollView>
             ) : null}
             <View style={styles.info}>
-              <Info size={20} color={color.ink} />
+              <Info size={20} color={color.trust} />
               <Text style={[type.small, { color: color.body, flex: 1 }]}>Si editas una publicación activa, vuelve a revisión antes de mostrarse otra vez.</Text>
             </View>
             {shown.map((p) => {
@@ -176,16 +169,16 @@ export default function Mine() {
                       <Text style={type.title} numberOfLines={1}>
                         {p.name}
                       </Text>
-                      <Pill label={STATUS[p.status][0]} fg={p.status === 'rejected' ? color.error : color.ink} bg={TONE[p.status]} />
+                      <Pill label={STATUS[p.status][0]} fg={STATUS[p.status][1]} bg={STATUS[p.status][2]} />
                       <Text style={type.caption}>{`${UPDATED[p.status]} ${timeAgo(p.updatedAt)}`}</Text>
                     </View>
                   </View>
                   {p.status === 'rejected' && p.moderationReason ? (
                     <View style={styles.reason}>
-                      <CircleAlert size={20} color={color.error} />
+                      <CircleAlert size={20} color={REJECTED} />
                       <View style={{ flex: 1, gap: 2 }}>
-                        <Text style={[type.label, { color: color.error, fontFamily: font.semibold }]}>Motivo del rechazo</Text>
-                        <Text style={[type.small, { color: color.error }]}>{p.moderationReason}</Text>
+                        <Text style={[type.label, { color: REJECTED, fontFamily: font.semibold }]}>Motivo del rechazo</Text>
+                        <Text style={[type.small, { color: REJECTED }]}>{p.moderationReason}</Text>
                       </View>
                     </View>
                   ) : null}
@@ -227,7 +220,7 @@ function Action({ label, onPress, primary, danger }: { label: string; onPress: (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [styles.action, primary ? { backgroundColor: pressed ? color.inkPressed : color.ink, borderColor: color.ink } : pressed && { backgroundColor: color.soft }]}
+      style={({ pressed }) => [styles.action, primary ? { backgroundColor: pressed ? color.inkPressed : color.ink, borderColor: color.ink } : pressed && { backgroundColor: color.cream }]}
     >
       <Text style={[type.label, { fontFamily: font.semibold }, primary && { color: color.canvas }, danger && { color: color.error }]}>{label}</Text>
     </Pressable>
@@ -235,16 +228,16 @@ function Action({ label, onPress, primary, danger }: { label: string; onPress: (
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
-  head: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12, gap: 2 },
+  root: { flex: 1, backgroundColor: color.cream },
+  head: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: 2 },
   body: { paddingHorizontal: 20, paddingBottom: 32, gap: 16 },
   chipBar: { flexGrow: 0, marginHorizontal: -20, marginVertical: -8 },
   chips: { gap: 8, paddingHorizontal: 20 },
-  info: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', backgroundColor: color.soft, borderRadius: radius.lg, padding: 16 },
-  card: { borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, padding: 16, gap: 12, backgroundColor: color.canvas },
+  info: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', backgroundColor: color.sky, borderRadius: radius.md, padding: 16 },
+  card: { borderRadius: radius.lg, padding: 16, gap: 12, backgroundColor: color.canvas, ...shadow },
   row: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  thumb: { width: 72, height: 72, borderRadius: 12, backgroundColor: color.strong },
+  thumb: { width: 72, height: 72, borderRadius: 12, backgroundColor: color.sand },
   reason: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: color.errorBg, borderRadius: radius.md, padding: 12 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  action: { height: 44, paddingHorizontal: 16, borderRadius: radius.full, borderWidth: 1, borderColor: color.hairline, alignItems: 'center', justifyContent: 'center' },
+  action: { height: 44, paddingHorizontal: 16, borderRadius: radius.full, borderWidth: 1, borderColor: color.hairline, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center' },
 });

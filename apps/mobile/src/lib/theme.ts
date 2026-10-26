@@ -1,26 +1,36 @@
 import { StyleSheet } from 'react-native';
 
-// White canvas, ink pill CTAs, brand orange accents, pastel surfaces
+// Palette from design-system/petzo/MASTER.md ("Pet Tech App": playful orange + trust blue); shared with the admin panel
 export const color = {
-  brand: '#C2410C',
-  brandPressed: '#9A3412',
-  brandDisabled: '#FBD5C5',
-  verified: '#0F766E',
-  ink: '#1C1C1E',
-  inkPressed: '#3A3A3C',
-  body: '#3F3F3F',
-  muted: '#6B6B6B',
+  brand: '#EA580C',
+  brandText: '#C2410C',
+  brandSoft: '#FFEDD5',
+  brandPressed: '#C2410C',
+  brandDisabled: '#FED7AA',
+  trust: '#2563EB',
+  hero: '#5B8DEF',
+  heroDeep: '#3B6FD8',
+  verified: '#15803D',
+  ink: '#1C1917',
+  inkPressed: '#44403C',
+  body: '#44403C',
+  muted: '#57534E',
   canvas: '#FFFFFF',
-  soft: '#F5F5F4',
-  strong: '#EDEBEA',
-  hairline: '#E7E5E4',
-  peach: '#FFE8D6',
-  sky: '#DCEBFA',
-  mint: '#DDF3E8',
+  cream: '#FFF7ED',
+  sand: '#F5EFE8',
+  soft: '#FFF7ED',
+  strong: '#F5EFE8',
+  hairline: '#EADFD3',
+  peach: '#FFEDD5',
+  sky: '#DBEAFE',
+  mint: '#DCFCE7',
   butter: '#FEF3C7',
-  error: '#B91C1C',
+  lilac: '#EDE9FE',
+  success: '#15803D',
+  warning: '#B45309',
+  error: '#DC2626',
   errorBg: '#FEE2E2',
-  scrim: 'rgba(0,0,0,0.5)',
+  scrim: 'rgba(28,25,23,0.5)',
 };
 
 export const font = {
@@ -32,12 +42,13 @@ export const font = {
 
 export const radius = { sm: 10, md: 16, lg: 24, xl: 32, full: 999 };
 
+// Claymorphism-lite: soft warm shadow, white cards on cream
 export const shadow = {
-  shadowColor: '#000',
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  shadowOffset: { width: 0, height: 4 },
-  elevation: 4,
+  shadowColor: '#1C1917',
+  shadowOpacity: 0.06,
+  shadowRadius: 24,
+  shadowOffset: { width: 0, height: 8 },
+  elevation: 3,
 };
 
 export const type = StyleSheet.create({
@@ -49,5 +60,5 @@ export const type = StyleSheet.create({
   label: { fontFamily: font.medium, fontSize: 14, lineHeight: 20, color: color.ink },
   small: { fontFamily: font.regular, fontSize: 14, lineHeight: 20, color: color.muted },
   caption: { fontFamily: font.regular, fontSize: 13, lineHeight: 18, color: color.muted },
-  badge: { fontFamily: font.semibold, fontSize: 11, lineHeight: 13 },
+  badge: { fontFamily: font.semibold, fontSize: 12, lineHeight: 16 },
 });

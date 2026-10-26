@@ -9,14 +9,14 @@ import { ApiError, api, upload } from '@/lib/api';
 import { formatWhatsapp, initials, localWhatsapp } from '@/lib/format';
 import { pickAvatar, type LocalPhoto } from '@/lib/photos';
 import { useSession } from '@/lib/session';
-import { color, font, radius, type } from '@/lib/theme';
+import { color, font, radius, shadow, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
 type Errors = Partial<Record<'nombre' | 'zona' | 'wa' | 'form', string>>;
 
 export default function ProfileSetup() {
   const { next } = useLocalSearchParams<{ next?: string }>();
-  const { profile, municipalities, zoneName, refreshProfile } = useSession();
+  const { profile, isComplete, municipalities, zoneName, refreshProfile } = useSession();
   const say = useToast();
   const [nombre, setNombre] = useState(profile?.fullName ?? '');
   const [zona, setZona] = useState(profile?.municipalityId ? String(profile.municipalityId) : '');
@@ -65,12 +65,17 @@ export default function ProfileSetup() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
-      <Header title="Completa tu perfil" onBack={leave} />
+      <Header onBack={leave} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <Text style={type.small}>
-            {next === 'publish' ? 'Antes de publicar necesitamos algunos datos. Te toma un minuto.' : 'Lo necesitas para publicar o pedir una adopción. Te toma un minuto.'}
-          </Text>
+          <View style={{ gap: 2 }}>
+            <Text style={type.h1} accessibilityRole="header">
+              {isComplete ? 'Editar perfil' : 'Completa tu perfil'}
+            </Text>
+            <Text style={type.small}>
+              {next === 'publish' ? 'Antes de publicar necesitamos algunos datos. Te toma un minuto.' : 'Lo necesitas para publicar o pedir una adopción. Te toma un minuto.'}
+            </Text>
+          </View>
           <View style={[styles.section, styles.photoRow]}>
             <Pressable accessibilityRole="button" accessibilityLabel={photoUri ? 'Cambiar foto de perfil' : 'Agregar foto de perfil'} onPress={pick} style={styles.avatar}>
               {photoUri ? <Image source={photoUri} style={StyleSheet.absoluteFill} contentFit="cover" /> : profile?.fullName ? <Text style={styles.initials}>{initials(profile.fullName)}</Text> : <Camera size={24} color={color.brand} />}
@@ -84,7 +89,7 @@ export default function ProfileSetup() {
           <View style={styles.section}>
             <Text style={type.title}>Tus datos</Text>
             <Field label="Nombre" error={errors.nombre}>
-              <Input value={nombre} onChangeText={setNombre} placeholder="Tu nombre y apellido" error={!!errors.nombre} autoComplete="name" style={styles.white} />
+              <Input value={nombre} onChangeText={setNombre} placeholder="Tu nombre y apellido" error={!!errors.nombre} autoComplete="name" style={styles.sand} />
             </Field>
             <Field label="Zona" error={errors.zona}>
               <Pressable accessibilityRole="button" accessibilityLabel={`Zona: ${zoneLabel || 'elige tu municipio'}`} onPress={() => setZoneOpen(true)} style={[styles.select, errors.zona && { borderColor: color.error }]}>
@@ -138,17 +143,17 @@ export default function ProfileSetup() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
+  root: { flex: 1, backgroundColor: color.cream },
   body: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 },
-  section: { backgroundColor: color.soft, borderRadius: radius.lg, padding: 16, gap: 16 },
+  section: { backgroundColor: color.canvas, borderRadius: radius.lg, padding: 16, gap: 16, ...shadow },
   photoRow: { flexDirection: 'row', alignItems: 'center' },
   avatar: { width: 80, height: 80, borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  initials: { fontFamily: font.bold, fontSize: 24, color: color.brand },
+  initials: { fontFamily: font.bold, fontSize: 24, color: color.brandText },
   photoButton: { height: 44, alignSelf: 'flex-start', paddingHorizontal: 16 },
-  white: { backgroundColor: color.canvas },
-  select: { height: 52, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, paddingHorizontal: 16, backgroundColor: color.canvas },
-  wa: { flexDirection: 'row', height: 52, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, backgroundColor: color.canvas, overflow: 'hidden' },
-  prefix: { fontFamily: font.medium, fontSize: 16, color: color.body, backgroundColor: color.strong, paddingHorizontal: 14, textAlignVertical: 'center', lineHeight: 50, borderRightWidth: 1, borderRightColor: color.hairline },
+  sand: { backgroundColor: color.sand }, // no borderColor: Input's error border must win
+  select: { height: 52, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, paddingHorizontal: 16, backgroundColor: color.sand },
+  wa: { flexDirection: 'row', height: 52, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, backgroundColor: color.sand, overflow: 'hidden' },
+  prefix: { fontFamily: font.medium, fontSize: 16, color: color.ink, paddingHorizontal: 14, textAlignVertical: 'center', lineHeight: 50, borderRightWidth: 1, borderRightColor: color.hairline },
   waInput: { flex: 1, paddingHorizontal: 12, fontFamily: font.regular, fontSize: 16, color: color.ink },
-  lock: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
+  lock: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: color.cream, borderRadius: radius.md, padding: 12 },
 });

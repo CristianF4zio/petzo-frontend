@@ -10,7 +10,7 @@ import { ApiError, api, upload as uploadFile, type Pet, type Sex, type Size, typ
 import { PLAN_LIMITS, SEX, SIZE, ageText, gendered, isActive } from '@/lib/format';
 import { pickPhotos } from '@/lib/photos';
 import { useSession } from '@/lib/session';
-import { color, font, radius, type } from '@/lib/theme';
+import { color, font, radius, shadow, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
 const TITLES = ['Fotos', 'Datos', 'Salud y descripción', 'Revisar y enviar'];
@@ -258,7 +258,7 @@ export default function Publish() {
       <View style={styles.steps}>
         <View style={styles.progress} accessibilityRole="progressbar" accessibilityLabel={`Paso ${step} de 4`}>
           {[1, 2, 3, 4].map((i) => (
-            <View key={i} style={[styles.bar, { backgroundColor: i <= step ? color.ink : color.hairline }]} />
+            <View key={i} style={[styles.bar, { backgroundColor: i <= step ? color.brand : color.hairline }]} />
           ))}
         </View>
         <View style={styles.row}>
@@ -270,10 +270,10 @@ export default function Publish() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           {step === 1 ? (
-            <View style={[styles.section, styles.soft]}>
+            <View style={styles.section}>
               <View style={styles.row}>
                 <Text style={type.title}>Fotos</Text>
-                <Pill label={`${tiles.length}/5`} fg={color.ink} bg={tiles.length ? color.mint : color.canvas} />
+                <Pill label={`${tiles.length}/5`} fg={tiles.length ? '#166534' : color.ink} bg={tiles.length ? color.mint : color.sand} />
               </View>
               <Text style={type.small}>Sube de 1 a 5 fotos tomadas por ti. La primera es la portada; toca una foto para moverla.</Text>
               <PhotoGrid
@@ -327,7 +327,7 @@ export default function Publish() {
                   })}
                 </View>
                 <Field label="Nombre" error={errors.name}>
-                  <Input value={form.name} onChangeText={(v) => set({ name: v })} placeholder="¿Cómo se llama?" error={!!errors.name} maxLength={60} />
+                  <Input value={form.name} onChangeText={(v) => set({ name: v })} placeholder="¿Cómo se llama?" error={!!errors.name} maxLength={60} style={styles.sand} />
                 </Field>
                 <View style={styles.field}>
                   <Text style={type.label}>Edad aproximada</Text>
@@ -417,7 +417,7 @@ export default function Publish() {
           {step === 4 ? (
             <>
               <View style={styles.review}>
-                <Image source={tiles[0]?.uri} style={{ aspectRatio: 16 / 9 }} contentFit="cover" />
+                <Image source={tiles[0]?.uri} style={styles.reviewPhoto} contentFit="cover" />
                 <View style={{ padding: 16, gap: 4 }}>
                   <Text style={type.h2}>{form.name}</Text>
                   <Text style={type.small}>{`${ageText(form.years * 12 + form.months)} · ${form.sex ? SEX[form.sex] : '—'} · ${form.size ? SIZE[form.size] : '—'}`}</Text>
@@ -425,7 +425,7 @@ export default function Publish() {
                   <Text style={[type.small, { color: color.body, marginTop: 4 }]}>{healthLabels.join(' · ') || 'Sin datos de salud'}</Text>
                 </View>
               </View>
-              <View style={[styles.section, styles.soft, styles.note]}>
+              <View style={[styles.section, styles.note]}>
                 <View style={styles.noteIcon}>
                   <ShieldCheck size={20} color={color.ink} />
                 </View>
@@ -438,7 +438,7 @@ export default function Publish() {
                 <View style={{ gap: 8 }}>
                   <Text style={type.small}>{`Tienes ${active} de ${limit} publicaciones activas`}</Text>
                   <View style={styles.quota}>
-                    <View style={{ height: '100%', width: `${Math.min(100, (active / limit) * 100)}%`, backgroundColor: color.ink }} />
+                    <View style={{ height: '100%', width: `${Math.min(100, (active / limit) * 100)}%`, backgroundColor: color.brand }} />
                   </View>
                 </View>
               )}
@@ -449,7 +449,7 @@ export default function Publish() {
         </ScrollView>
         <Footer>
           <View style={styles.footerRow}>
-            {step > 1 && !busy ? <Button label="Atrás" variant="text" onPress={() => (setStep(step - 1), setErrors({}))} /> : null}
+            {step > 1 && !busy ? <Button label="Atrás" variant="secondary" style={styles.back} onPress={() => (setStep(step - 1), setErrors({}))} /> : null}
             <Button label={busy ? 'Enviando…' : step === 4 ? 'Publicar' : 'Continuar'} onPress={next} disabled={busy} style={{ flex: 1 }} />
           </View>
         </Footer>
@@ -516,18 +516,20 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
+  root: { flex: 1, backgroundColor: color.cream },
   top: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 },
-  blocked: { marginHorizontal: 20, padding: 20, gap: 12, alignItems: 'center', backgroundColor: color.soft, borderRadius: radius.lg },
+  blocked: { marginHorizontal: 20, padding: 24, gap: 12, alignItems: 'center', backgroundColor: color.canvas, borderRadius: radius.lg, ...shadow },
   center: { textAlign: 'center' },
   stretch: { alignSelf: 'stretch', marginTop: 8 },
-  steps: { paddingHorizontal: 20, paddingBottom: 12, gap: 10, borderBottomWidth: 1, borderBottomColor: color.hairline },
-  progress: { flexDirection: 'row', gap: 4 },
-  bar: { flex: 1, height: 4, borderRadius: radius.full },
+  steps: { paddingHorizontal: 20, paddingBottom: 12, gap: 10 },
+  progress: { flexDirection: 'row', gap: 6 },
+  bar: { flex: 1, height: 6, borderRadius: radius.full },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, gap: 16 },
-  section: { padding: 16, gap: 12, borderRadius: radius.lg, borderWidth: 1, borderColor: color.hairline, backgroundColor: color.canvas },
-  soft: { backgroundColor: color.soft, borderColor: color.soft },
+  body: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24, gap: 16 },
+  // white cards on cream; fields inside are sand-filled
+  section: { padding: 16, gap: 12, borderRadius: radius.lg, backgroundColor: color.canvas, ...shadow },
+  sand: { backgroundColor: color.sand }, // no borderColor: Input's error border must win
+  back: { paddingHorizontal: 20 },
   field: { gap: 8 },
   two: { flexDirection: 'row', gap: 8 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -535,10 +537,11 @@ const styles = StyleSheet.create({
   speciesOn: { borderColor: color.ink },
   speciesIcon: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center' },
   check: { position: 'absolute', top: 12, right: 12, width: 24, height: 24, borderRadius: radius.full, backgroundColor: color.ink, alignItems: 'center', justifyContent: 'center' },
-  textarea: { height: 180, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, backgroundColor: color.soft, padding: 16, fontFamily: font.regular, fontSize: 16, lineHeight: 24, color: color.ink, textAlignVertical: 'top' },
-  review: { borderWidth: 1, borderColor: color.hairline, borderRadius: radius.lg, overflow: 'hidden' },
+  textarea: { height: 180, borderWidth: 1, borderColor: color.sand, borderRadius: radius.md, backgroundColor: color.sand, padding: 16, fontFamily: font.regular, fontSize: 16, lineHeight: 24, color: color.ink, textAlignVertical: 'top' },
+  review: { borderRadius: radius.lg, backgroundColor: color.canvas, ...shadow },
+  reviewPhoto: { aspectRatio: 16 / 9, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, backgroundColor: color.sand },
   note: { flexDirection: 'row', alignItems: 'flex-start' },
   noteIcon: { width: 40, height: 40, borderRadius: radius.full, backgroundColor: color.mint, alignItems: 'center', justifyContent: 'center' },
-  quota: { height: 4, borderRadius: radius.full, backgroundColor: color.strong, overflow: 'hidden' },
+  quota: { height: 6, borderRadius: radius.full, backgroundColor: color.hairline, overflow: 'hidden' },
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
 });

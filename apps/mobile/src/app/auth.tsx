@@ -1,11 +1,11 @@
-import { Eye, EyeOff } from 'lucide-react-native';
+import { CircleAlert, Eye, EyeOff, PawPrint } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Field, Header, Input, Segmented } from '@/components/ui';
 import { ApiError } from '@/lib/api';
 import { useSession } from '@/lib/session';
-import { color, type } from '@/lib/theme';
+import { color, radius, shadow, type } from '@/lib/theme';
 
 type Mode = 'login' | 'register';
 type Errors = Partial<Record<'nombre' | 'correo' | 'pass' | 'form', string>>;
@@ -55,7 +55,10 @@ export default function Auth() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           <View style={{ gap: 4 }}>
-            <Text style={type.h1} accessibilityRole="header">
+            <View style={styles.logo} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <PawPrint size={30} color={color.brand} strokeWidth={2.4} />
+            </View>
+            <Text style={[type.h1, styles.title]} accessibilityRole="header">
               {mode === 'login' ? 'Entra a Petzo' : 'Crea tu cuenta'}
             </Text>
             <Text style={type.small}>{mode === 'login' ? 'Qué bueno verte de nuevo.' : 'Solo toma un minuto.'}</Text>
@@ -103,7 +106,12 @@ export default function Auth() {
               </Pressable>
             </View>
           </Field>
-          {errors.form ? <Text style={[type.small, { color: color.error }]} accessibilityRole="alert">{errors.form}</Text> : null}
+          {errors.form ? (
+            <View style={styles.formError} accessibilityRole="alert">
+              <CircleAlert size={18} color={color.error} />
+              <Text style={[type.small, { color: color.error, flex: 1 }]}>{errors.form}</Text>
+            </View>
+          ) : null}
           <Button label={busy ? 'Un momento…' : mode === 'login' ? 'Entrar' : 'Crear cuenta'} onPress={submit} disabled={busy} style={{ marginTop: 8 }} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -112,7 +120,10 @@ export default function Auth() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
-  body: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 24, gap: 20 },
+  root: { flex: 1, backgroundColor: color.cream },
+  body: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24, gap: 20 },
+  logo: { width: 64, height: 64, borderRadius: radius.lg, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center', marginBottom: 16, ...shadow },
+  title: { fontSize: 32, lineHeight: 38 },
+  formError: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: color.errorBg, borderRadius: radius.md, padding: 12 },
   eye: { position: 'absolute', right: 2, top: 2, width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
 });

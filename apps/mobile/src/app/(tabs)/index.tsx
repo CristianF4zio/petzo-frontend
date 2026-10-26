@@ -12,23 +12,25 @@ import { ApiError, api, type Page, type Pet, type Species } from '@/lib/api';
 import { DEFAULT_FILTERS, NO_MAX, activeCount, ageLabel, toQuery, type Filters } from '@/lib/filters';
 import { SEX, SIZE, initials } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { color, font, radius, type } from '@/lib/theme';
+import { color, font, radius, shadow, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
 type Status = 'loading' | 'ready' | 'error' | 'offline';
 
 const CATEGORIES: [Species | '', string, LucideIcon, string][] = [
-  ['', 'Todos', PawPrint, color.peach],
-  ['dog', 'Perros', Dog, color.sky],
-  ['cat', 'Gatos', Cat, color.butter],
+  ['', 'Todos', PawPrint, color.sand],
+  ['dog', 'Perros', Dog, color.peach],
+  ['cat', 'Gatos', Cat, color.sky],
 ];
 
 function SkeletonCard() {
   return (
-    <View style={{ flex: 1, gap: 8 }}>
+    <View style={styles.skeletonCard}>
       <Skeleton style={{ aspectRatio: 1, borderRadius: radius.md }} />
-      <Skeleton style={{ height: 16, width: '60%', marginTop: 2 }} />
-      <Skeleton style={{ height: 12, width: '80%' }} />
+      <View style={{ gap: 8, padding: 12 }}>
+        <Skeleton style={{ height: 16, width: '60%' }} />
+        <Skeleton style={{ height: 12, width: '80%' }} />
+      </View>
     </View>
   );
 }
@@ -125,13 +127,13 @@ export default function Catalog() {
       </View>
 
       <View style={styles.searchRow}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Buscar por zona, edad o tamaño" onPress={() => setSheet(true)} style={styles.search}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Buscar por zona, edad o tamaño" onPress={() => setSheet(true)} style={({ pressed }) => [styles.search, pressed && styles.pressed]}>
           <Search size={20} color={color.muted} />
           <Text style={[type.body, { color: color.muted, flex: 1 }]} numberOfLines={1}>
             Busca por zona, edad o tamaño
           </Text>
         </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel={n ? `Filtros, ${n} activos` : 'Filtros'} onPress={() => setSheet(true)} style={({ pressed }) => [styles.filter, pressed && { backgroundColor: color.inkPressed }]}>
+        <Pressable accessibilityRole="button" accessibilityLabel={n ? `Filtros, ${n} activos` : 'Filtros'} onPress={() => setSheet(true)} style={({ pressed }) => [styles.filter, pressed && [styles.pressed, { backgroundColor: color.inkPressed }]]}>
           <SlidersHorizontal size={20} color={color.canvas} />
           {n ? (
             <View style={styles.badge}>
@@ -146,18 +148,22 @@ export default function Catalog() {
           const on = filters.species === value;
           return (
             <Pressable key={label} accessibilityRole="radio" accessibilityLabel={label} accessibilityState={{ checked: on }} onPress={() => setSpecies(value)} style={styles.cat}>
-              <View style={[styles.catCircle, { backgroundColor: bg }, on && styles.catOn]}>
-                <Icon size={26} color={color.ink} />
+              <View style={[styles.catRing, on && styles.catOn]}>
+                <View style={[styles.catCircle, { backgroundColor: bg }]}>
+                  <Icon size={26} color={color.ink} />
+                </View>
               </View>
               <Text style={[styles.catLabel, on && { fontFamily: font.bold, color: color.ink }]}>{label}</Text>
             </Pressable>
           );
         })}
         <Pressable accessibilityRole="button" accessibilityLabel="Recomendados para ti" onPress={() => router.push('/match')} style={styles.cat}>
-          <View style={[styles.catCircle, { backgroundColor: color.mint }]}>
-            <Sparkles size={26} color={color.ink} />
+          <View style={styles.catRing}>
+            <View style={[styles.catCircle, { backgroundColor: color.mint }]}>
+              <Sparkles size={26} color={color.ink} />
+            </View>
           </View>
-          <Text style={styles.catLabel}>Match</Text>
+          <Text style={styles.catLabel}>Match IA</Text>
         </Pressable>
       </View>
 
@@ -244,26 +250,29 @@ export default function Catalog() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
-  top: { paddingTop: 12, gap: 20, marginBottom: 16 },
+  root: { flex: 1, backgroundColor: color.cream },
+  pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
+  top: { paddingTop: 12, gap: 24, marginBottom: 16 },
   greet: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 48, height: 48, borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  initials: { fontFamily: font.bold, fontSize: 16, color: color.brand },
-  searchRow: { flexDirection: 'row', gap: 10 },
-  search: { flex: 1, height: 52, borderRadius: radius.full, backgroundColor: color.soft, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 18 },
+  avatar: { width: 52, height: 52, borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 2, borderColor: color.canvas, ...shadow },
+  initials: { fontFamily: font.bold, fontSize: 16, color: color.brandText },
+  searchRow: { flexDirection: 'row', gap: 12 },
+  search: { flex: 1, height: 52, borderRadius: radius.full, backgroundColor: color.canvas, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 18, ...shadow },
   filter: { width: 52, height: 52, borderRadius: radius.full, backgroundColor: color.ink, alignItems: 'center', justifyContent: 'center' },
-  badge: { position: 'absolute', top: 2, right: 2, minWidth: 18, height: 18, borderRadius: radius.full, backgroundColor: color.brand, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, borderWidth: 2, borderColor: color.canvas },
+  badge: { position: 'absolute', top: 0, right: 0, minWidth: 20, height: 20, borderRadius: radius.full, backgroundColor: color.brand, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, borderWidth: 2, borderColor: color.cream },
   cats: { flexDirection: 'row', justifyContent: 'space-between' },
-  cat: { alignItems: 'center', gap: 6, minWidth: 64 },
-  catCircle: { width: 64, height: 64, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'transparent' },
+  cat: { alignItems: 'center', gap: 6, minWidth: 72 },
+  catRing: { width: 72, height: 72, borderRadius: radius.full, borderWidth: 2, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
+  catCircle: { width: 64, height: 64, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
   catOn: { borderColor: color.ink },
+  skeletonCard: { flex: 1, backgroundColor: color.canvas, borderRadius: radius.md, overflow: 'hidden' },
   catLabel: { fontFamily: font.medium, fontSize: 13, lineHeight: 18, color: color.body },
   chipBar: { flexGrow: 0, marginHorizontal: -20, marginVertical: -8 },
   chips: { gap: 8, paddingHorizontal: 20 },
   section: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   listContent: { paddingHorizontal: 20, paddingBottom: 24 },
-  skeletonRow: { flexDirection: 'row', gap: 16, marginBottom: 20 },
-  left: { paddingRight: 8, paddingBottom: 20 },
-  right: { paddingLeft: 8, paddingBottom: 20 },
+  skeletonRow: { flexDirection: 'row', gap: 16, marginBottom: 16 },
+  left: { paddingRight: 8, paddingBottom: 16 },
+  right: { paddingLeft: 8, paddingBottom: 16 },
   end: { textAlign: 'center', paddingTop: 8, paddingBottom: 16 },
 });

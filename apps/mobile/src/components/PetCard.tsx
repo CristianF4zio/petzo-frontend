@@ -11,10 +11,10 @@ export const HEART = 'M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0
 
 export const petMeta = (pet: Pet) => `${ageText(pet.ageMonths)} · ${SEX[pet.sex]} · ${SIZE[pet.size]}`;
 
-export function HeartIcon({ on, size = 20 }: { on: boolean; size?: number }) {
+export function HeartIcon({ on, size = 20, tint = color.brand }: { on: boolean; size?: number; tint?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path d={HEART} fill={on ? color.brand : 'none'} stroke={on ? color.brand : color.ink} strokeWidth={2} strokeLinejoin="round" />
+      <Path d={HEART} fill={on ? tint : 'none'} stroke={on ? tint : color.ink} strokeWidth={2} strokeLinejoin="round" />
     </Svg>
   );
 }
@@ -28,7 +28,7 @@ export const PetCard = memo(function PetCard({ pet, zone, fav, onOpen, onFav }: 
         accessibilityRole="button"
         accessibilityLabel={`Ver a ${pet.name}, ${petMeta(pet)}, ${zone}${pet.publisher.verified ? ', fundación verificada' : ''}`}
         onPress={() => onOpen(pet.id)}
-        style={({ pressed }) => [styles.card, pressed && { opacity: 0.85 }]}
+        style={({ pressed }) => [styles.card, pressed && styles.pressed]}
       >
         <View style={styles.photo}>
           <Image source={pet.photos[0]?.url} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} recyclingKey={pet.id} />
@@ -44,7 +44,7 @@ export const PetCard = memo(function PetCard({ pet, zone, fav, onOpen, onFav }: 
             <Text style={[type.title, styles.name]} numberOfLines={1}>
               {pet.name}
             </Text>
-            {pet.publisher.verified ? <BadgeCheck size={16} color={color.verified} /> : null}
+            {pet.publisher.verified ? <BadgeCheck size={16} color={color.success} /> : null}
           </View>
           <View style={styles.row}>
             <MapPin size={14} color={color.muted} />
@@ -62,22 +62,25 @@ export const PetCard = memo(function PetCard({ pet, zone, fav, onOpen, onFav }: 
         onPress={() => onFav(pet.id)}
         style={styles.heartHit}
       >
-        <View style={styles.heart}>
-          <HeartIcon on={fav} size={18} />
-        </View>
+        {({ pressed }) => (
+          <View style={[styles.heart, fav && { backgroundColor: color.brand }, pressed && styles.pressed]}>
+            <HeartIcon on={fav} size={18} tint={color.canvas} />
+          </View>
+        )}
       </Pressable>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  card: { gap: 10 },
-  photo: { aspectRatio: 1, borderRadius: radius.md, overflow: 'hidden', backgroundColor: color.strong },
+  card: { backgroundColor: color.canvas, borderRadius: radius.md, ...shadow },
+  pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
+  photo: { aspectRatio: 1, borderTopLeftRadius: radius.md, borderTopRightRadius: radius.md, overflow: 'hidden', backgroundColor: color.sand },
   heartHit: { position: 'absolute', top: 2, right: 2, width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
   heart: { width: 36, height: 36, borderRadius: radius.full, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center', ...shadow, shadowOpacity: 0.12, elevation: 3 },
   count: { position: 'absolute', left: 8, bottom: 8, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: color.scrim, borderRadius: radius.full, paddingVertical: 3, paddingHorizontal: 8 },
   countText: { fontFamily: font.medium, fontSize: 12, color: color.canvas },
-  info: { gap: 3, paddingHorizontal: 2 },
+  info: { gap: 3, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 12 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   name: { flexShrink: 1, fontFamily: font.bold },
 });

@@ -93,17 +93,17 @@ export function FiltersSheet({ visible, filters, onApply, onClose }: Props) {
         <View style={styles.ages}>
           <View style={styles.age}>
             <Text style={type.caption}>Desde</Text>
-            <SelectButton value={ageLabel(draft.minAge)} placeholder="Desde" onPress={() => setPicker('min')} />
+            <SelectButton fill value={ageLabel(draft.minAge)} placeholder="Desde" onPress={() => setPicker('min')} />
           </View>
           <View style={styles.age}>
             <Text style={type.caption}>Hasta</Text>
-            <SelectButton value={ageLabel(draft.maxAge)} placeholder="Hasta" onPress={() => setPicker('max')} />
+            <SelectButton fill value={ageLabel(draft.maxAge)} placeholder="Hasta" onPress={() => setPicker('max')} />
           </View>
         </View>
       </View>
       <View style={styles.group}>
         <Text style={type.title}>Zona</Text>
-        <SelectButton icon={MapPin} value={draft.zone ? zoneName(draft.zone) : 'Toda Gran Caracas'} placeholder="Toda Gran Caracas" onPress={() => setPicker('zone')} />
+        <SelectButton fill icon={MapPin} value={draft.zone ? zoneName(draft.zone) : 'Toda Gran Caracas'} placeholder="Toda Gran Caracas" onPress={() => setPicker('zone')} />
       </View>
 
       <OptionSheet

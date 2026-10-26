@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Header, Pill, Skeleton, StateView } from '@/components/ui';
 import { ApiError, api, openContact, type MyRequest } from '@/lib/api';
 import { REQUEST_STATUS, timeAgo } from '@/lib/format';
-import { color, font, radius, type } from '@/lib/theme';
+import { color, font, radius, shadow, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
 const NOTE: Record<MyRequest['status'], string> = {
@@ -15,14 +15,6 @@ const NOTE: Record<MyRequest['status'], string> = {
   approved: 'Aprobada: ya puedes escribirle por WhatsApp.',
   rejected: 'No fue aprobada esta vez.',
   withdrawn: 'La retiraste.',
-};
-
-// Pastel badges shared with the other tabs: [text, background]
-const BADGE: Record<MyRequest['status'], [string, string]> = {
-  pending: [color.ink, color.butter],
-  approved: [color.verified, color.mint],
-  rejected: [color.error, color.errorBg],
-  withdrawn: [color.body, color.strong],
 };
 
 // HU-07: the adopter follows the state of each request
@@ -39,7 +31,13 @@ export default function MyRequests() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
-      <Header title="Mis solicitudes" />
+      <Header />
+      <View style={styles.top}>
+        <Text style={type.h1} accessibilityRole="header">
+          Mis solicitudes
+        </Text>
+        {items?.length ? <Text style={type.small}>{items.length === 1 ? '1 solicitud enviada' : `${items.length} solicitudes enviadas`}</Text> : null}
+      </View>
       <ScrollView contentContainerStyle={styles.body}>
         {failed ? (
           <StateView icon={CloudAlert} title="No pudimos cargar tus solicitudes" action={<Button label="Reintentar" variant="secondary" icon={RefreshCw} onPress={load} />} />
@@ -54,12 +52,12 @@ export default function MyRequests() {
           />
         ) : (
           items.map((r) => {
-            const [fg, bg] = BADGE[r.status];
+            const [label, fg, bg] = REQUEST_STATUS[r.status];
             return (
               <View key={r.id} style={styles.card}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Ver a ${r.petName}, ${REQUEST_STATUS[r.status][0]}`}
+                  accessibilityLabel={`Ver a ${r.petName}, ${label}`}
                   onPress={() => router.push(`/pet/${r.petId}`)}
                   style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
                 >
@@ -69,7 +67,7 @@ export default function MyRequests() {
                       <Text style={[type.title, styles.name]} numberOfLines={1}>
                         {r.petName}
                       </Text>
-                      <Pill label={REQUEST_STATUS[r.status][0]} fg={fg} bg={bg} />
+                      <Pill label={label} fg={fg} bg={bg} />
                     </View>
                     <Text style={[type.small, { color: color.body }]} numberOfLines={2}>
                       {NOTE[r.status]}
@@ -98,11 +96,12 @@ export default function MyRequests() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
+  root: { flex: 1, backgroundColor: color.cream },
+  top: { paddingHorizontal: 20, paddingBottom: 12, gap: 2 },
   body: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24, gap: 12 },
-  card: { gap: 16, backgroundColor: color.soft, borderRadius: radius.lg, padding: 16 },
+  card: { gap: 16, backgroundColor: color.canvas, borderRadius: radius.lg, padding: 16, ...shadow },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   name: { flexShrink: 1, fontFamily: font.bold },
-  thumb: { width: 72, height: 72, borderRadius: 12, backgroundColor: color.strong },
+  thumb: { width: 72, height: 72, borderRadius: 12, backgroundColor: color.sand },
 });

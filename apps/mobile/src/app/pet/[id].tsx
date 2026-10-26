@@ -10,7 +10,7 @@ import { Button, Chip, Footer, Header, RoundButton, Sheet, Skeleton, StateView, 
 import { ApiError, api, openContact, type MyRequest, type Pet } from '@/lib/api';
 import { SEX, SIZE, ageText, gendered, initials } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { color, font, radius, type } from '@/lib/theme';
+import { color, font, radius, shadow, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
 const REASONS = ['Fotos de internet', 'Parece una venta', 'Datos falsos', 'Otro motivo'];
@@ -28,7 +28,7 @@ export default function PetDetail() {
   const [reporting, setReporting] = useState(false);
   const [asking, setAsking] = useState(false);
   const [myReq, setMyReq] = useState<MyRequest | null>(null); // latest own request for this pet
-  const galleryW = width - 32;
+  const galleryW = width - 40;
 
   const load = useCallback(() => {
     setFailed(false);
@@ -69,7 +69,7 @@ export default function PetDetail() {
     return (
       <SafeAreaView style={styles.root}>
         <Header title="Detalle" />
-        <View style={{ paddingHorizontal: 16, gap: 12 }}>
+        <View style={{ paddingHorizontal: 20, gap: 12 }}>
           <Skeleton style={{ height: PHOTO_H, borderRadius: radius.lg }} />
           <Skeleton style={{ height: 28, width: '50%', marginTop: 8 }} />
           <Skeleton style={{ height: 14, width: '35%' }} />
@@ -144,14 +144,14 @@ export default function PetDetail() {
           </View>
           <View style={styles.facts}>
             {facts.map(({ Icon, value, label, bg }) => (
-              <View key={label} style={styles.fact} accessible accessibilityLabel={`${label}: ${value}`}>
-                <View style={[styles.factIcon, { backgroundColor: bg }]}>
+              <View key={label} style={[styles.fact, { backgroundColor: bg }]} accessible accessibilityLabel={`${label}: ${value}`}>
+                <View style={styles.factIcon}>
                   <Icon size={18} color={color.ink} />
                 </View>
                 <Text style={[type.title, { textAlign: 'center' }]} numberOfLines={2}>
                   {value}
                 </Text>
-                <Text style={type.caption}>{label}</Text>
+                <Text style={[type.caption, { color: color.body }]}>{label}</Text>
               </View>
             ))}
           </View>
@@ -159,7 +159,7 @@ export default function PetDetail() {
             <Text style={type.h2}>Salud</Text>
             <View style={styles.wrap}>
               {health.map(({ Icon, label, ok }) => (
-                <View key={label} style={[styles.health, { backgroundColor: ok ? color.mint : color.soft }]}>
+                <View key={label} style={[styles.health, ok ? { backgroundColor: color.mint } : styles.healthOff]}>
                   <Icon size={16} color={color.ink} />
                   <Text style={styles.healthText}>{label}</Text>
                 </View>
@@ -222,24 +222,25 @@ export default function PetDetail() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
-  gallery: { marginHorizontal: 16, height: PHOTO_H, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: color.strong },
+  root: { flex: 1, backgroundColor: color.cream },
+  gallery: { marginHorizontal: 20, height: PHOTO_H, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: color.sand },
   dots: { position: 'absolute', bottom: 14, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },
   dot: { width: 7, height: 7, borderRadius: radius.full, backgroundColor: 'rgba(255,255,255,0.6)' },
   dotOn: { width: 20, backgroundColor: color.canvas },
-  body: { paddingHorizontal: 16, paddingTop: 20, gap: 24 },
+  body: { paddingHorizontal: 20, paddingTop: 20, gap: 24 },
   nameRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   facts: { flexDirection: 'row', gap: 10 },
-  fact: { flex: 1, alignItems: 'center', gap: 6, backgroundColor: color.soft, borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: 8 },
-  factIcon: { width: 36, height: 36, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
+  fact: { flex: 1, alignItems: 'center', gap: 6, borderRadius: radius.md, paddingVertical: 16, paddingHorizontal: 8 },
+  factIcon: { width: 36, height: 36, borderRadius: radius.full, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center' },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   health: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: radius.full },
+  healthOff: { backgroundColor: color.canvas, borderWidth: 1, borderColor: color.hairline },
   healthText: { fontFamily: font.medium, fontSize: 14, color: color.ink },
-  publisher: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: color.soft, borderRadius: radius.md, padding: 16 },
+  publisher: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: color.canvas, borderRadius: radius.md, padding: 16, ...shadow },
   avatar: { width: 52, height: 52, borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  initials: { fontFamily: font.bold, fontSize: 16, color: color.brand },
-  particular: { alignSelf: 'flex-start', color: color.body, backgroundColor: color.canvas, borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 6, overflow: 'hidden' },
+  initials: { fontFamily: font.bold, fontSize: 16, color: color.brandText },
+  particular: { alignSelf: 'flex-start', color: color.ink, backgroundColor: color.sand, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4, overflow: 'hidden' },
   note: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', backgroundColor: color.butter, borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: 16 },
   report: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, alignSelf: 'flex-start' },
 });

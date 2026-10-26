@@ -7,9 +7,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Field, FieldError, Input, Pill, Sheet } from '@/components/ui';
 import { ApiError, api, type Pet } from '@/lib/api';
-import { PLAN_LIMITS, initials, isActive, localWhatsapp } from '@/lib/format';
+import { PLAN_LIMITS, REQUEST_STATUS, initials, isActive, localWhatsapp } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { color, font, radius, type } from '@/lib/theme';
+import { color, font, radius, shadow, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
 // Grouped menu row: pastel icon circle, label, optional value, chevron
@@ -19,7 +19,7 @@ function Row({ icon: Icon, tint, label, sub, value, first, onPress }: { icon: Lu
       accessibilityRole={onPress ? 'button' : undefined}
       disabled={!onPress}
       onPress={onPress}
-      style={({ pressed }) => [styles.row, !first && styles.divider, pressed && { backgroundColor: color.soft }]}
+      style={({ pressed }) => [styles.row, !first && styles.divider, pressed && { backgroundColor: color.cream }]}
     >
       <View style={[styles.rowIcon, { backgroundColor: tint }]}>
         <Icon size={20} color={color.ink} />
@@ -43,8 +43,8 @@ const FOUNDATION_SUB: Record<string, string> = {
 
 // [label, text, background]
 const FOUNDATION_BADGE: Record<string, [string, string, string]> = {
-  pending: ['Pendiente', color.ink, color.butter],
-  rejected: ['Rechazada', color.error, color.errorBg],
+  pending: REQUEST_STATUS.pending,
+  rejected: REQUEST_STATUS.rejected,
 };
 
 // HU-12 / RF-05: name, Instagram and description; the admin verifies it in the panel
@@ -147,7 +147,7 @@ export default function Profile() {
             </View>
           </View>
           <View style={styles.badges}>
-            <Pill label={pro ? 'Pro' : 'Gratis'} fg={color.ink} bg={pro ? color.peach : color.canvas} />
+            <Pill label={pro ? 'Pro' : 'Gratis'} fg={pro ? '#9A3412' : color.ink} bg={pro ? color.brandSoft : color.sand} />
             {verified ? (
               <View style={[styles.badge, { backgroundColor: color.mint }]}>
                 <BadgeCheck size={14} color={color.verified} />
@@ -164,7 +164,7 @@ export default function Profile() {
             <Text style={[type.small, { color: color.body }]}>{`${active} de ${limit} publicaciones activas`}</Text>
           </View>
           <View style={styles.quota}>
-            <View style={{ height: '100%', width: `${Math.min(100, (active / limit) * 100)}%`, backgroundColor: color.ink, borderRadius: radius.full }} />
+            <View style={{ height: '100%', width: `${Math.min(100, (active / limit) * 100)}%`, backgroundColor: color.brand, borderRadius: radius.full }} />
           </View>
           {pro ? null : <Button label="Pásate a Pro: hasta 30 activas" variant="text" onPress={() => say('El plan Pro llega pronto. Te avisamos.')} style={{ height: 44 }} />}
         </View>
@@ -181,7 +181,7 @@ export default function Profile() {
               onPress={() => router.push('/favorites')}
             />
             <Row icon={Send} tint={color.sky} label="Mis solicitudes" sub="Estado de tus solicitudes de adopción" onPress={() => router.push('/my-requests')} />
-            <Row icon={Sparkles} tint={color.mint} label="Recomendados por IA" sub="Cuestionario de estilo de vida" onPress={() => router.push('/match')} />
+            <Row icon={Sparkles} tint={color.lilac} label="Recomendados por IA" sub="Cuestionario de estilo de vida" onPress={() => router.push('/match')} />
           </View>
         </View>
 
@@ -204,7 +204,7 @@ export default function Profile() {
           </View>
         </View>
 
-        <Pressable accessibilityRole="button" onPress={signOut} style={({ pressed }) => [styles.signOut, pressed && { backgroundColor: color.soft }]}>
+        <Pressable accessibilityRole="button" onPress={signOut} style={({ pressed }) => [styles.signOut, pressed && { backgroundColor: color.cream }]}>
           <LogOut size={20} color={color.error} />
           <Text style={styles.signOutLabel}>Cerrar sesión</Text>
         </Pressable>
@@ -216,24 +216,24 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
+  root: { flex: 1, backgroundColor: color.cream },
   body: { paddingHorizontal: 20, paddingBottom: 32, gap: 16 },
   title: { paddingTop: 8, paddingBottom: 4 },
-  section: { backgroundColor: color.soft, borderRadius: radius.lg, padding: 16, gap: 12 },
+  section: { backgroundColor: color.canvas, borderRadius: radius.lg, padding: 16, gap: 12, ...shadow },
   sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   me: { alignItems: 'center', paddingVertical: 24, gap: 8 },
   avatarHit: { width: 80, height: 80, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   avatar: { width: 72, height: 72, borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  initials: { fontFamily: font.bold, fontSize: 24, color: color.brand },
-  camera: { position: 'absolute', right: 2, bottom: 2, width: 28, height: 28, borderRadius: radius.full, backgroundColor: color.ink, borderWidth: 2, borderColor: color.soft, alignItems: 'center', justifyContent: 'center' },
+  initials: { fontFamily: font.bold, fontSize: 24, color: color.brandText },
+  camera: { position: 'absolute', right: 2, bottom: 2, width: 28, height: 28, borderRadius: radius.full, backgroundColor: color.ink, borderWidth: 2, borderColor: color.canvas, alignItems: 'center', justifyContent: 'center' },
   name: { fontFamily: font.bold, textAlign: 'center' },
   meta: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 16, rowGap: 4 },
   inline: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   badges: { flexDirection: 'row', gap: 8, marginTop: 4 },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 24, paddingHorizontal: 10, borderRadius: radius.full },
   edit: { alignSelf: 'stretch', marginTop: 8 },
-  quota: { height: 6, borderRadius: radius.full, backgroundColor: color.strong, overflow: 'hidden' },
-  menu: { backgroundColor: color.canvas, borderRadius: radius.md, overflow: 'hidden' },
+  quota: { height: 6, borderRadius: radius.full, backgroundColor: color.hairline, overflow: 'hidden' },
+  menu: { marginHorizontal: -12, borderRadius: radius.md, overflow: 'hidden' },
   row: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 12, paddingVertical: 10 },
   divider: { borderTopWidth: 1, borderTopColor: color.hairline },
   rowIcon: { width: 40, height: 40, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },

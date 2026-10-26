@@ -9,7 +9,7 @@ import { Button, FieldError, Header, Pill, Segmented, Skeleton, StateView } from
 import { ApiError, api, type Lifestyle, type Pet, type Species } from '@/lib/api';
 import { HOUSING, YES_NO } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { color, radius, type } from '@/lib/theme';
+import { color, radius, shadow, type } from '@/lib/theme';
 
 type Match = { pet: Pet; score: number; reason: string };
 type Form = { [K in keyof Lifestyle]: Lifestyle[K] extends boolean ? 'si' | 'no' | '' : Lifestyle[K] | '' };
@@ -97,7 +97,7 @@ export default function MatchScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={`Ver a ${pet.name}, ${score}% compatible`}
                   onPress={() => router.push(`/pet/${pet.id}`)}
-                  style={({ pressed }) => [styles.card, pressed && { backgroundColor: color.soft }]}
+                  style={({ pressed }) => [styles.card, pressed && styles.pressed]}
                 >
                   <Image source={pet.photos[0]?.url} style={styles.thumb} contentFit="cover" />
                   <View style={{ flex: 1, gap: 4 }}>
@@ -105,7 +105,7 @@ export default function MatchScreen() {
                       <Text style={[type.title, { flex: 1 }]} numberOfLines={1}>
                         {pet.name}
                       </Text>
-                      <Pill label={`${score}% afín`} fg={color.ink} bg={color.mint} />
+                      <Pill label={`${score}% afín`} fg={color.success} bg={color.mint} />
                     </View>
                     <Text style={type.caption} numberOfLines={1}>{`${petMeta(pet)} · ${zoneName(pet.municipalityId)}`}</Text>
                     {reason ? <Text style={[type.small, { color: color.body }]}>{reason}</Text> : null}
@@ -156,11 +156,12 @@ export default function MatchScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
+  root: { flex: 1, backgroundColor: color.cream },
+  pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
   body: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 32, gap: 16 },
   intro: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', backgroundColor: color.mint, borderRadius: radius.lg, padding: 16 },
-  section: { backgroundColor: color.soft, borderRadius: radius.lg, padding: 16, gap: 12 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, padding: 12, backgroundColor: color.canvas },
-  thumb: { width: 72, height: 72, borderRadius: 12, backgroundColor: color.strong },
+  section: { backgroundColor: color.canvas, borderRadius: radius.lg, padding: 16, gap: 12, ...shadow },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, borderRadius: radius.md, padding: 12, backgroundColor: color.canvas, ...shadow },
+  thumb: { width: 72, height: 72, borderRadius: radius.sm, backgroundColor: color.sand },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 });

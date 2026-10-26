@@ -1,17 +1,26 @@
 import type { PetStatus, RequestStatus, Sex, Size, Species } from './api';
+import { color } from './theme';
 
 export const SPECIES: Record<Species, string> = { dog: 'Perro', cat: 'Gato' };
 export const SEX: Record<Sex, string> = { male: 'Macho', female: 'Hembra' };
 export const SIZE: Record<Size, string> = { small: 'Pequeño', medium: 'Mediano', large: 'Grande' };
 
+// Badge table in design-system/petzo/MASTER.md: dark text on a pastel, always with a label
+const TONE = {
+  review: ['#92400E', color.butter],
+  ok: ['#166534', color.mint],
+  bad: ['#991B1B', color.errorBg],
+  idle: [color.ink, color.sand],
+} as const;
+
 // [label, text color, background]
 export const STATUS: Record<PetStatus, [string, string, string]> = {
-  draft: ['Borrador', '#6A6A6A', '#F2F2F2'],
-  pending_review: ['En revisión', '#B45309', '#FEF3C7'],
-  approved: ['Publicada', '#15803D', '#DCFCE7'],
-  rejected: ['Rechazada', '#B91C1C', '#FEE2E2'],
-  paused: ['Pausada', '#3F3F3F', '#EBEBEB'],
-  adopted: ['Adoptada', '#9A3412', '#FFEDD5'],
+  draft: ['Borrador', ...TONE.idle],
+  pending_review: ['En revisión', ...TONE.review],
+  approved: ['Publicada', ...TONE.ok],
+  rejected: ['Rechazada', ...TONE.bad],
+  paused: ['Pausada', '#1E40AF', color.sky],
+  adopted: ['Adoptada', '#9A3412', color.peach],
 };
 
 export function ageText(m: number) {
@@ -58,10 +67,10 @@ export const isActive = (s: PetStatus) => s === 'pending_review' || s === 'appro
 
 // [label, text color, background]
 export const REQUEST_STATUS: Record<RequestStatus, [string, string, string]> = {
-  pending: ['Pendiente', '#B45309', '#FEF3C7'],
-  approved: ['Aprobada', '#15803D', '#DCFCE7'],
-  rejected: ['Rechazada', '#B91C1C', '#FEE2E2'],
-  withdrawn: ['Retirada', '#3F3F3F', '#EBEBEB'],
+  pending: ['Pendiente', ...TONE.review],
+  approved: ['Aprobada', ...TONE.ok],
+  rejected: ['Rechazada', ...TONE.bad],
+  withdrawn: ['Retirada', ...TONE.idle],
 };
 
 export const HOUSING = [
@@ -75,4 +84,4 @@ export const YES_NO = [
 ] as const;
 
 // AI score 0-100 → [text, background]: green from 70, amber from 40
-export const scoreColors = (s: number): [string, string] => (s >= 70 ? ['#15803D', '#DCFCE7'] : s >= 40 ? ['#B45309', '#FEF3C7'] : ['#B91C1C', '#FEE2E2']);
+export const scoreColors = (s: number): [string, string] => [...(s >= 70 ? TONE.ok : s >= 40 ? TONE.review : TONE.bad)];

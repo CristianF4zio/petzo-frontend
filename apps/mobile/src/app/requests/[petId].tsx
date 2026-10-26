@@ -5,13 +5,11 @@ import { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Header, Pill, Skeleton, StateView } from '@/components/ui';
-import { ApiError, api, openContact, type AdoptionRequest, type Pet, type RequestStatus } from '@/lib/api';
+import { ApiError, api, openContact, type AdoptionRequest, type Pet } from '@/lib/api';
 import { HOUSING, REQUEST_STATUS, initials, scoreColors, timeAgo } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { color, font, radius, type } from '@/lib/theme';
+import { color, font, radius, shadow, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
-
-const TONE: Record<RequestStatus, string> = { pending: color.butter, approved: color.mint, rejected: color.errorBg, withdrawn: color.soft };
 
 // HU-08 + HU-09: requests for one of my pets, newest first; approving one leaves the rest pending
 export default function PetRequests() {
@@ -63,19 +61,19 @@ export default function PetRequests() {
         {failed ? (
           <StateView icon={CloudAlert} title="No pudimos cargar las solicitudes" action={<Button label="Reintentar" variant="secondary" icon={RefreshCw} onPress={load} />} />
         ) : !items ? (
-          [0, 1].map((i) => <Skeleton key={i} style={{ height: 200, borderRadius: radius.md }} />)
+          [0, 1].map((i) => <Skeleton key={i} style={{ height: 200, borderRadius: radius.lg }} />)
         ) : items.length === 0 ? (
           <StateView icon={Inbox} title="Aún no hay solicitudes" body="Cuando alguien quiera adoptar, aquí verás su solicitud con un resumen y un puntaje." />
         ) : (
           <>
             <View style={{ gap: 2 }}>
-              <Text style={type.h2} accessibilityRole="header">
+              <Text style={type.h1} accessibilityRole="header">
                 Solicitudes
               </Text>
               <Text style={type.small}>{`${items.length} ${items.length === 1 ? 'persona quiere' : 'personas quieren'} adoptar${pet ? ` a ${pet.name}` : ''}`}</Text>
             </View>
             {items.map((r) => {
-              const [label] = REQUEST_STATUS[r.status];
+              const [label, fg, bg] = REQUEST_STATUS[r.status];
               const name = r.adopter.name || 'Sin nombre';
               const housing = HOUSING.find((h) => h.value === r.answers?.housing)?.label;
               const otherPets = r.answers?.otherPets;
@@ -84,7 +82,7 @@ export default function PetRequests() {
                 <View key={r.id} style={styles.card}>
                   <View style={styles.row}>
                     <View style={styles.avatar}>
-                      {r.adopter.avatarUrl ? <Image source={r.adopter.avatarUrl} style={StyleSheet.absoluteFill} /> : <Text style={[type.title, { color: color.brand }]}>{initials(name)}</Text>}
+                      {r.adopter.avatarUrl ? <Image source={r.adopter.avatarUrl} style={StyleSheet.absoluteFill} /> : <Text style={[type.title, { color: color.brandText }]}>{initials(name)}</Text>}
                     </View>
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={type.title} numberOfLines={1}>
@@ -92,12 +90,12 @@ export default function PetRequests() {
                       </Text>
                       <Text style={type.caption} numberOfLines={1}>{`${zoneName(r.adopter.municipalityId) || 'Sin zona'} · ${timeAgo(r.createdAt)}`}</Text>
                     </View>
-                    <Pill label={label} fg={r.status === 'rejected' ? color.error : color.ink} bg={TONE[r.status]} />
+                    <Pill label={label} fg={fg} bg={bg} />
                   </View>
                   {r.aiScore != null ? (
                     <View style={styles.ai}>
                       <View style={styles.row}>
-                        <Sparkles size={20} color={color.ink} />
+                        <Sparkles size={20} color={color.brand} />
                         <Text style={[type.label, { fontFamily: font.semibold, flex: 1 }]}>Resumen IA</Text>
                         <Pill label={`${r.aiScore}/100`} fg={scoreColors(r.aiScore)[0]} bg={scoreColors(r.aiScore)[1]} />
                       </View>
@@ -129,7 +127,7 @@ export default function PetRequests() {
                         accessibilityState={{ disabled: busy === r.id }}
                         disabled={busy === r.id}
                         onPress={() => decide(r, false)}
-                        style={({ pressed }) => [styles.reject, pressed && { backgroundColor: color.soft }]}
+                        style={({ pressed }) => [styles.reject, pressed && { backgroundColor: color.cream }]}
                       >
                         <Text style={[styles.rejectLabel, busy === r.id && { color: color.muted }]}>Rechazar</Text>
                       </Pressable>
@@ -158,14 +156,14 @@ function Answer({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.canvas },
+  root: { flex: 1, backgroundColor: color.cream },
   body: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 32, gap: 16 },
-  card: { borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, padding: 16, gap: 12, backgroundColor: color.canvas },
+  card: { borderRadius: radius.lg, padding: 16, gap: 12, backgroundColor: color.canvas, ...shadow },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  ai: { backgroundColor: color.soft, borderRadius: radius.md, padding: 12, gap: 8 },
+  ai: { backgroundColor: color.cream, borderRadius: radius.md, padding: 12, gap: 8 },
   toggle: { minHeight: 48, flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: color.hairline },
-  answers: { backgroundColor: color.soft, borderRadius: radius.md, paddingHorizontal: 12 },
+  answers: { backgroundColor: color.cream, borderRadius: radius.md, paddingHorizontal: 12 },
   answer: { minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   buttons: { flexDirection: 'row', gap: 12 },
   reject: { flex: 1, height: 52, borderRadius: radius.full, borderWidth: 1, borderColor: color.hairline, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center' },

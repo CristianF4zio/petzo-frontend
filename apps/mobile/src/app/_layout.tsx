@@ -38,6 +38,8 @@ function App() {
   return (
     <>
       {fontsLoaded ? <Routes /> : null}
+      {/* light icons over the blue splash; the root "dark" one comes back when it unmounts */}
+      {splash ? <StatusBar style="light" /> : null}
       {splash ? <Splash fonts={fontsLoaded} ready={fontsLoaded && ready} onDone={hide} /> : null}
     </>
   );
