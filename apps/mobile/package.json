@@ -36,5 +36,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit"
   },
+  "overrides": {
+    "react-dom": "19.3.0"
+  },
   "private": true
 }
