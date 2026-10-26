@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 20, paddingRight: 8 },
   logo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoMark: { width: 32, height: 32, borderRadius: radius.sm, backgroundColor: color.brand, alignItems: 'center', justifyContent: 'center' },
-  logoText: { fontFamily: font.bold, fontSize: 18, color: color.canvas },
+  logoText: { fontFamily: font.bold, fontSize: 20, color: color.canvas }, // bold ≥ 18.7px = large text: white on hero blue needs 3:1
   dots: { flexDirection: 'row' },
   dotHit: { minWidth: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   pageDot: { width: 8, height: 8, borderRadius: radius.full, backgroundColor: 'rgba(255,255,255,0.5)' },

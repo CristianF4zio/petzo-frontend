@@ -5,8 +5,6 @@ export const color = {
   brand: '#EA580C',
   brandText: '#C2410C',
   brandSoft: '#FFEDD5',
-  brandPressed: '#C2410C',
-  brandDisabled: '#FED7AA',
   trust: '#2563EB',
   hero: '#5B8DEF',
   heroDeep: '#3B6FD8',
@@ -18,8 +16,6 @@ export const color = {
   canvas: '#FFFFFF',
   cream: '#FFF7ED',
   sand: '#F5EFE8',
-  soft: '#FFF7ED',
-  strong: '#F5EFE8',
   hairline: '#EADFD3',
   peach: '#FFEDD5',
   sky: '#DBEAFE',
@@ -27,8 +23,7 @@ export const color = {
   butter: '#FEF3C7',
   lilac: '#EDE9FE',
   success: '#15803D',
-  warning: '#B45309',
-  error: '#DC2626',
+  error: '#B91C1C', // 5.5:1 on errorBg (#DC2626 was 3.9:1)
   errorBg: '#FEE2E2',
   scrim: 'rgba(28,25,23,0.5)',
 };

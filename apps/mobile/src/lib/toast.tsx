@@ -1,5 +1,5 @@
 import { createContext, use, useCallback, useRef, useState, type ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
 import { color, radius, shadow, type } from './theme';
 
 const ToastContext = createContext<(message: string) => void>(() => {});
@@ -10,6 +10,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const say = useCallback((m: string) => {
     setMessage(m);
+    // role="alert" alone is not announced on appear by VoiceOver/TalkBack
+    AccessibilityInfo.announceForAccessibility(m);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setMessage(null), 2600);
   }, []);

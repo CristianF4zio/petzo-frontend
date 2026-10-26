@@ -25,7 +25,7 @@ Source: ui-ux-pro-max data → product "Pet Tech App" (colors.csv #23, products.
 | `peach` `#FFEDD5` · `sky` `#DBEAFE` · `mint` `#DCFCE7` · `butter` `#FEF3C7` · `lilac` `#EDE9FE` | | Category circles, status badges, illustration fills | text on them = ink/dark variant |
 | `success` | `#15803D` | Approved, toggle on | 5.0:1 |
 | `warning` | `#B45309` | In review text | 5.0:1 |
-| `danger` | `#DC2626` | Reject/delete text & icons | 4.8:1 |
+| `danger` | `#B91C1C` | Reject/delete text & icons | 6.5:1 on white, 5.5:1 on dangerSoft |
 | `dangerSoft` | `#FEE2E2` | Danger badge bg | |
 
 Status badges (always text + color): En revisión = butter/`#92400E` · Aprobada/Activa = mint/`#166534` · Rechazada = dangerSoft/`#991B1B` · Borrador = sand/ink · Pausada = sky/`#1E40AF` · Adoptada = peach/`#9A3412` · Verificada = mint + BadgeCheck · Pro = brandSoft/`#9A3412`.

@@ -70,7 +70,7 @@ Fuera de la app (otros repos o v2)
 - [x] Repo renombrado en GitHub a `petzo-frontend`
 - [x] IA: ya no hace falta `ANTHROPIC_API_KEY`; todo va por la clave de OpenRouter (DECISIONS §9)
 - [x] Flujos de n8n activos en staging: moderación (callback por el túnel) y correo con la cuenta de desarrollo Ethereal. El túnel se levanta de nuevo si cambia la red (la IA actualiza la URL en n8n)
-- [ ] Site URL de Supabase = `http://192.168.0.159:8090` (la IP de la PC cambió el 26-oct; sin esto falla el login con Google)
+- [x] Site URL de Supabase = `http://192.168.0.159:8090` (cambiada por Cris el 26-oct tras el cambio de IP; la API ya arma el callback con esa IP)
 - [-] Servicio Docker en Render: fuera de alcance (demo local)
 - [-] Sesión del CLI de Expo para EAS: solo hacía falta para el APK; Expo Go usa `EXPO_TOKEN` en el proceso
 

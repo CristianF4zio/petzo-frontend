@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   searchRow: { flexDirection: 'row', gap: 12 },
   search: { flex: 1, height: 52, borderRadius: radius.full, backgroundColor: color.canvas, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 18, ...shadow },
   filter: { width: 52, height: 52, borderRadius: radius.full, backgroundColor: color.ink, alignItems: 'center', justifyContent: 'center' },
-  badge: { position: 'absolute', top: 0, right: 0, minWidth: 20, height: 20, borderRadius: radius.full, backgroundColor: color.brand, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, borderWidth: 2, borderColor: color.cream },
+  badge: { position: 'absolute', top: 0, right: 0, minWidth: 20, height: 20, borderRadius: radius.full, backgroundColor: color.brandText, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, borderWidth: 2, borderColor: color.cream },
   cats: { flexDirection: 'row', justifyContent: 'space-between' },
   cat: { alignItems: 'center', gap: 6, minWidth: 72 },
   catRing: { width: 72, height: 72, borderRadius: radius.full, borderWidth: 2, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center' },

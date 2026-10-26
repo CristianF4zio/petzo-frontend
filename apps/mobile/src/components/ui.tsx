@@ -221,9 +221,14 @@ export function Header({ title, onBack, right }: { title?: string; onBack?: () =
       <RoundButton label="Volver" onPress={onBack ?? (() => router.back())}>
         <ArrowLeft size={20} color={color.ink} />
       </RoundButton>
-      <Text style={[type.title, styles.headerTitle]} numberOfLines={1} accessibilityRole="header">
-        {title}
-      </Text>
+      {/* no title: a plain spacer, so screen readers don't announce an empty "header" */}
+      {title ? (
+        <Text style={[type.title, styles.headerTitle]} numberOfLines={1} accessibilityRole="header">
+          {title}
+        </Text>
+      ) : (
+        <View style={styles.headerTitle} />
+      )}
       {right ?? <View style={styles.iconButton} />}
     </View>
   );
@@ -317,7 +322,7 @@ const styles = StyleSheet.create({
   chipOn: { backgroundColor: color.ink, borderColor: color.ink },
   chipLabel: { fontFamily: font.medium, fontSize: 14, color: color.ink },
   chipLabelOn: { fontFamily: font.semibold, color: color.canvas },
-  count: { minWidth: 20, height: 20, borderRadius: radius.full, backgroundColor: color.brand, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  count: { minWidth: 20, height: 20, borderRadius: radius.full, backgroundColor: color.brandText, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   pill: { alignSelf: 'flex-start', height: 24, paddingHorizontal: 10, borderRadius: radius.full, justifyContent: 'center' },
   verified: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 4, height: 24, paddingHorizontal: 10, backgroundColor: color.mint, borderRadius: radius.full },
   iconCircle: { borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
