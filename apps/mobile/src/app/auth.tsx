@@ -54,7 +54,12 @@ export default function Auth() {
       <Header />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <Text style={type.h1}>{mode === 'login' ? 'Entra a Petzo' : 'Crea tu cuenta'}</Text>
+          <View style={{ gap: 4 }}>
+            <Text style={type.h1} accessibilityRole="header">
+              {mode === 'login' ? 'Entra a Petzo' : 'Crea tu cuenta'}
+            </Text>
+            <Text style={type.small}>{mode === 'login' ? 'Qué bueno verte de nuevo.' : 'Solo toma un minuto.'}</Text>
+          </View>
           <Segmented
             options={[
               { value: 'login', label: 'Entrar' },
@@ -108,6 +113,6 @@ export default function Auth() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: color.canvas },
-  body: { paddingHorizontal: 16, paddingBottom: 24, gap: 16 },
-  eye: { position: 'absolute', right: 0, top: 0, width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
+  body: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 24, gap: 20 },
+  eye: { position: 'absolute', right: 2, top: 2, width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
 });

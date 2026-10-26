@@ -1,6 +1,8 @@
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold, DMSans_700Bold, useFonts } from '@expo-google-fonts/dm-sans';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useCallback, useState } from 'react';
+import { Splash } from '@/components/Splash';
 import { SessionProvider, useSession } from '@/lib/session';
 import { color } from '@/lib/theme';
 import { ToastProvider } from '@/lib/toast';
@@ -28,14 +30,25 @@ function Routes() {
   );
 }
 
-export default function RootLayout() {
+function App() {
   const [fontsLoaded] = useFonts({ DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold, DMSans_700Bold });
-  if (!fontsLoaded) return null;
+  const { ready } = useSession();
+  const [splash, setSplash] = useState(true);
+  const hide = useCallback(() => setSplash(false), []);
+  return (
+    <>
+      {fontsLoaded ? <Routes /> : null}
+      {splash ? <Splash fonts={fontsLoaded} ready={fontsLoaded && ready} onDone={hide} /> : null}
+    </>
+  );
+}
+
+export default function RootLayout() {
   return (
     <SessionProvider>
       <ToastProvider>
         <StatusBar style="dark" />
-        <Routes />
+        <App />
       </ToastProvider>
     </SessionProvider>
   );

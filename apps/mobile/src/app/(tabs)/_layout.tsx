@@ -21,15 +21,16 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: color.brand,
         tabBarInactiveTintColor: color.muted,
-        tabBarLabelStyle: { fontFamily: font.medium, fontSize: 13 },
-        tabBarStyle: { borderTopColor: color.hairline },
+        tabBarLabelStyle: { fontFamily: font.semibold, fontSize: 12 },
+        tabBarStyle: { backgroundColor: color.canvas, borderTopColor: color.hairline, borderTopWidth: 1, elevation: 0, shadowOpacity: 0 },
+        tabBarItemStyle: { paddingTop: 4 },
         sceneStyle: { backgroundColor: color.canvas },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Explorar', tabBarIcon: ({ color: c }) => <Compass size={24} color={c} /> }} />
-      <Tabs.Screen name="publish" options={{ title: 'Publicar', tabBarIcon: ({ color: c }) => <CirclePlus size={24} color={c} /> }} />
-      <Tabs.Screen name="mine" options={{ title: 'Mis publicaciones', tabBarIcon: ({ color: c }) => <LayoutList size={24} color={c} /> }} />
-      <Tabs.Screen name="profile" options={{ title: 'Perfil', tabBarIcon: ({ color: c }) => <CircleUser size={24} color={c} /> }} />
+      <Tabs.Screen name="index" options={{ title: 'Explorar', tabBarIcon: ({ color: c, focused }) => <Compass size={24} color={c} strokeWidth={focused ? 2.4 : 2} /> }} />
+      <Tabs.Screen name="publish" options={{ title: 'Publicar', tabBarIcon: ({ color: c, focused }) => <CirclePlus size={24} color={c} strokeWidth={focused ? 2.4 : 2} /> }} />
+      <Tabs.Screen name="mine" options={{ title: 'Mis publicaciones', tabBarIcon: ({ color: c, focused }) => <LayoutList size={24} color={c} strokeWidth={focused ? 2.4 : 2} /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Perfil', tabBarIcon: ({ color: c, focused }) => <CircleUser size={24} color={c} strokeWidth={focused ? 2.4 : 2} /> }} />
     </Tabs>
   );
 }

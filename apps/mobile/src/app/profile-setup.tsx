@@ -130,8 +130,8 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24, gap: 20 },
   photoRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   avatar: { width: 80, height: 80, borderRadius: radius.full, borderWidth: 1, borderColor: color.hairline, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  wa: { flexDirection: 'row', height: 48, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.sm, overflow: 'hidden' },
-  prefix: { fontFamily: font.medium, fontSize: 16, color: color.body, backgroundColor: color.strong, paddingHorizontal: 12, textAlignVertical: 'center', lineHeight: 46, borderRightWidth: 1, borderRightColor: color.hairline },
+  wa: { flexDirection: 'row', height: 52, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, backgroundColor: color.soft, overflow: 'hidden' },
+  prefix: { fontFamily: font.medium, fontSize: 16, color: color.body, backgroundColor: color.strong, paddingHorizontal: 14, textAlignVertical: 'center', lineHeight: 50, borderRightWidth: 1, borderRightColor: color.hairline },
   waInput: { flex: 1, paddingHorizontal: 12, fontFamily: font.regular, fontSize: 16, color: color.ink },
   lock: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
 });

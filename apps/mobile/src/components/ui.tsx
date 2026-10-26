@@ -40,13 +40,13 @@ export function Button({ label, onPress, variant = 'primary', disabled, icon: Ic
         styles.button,
         variant === 'secondary' && styles.buttonSecondary,
         variant === 'text' && styles.buttonText,
-        primary && { backgroundColor: disabled ? color.brandDisabled : pressed ? color.brandPressed : color.brand },
+        primary && { backgroundColor: disabled ? color.strong : pressed ? color.inkPressed : color.ink },
         variant === 'secondary' && pressed && { backgroundColor: color.soft },
         style,
       ]}
     >
-      {Icon ? <Icon size={20} color={primary ? color.canvas : color.ink} /> : null}
-      <Text style={[styles.buttonLabel, primary && { color: color.canvas }, variant === 'text' && styles.underline]}>{label}</Text>
+      {Icon ? <Icon size={20} color={disabled ? color.muted : primary ? color.canvas : color.ink} /> : null}
+      <Text style={[styles.buttonLabel, primary && { color: color.canvas }, disabled && { color: color.muted }, variant === 'text' && styles.underline]}>{label}</Text>
     </Pressable>
   );
 }
@@ -119,12 +119,12 @@ export function Chip({ label, on, onPress, icon: Icon, count }: { label: string;
   return (
     <Pressable accessibilityRole="button" accessibilityState={{ selected: on }} onPress={onPress} style={styles.chipHit}>
       <View style={[styles.chip, on && styles.chipOn]}>
-        {Icon ? <Icon size={16} color={color.ink} /> : null}
-        <Text style={[styles.chipLabel, on && { fontFamily: font.semibold }]} numberOfLines={1}>
+        {Icon ? <Icon size={16} color={on ? color.canvas : color.ink} /> : null}
+        <Text style={[styles.chipLabel, on && styles.chipLabelOn]} numberOfLines={1}>
           {label}
         </Text>
         {count ? (
-          <View style={styles.count}>
+          <View style={[styles.count, on && { backgroundColor: color.brand }]}>
             <Text style={[type.badge, { color: color.canvas }]}>{count}</Text>
           </View>
         ) : null}
@@ -150,10 +150,10 @@ export function VerifiedBadge() {
   );
 }
 
-export function IconCircle({ icon: Icon, size = 64 }: { icon: LucideIcon; size?: number }) {
+export function IconCircle({ icon: Icon, size = 72 }: { icon: LucideIcon; size?: number }) {
   return (
     <View style={[styles.iconCircle, { width: size, height: size }]}>
-      <Icon size={size * 0.44} color={color.ink} />
+      <Icon size={size * 0.42} color={color.brand} />
     </View>
   );
 }
@@ -164,7 +164,7 @@ export function StateView({ icon, title, body, action }: { icon: LucideIcon; tit
     <View style={styles.state}>
       <IconCircle icon={icon} />
       <Text style={[type.h2, { marginTop: 8, textAlign: 'center' }]}>{title}</Text>
-      {body ? <Text style={[type.body, { textAlign: 'center' }]}>{body}</Text> : null}
+      {body ? <Text style={[type.body, { textAlign: 'center', color: color.muted }]}>{body}</Text> : null}
       {action ? <View style={{ marginTop: 8 }}>{action}</View> : null}
     </View>
   );
@@ -185,13 +185,25 @@ export function Skeleton({ style }: { style: StyleProp<ViewStyle> }) {
   return <Animated.View style={[{ backgroundColor: color.strong, borderRadius: radius.sm, opacity }, style]} />;
 }
 
-export function Header({ title, onBack }: { title?: string; onBack?: () => void }) {
+// White circle icon button with a 48pt hit area
+export function RoundButton({ label, onPress, children }: { label: string; onPress: () => void; children: ReactNode }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={styles.iconButton}>
+      {({ pressed }) => <View style={[styles.round, pressed && { backgroundColor: color.soft }]}>{children}</View>}
+    </Pressable>
+  );
+}
+
+export function Header({ title, onBack, right }: { title?: string; onBack?: () => void; right?: ReactNode }) {
   return (
     <View style={styles.header}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={onBack ?? (() => router.back())} style={styles.iconButton}>
-        <ArrowLeft size={24} color={color.ink} />
-      </Pressable>
-      {title ? <Text style={type.title}>{title}</Text> : null}
+      <RoundButton label="Volver" onPress={onBack ?? (() => router.back())}>
+        <ArrowLeft size={20} color={color.ink} />
+      </RoundButton>
+      <Text style={[type.title, styles.headerTitle]} numberOfLines={1} accessibilityRole="header">
+        {title}
+      </Text>
+      {right ?? <View style={styles.iconButton} />}
     </View>
   );
 }
@@ -210,6 +222,7 @@ export function Sheet({ visible, title, onClose, children, footer }: { visible: 
           <View style={[StyleSheet.absoluteFill, { backgroundColor: color.scrim }]} />
         </Pressable>
         <View style={[styles.sheet, !footer && { paddingBottom: bottom }]} accessibilityViewIsModal>
+          <View style={styles.grabber} />
           {title ? (
             <View style={styles.sheetHeader}>
               <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} style={[styles.iconButton, styles.sheetClose]}>
@@ -257,33 +270,37 @@ export function OptionSheet({ visible, title, options, value, onPick, onClose }:
 }
 
 const styles = StyleSheet.create({
-  button: { height: 48, borderRadius: radius.sm, paddingHorizontal: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  buttonSecondary: { backgroundColor: color.canvas, borderWidth: 1, borderColor: color.ink },
+  button: { height: 52, borderRadius: radius.full, paddingHorizontal: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  buttonSecondary: { backgroundColor: color.canvas, borderWidth: 1, borderColor: color.hairline },
   buttonText: { paddingHorizontal: 4, alignSelf: 'flex-start' },
-  buttonLabel: { fontFamily: font.medium, fontSize: 16, color: color.ink },
+  buttonLabel: { fontFamily: font.semibold, fontSize: 16, color: color.ink },
   underline: { textDecorationLine: 'underline' },
   row4: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   field: { gap: 8 },
-  input: { height: 48, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.sm, paddingHorizontal: 12, fontFamily: font.regular, fontSize: 16, color: color.ink, backgroundColor: color.canvas },
+  input: { height: 52, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, paddingHorizontal: 16, fontFamily: font.regular, fontSize: 16, color: color.ink, backgroundColor: color.soft },
   select: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  segmented: { flexDirection: 'row', backgroundColor: color.strong, borderRadius: radius.full, padding: 4, gap: 4 },
-  segment: { flex: 1, height: 40, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
-  segmentOn: { backgroundColor: color.canvas, borderColor: color.hairline },
+  segmented: { flexDirection: 'row', backgroundColor: color.soft, borderRadius: radius.full, padding: 4, gap: 4 },
+  segment: { flex: 1, height: 44, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
+  segmentOn: { backgroundColor: color.canvas, ...shadow, shadowOpacity: 0.06, elevation: 2 },
   segmentLabel: { fontFamily: font.medium, fontSize: 14, color: color.body },
   chipHit: { height: 48, justifyContent: 'center' },
-  chip: { height: 36, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, borderRadius: radius.full, borderWidth: 1, borderColor: color.hairline, backgroundColor: color.canvas },
-  chipOn: { borderColor: color.ink, backgroundColor: color.strong },
-  chipLabel: { fontFamily: font.regular, fontSize: 14, color: color.ink },
+  chip: { height: 38, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, borderRadius: radius.full, backgroundColor: color.soft },
+  chipOn: { backgroundColor: color.ink },
+  chipLabel: { fontFamily: font.medium, fontSize: 14, color: color.ink },
+  chipLabelOn: { fontFamily: font.semibold, color: color.canvas },
   count: { minWidth: 20, height: 20, borderRadius: radius.full, backgroundColor: color.ink, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   pill: { alignSelf: 'flex-start', height: 24, paddingHorizontal: 10, borderRadius: radius.full, justifyContent: 'center' },
   verified: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 4, height: 24, paddingHorizontal: 8, borderWidth: 1, borderColor: color.verified, borderRadius: radius.full },
-  iconCircle: { borderRadius: radius.full, backgroundColor: color.strong, alignItems: 'center', justifyContent: 'center' },
+  iconCircle: { borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center' },
   state: { paddingVertical: 64, paddingHorizontal: 32, alignItems: 'center', gap: 12 },
-  header: { height: 56, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 4 },
+  header: { height: 60, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 },
+  headerTitle: { flex: 1, textAlign: 'center' },
   iconButton: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
+  round: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: color.canvas, borderWidth: 1, borderColor: color.hairline, alignItems: 'center', justifyContent: 'center' },
   footer: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: color.hairline, backgroundColor: color.canvas },
   sheetRoot: { flex: 1, justifyContent: 'flex-end' },
-  sheet: { backgroundColor: color.canvas, borderTopLeftRadius: radius.md, borderTopRightRadius: radius.md, maxHeight: '90%', ...shadow },
+  sheet: { backgroundColor: color.canvas, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, maxHeight: '90%', ...shadow },
+  grabber: { alignSelf: 'center', width: 36, height: 5, borderRadius: radius.full, backgroundColor: color.hairline, marginTop: 8 },
   sheetHeader: { height: 56, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 1, borderBottomColor: color.hairline },
   sheetClose: { position: 'absolute', left: 4 },
   sheetBody: { padding: 16, gap: 24 },

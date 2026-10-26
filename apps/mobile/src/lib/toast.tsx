@@ -29,6 +29,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 export const useToast = () => use(ToastContext);
 
 const styles = StyleSheet.create({
-  toast: { position: 'absolute', left: 16, right: 16, bottom: 96, backgroundColor: color.ink, borderRadius: radius.sm, padding: 14 },
+  toast: { position: 'absolute', left: 16, right: 16, bottom: 96, backgroundColor: color.ink, borderRadius: radius.md, padding: 16 },
   text: { color: color.canvas },
 });

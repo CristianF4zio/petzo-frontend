@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   body: { padding: 16, gap: 20 },
   two: { flexDirection: 'row', gap: 8 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  textarea: { height: 180, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.sm, padding: 12, fontFamily: font.regular, fontSize: 16, lineHeight: 24, color: color.ink, textAlignVertical: 'top' },
+  textarea: { height: 180, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, backgroundColor: color.soft, padding: 16, fontFamily: font.regular, fontSize: 16, lineHeight: 24, color: color.ink, textAlignVertical: 'top' },
   review: { borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, overflow: 'hidden' },
   note: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', backgroundColor: color.soft, borderRadius: radius.md, padding: 16 },
   quota: { height: 4, borderRadius: radius.full, backgroundColor: color.strong, overflow: 'hidden' },
