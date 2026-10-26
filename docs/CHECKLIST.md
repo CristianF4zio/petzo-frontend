@@ -9,7 +9,7 @@ Repos (exactamente dos, como pide el reto): `petzo-backend` (API, n8n, Stagehand
 - [x] B0 Supabase + modelo: Flyway V1 (baseline) + V2 (trigger de perfiles); un registro nuevo crea su perfil
 - [x] B1 API core: JWT, perfiles, mascotas, fotos, catálogo, límite de plan, admin, Swagger (tests en verde)
 - [x] B2 Solicitudes + IA: IA real por OpenRouter (`gpt-4.1-mini`); match verificado en vivo el 25-oct
-- [~] B3 Automatizaciones: flujos n8n importados y activos en staging; moderación (ejecución 417) e importación con Stagehand corridas en vivo. Falta el correo del flujo 2: la credencial SMTP necesita contraseña (Cris)
+- [x] B3 Automatizaciones: los 2 flujos de n8n corren en staging disparados por la API (moderación 426, correos 427–429, 26-oct) e importación con Stagehand en vivo
 - [x] B4 API lista: 27/27 tests, Dockerfile y colección `.http`; corre en local (`:8090`) y pasó el recorrido completo por la API el 26-oct. El deploy en Render queda fuera de alcance (demo local)
 
 ## F1 App móvil (Expo)
@@ -69,7 +69,7 @@ Fuera de la app (otros repos o v2)
 - [x] `petzo-backend` y `petzo-frontend` públicos (verificado con la API de GitHub sin sesión, 26-oct)
 - [x] Repo renombrado en GitHub a `petzo-frontend`
 - [x] IA: ya no hace falta `ANTHROPIC_API_KEY`; todo va por la clave de OpenRouter (DECISIONS §9)
-- [~] Flujos de n8n importados y activos en staging con sus URLs en `.env`; el flujo 1 ya corrió. Falta la contraseña en la credencial **Petzo SMTP** para el flujo 2, y levantar el túnel cada vez que cambia la red
+- [x] Flujos de n8n activos en staging: moderación (callback por el túnel) y correo con la cuenta de desarrollo Ethereal. El túnel se levanta de nuevo si cambia la red (la IA actualiza la URL en n8n)
 - [ ] Site URL de Supabase = `http://192.168.0.159:8090` (la IP de la PC cambió el 26-oct; sin esto falla el login con Google)
 - [-] Servicio Docker en Render: fuera de alcance (demo local)
 - [-] Sesión del CLI de Expo para EAS: solo hacía falta para el APK; Expo Go usa `EXPO_TOKEN` en el proceso
