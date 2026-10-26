@@ -73,3 +73,5 @@ Fuera de la app (otros repos o v2)
 
 ## Recortables (en este orden, si hay atraso)
 - [ ] HU-15 dashboard → HU-16 favoritos → HU-11 reportes → HU-06 match
+
+- [x] Rediseño (26-oct): app con splash animado, onboarding, inicio con categorías y grilla, detalle con chips; panel con barra lateral, buscador, tarjetas y splash. Lógica y llamadas a la API sin cambios (comparadas); tsc, export, build y lint en verde
