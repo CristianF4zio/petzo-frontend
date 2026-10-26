@@ -66,7 +66,7 @@ Fuera de la app (otros repos o v2)
 ## Pendientes de Cris
 - [x] Repos `petzo-backend` y `petzo-frontend` en GitHub
 - [x] `petzo-web` archivado en GitHub (confirmado por la API de GitHub el 26-oct)
-- [ ] Hacer públicos `petzo-backend` y `petzo-frontend` para quien evalúa (hoy privados; la IA no tiene permiso)
+- [x] `petzo-backend` y `petzo-frontend` públicos (verificado con la API de GitHub sin sesión, 26-oct)
 - [x] Repo renombrado en GitHub a `petzo-frontend`
 - [x] IA: ya no hace falta `ANTHROPIC_API_KEY`; todo va por la clave de OpenRouter (DECISIONS §9)
 - [~] Flujos de n8n importados y activos en staging con sus URLs en `.env`; el flujo 1 ya corrió. Falta la contraseña en la credencial **Petzo SMTP** para el flujo 2, y levantar el túnel cada vez que cambia la red
