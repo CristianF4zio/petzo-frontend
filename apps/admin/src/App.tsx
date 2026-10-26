@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { BadgeCheck, BarChart3, Download, Flag, LogOut, RotateCw, Search, ShieldAlert, ShieldCheck, Users as UsersIcon } from 'lucide-react'
+import { BadgeCheck, Download, Flag, LogOut, RotateCw, Search, ShieldAlert, ShieldCheck, Users as UsersIcon } from 'lucide-react'
 import { googleClaim, googleStart, login, logout, message, useAuth, useLoad } from './api.ts'
 import { Logo, Splash } from './Splash.tsx'
-import { Foundations, Imports, Moderation, Reports, Stats, Users, type Profile } from './views.tsx'
+import { Foundations, Imports, Moderation, Reports, Users, type Profile } from './views.tsx'
 
 const tabs = {
   moderation: ['Moderación', Moderation, ShieldCheck, 'Aprueba o rechaza las publicaciones en revisión.'],
@@ -10,7 +10,6 @@ const tabs = {
   users: ['Usuarios', Users, UsersIcon, 'Gestiona planes y suspende cuentas.'],
   reports: ['Reportes', Reports, Flag, 'Revisa los reportes abiertos de la comunidad.'],
   imports: ['Importaciones', Imports, Download, 'Importa publicaciones de una fundación con Stagehand.'],
-  stats: ['Métricas', Stats, BarChart3, 'Resumen de la actividad de la plataforma.'],
 } as const
 
 const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()

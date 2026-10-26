@@ -314,30 +314,3 @@ export function Imports() {
     </>
   )
 }
-
-const stats = {
-  active_pets: 'Publicaciones activas',
-  pending_review: 'En revisión',
-  rejected: 'Rechazadas',
-  adopted: 'Adoptadas',
-  requests: 'Solicitudes',
-  users: 'Usuarios',
-}
-
-export function Stats() {
-  const load = useLoad<Record<keyof typeof stats, number>>('/admin/stats')
-  return (
-    <Loaded load={load}>
-      {data => (
-        <div className="stats">
-          {Object.entries(stats).map(([key, label]) => (
-            <div key={key} className="card stat">
-              <strong>{data[key as keyof typeof stats]}</strong>
-              <span className="muted">{label}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </Loaded>
-  )
-}

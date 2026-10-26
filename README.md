@@ -5,7 +5,7 @@ Clientes de **Petzo**, adopción de perros y gatos en Gran Caracas. Los dos cons
 | Carpeta | Qué es |
 | --- | --- |
 | `apps/mobile` | App React Native + Expo (TypeScript, Expo Router). **Plataforma elegida: iOS con Expo Go** en un iPhone físico, porque es el teléfono donde probé de verdad y Expo Go no pide cuenta de desarrollador ni tiendas. El mismo código corre en Android (probado en emulador) |
-| `apps/admin` | **Panel admin web** React + Vite: moderación, fundaciones y planes, usuarios, reportes, importaciones (Stagehand) y métricas |
+| `apps/admin` | **Panel admin web** React + Vite: moderación, fundaciones y planes, usuarios, reportes e importaciones (Stagehand) |
 | `docs/` | Checklist, diseño y logs de skills y agentes |
 
 - **Registro de decisiones:** [petzo-backend/docs/DECISIONS.md](https://github.com/CristianF4zio/petzo-backend/blob/main/docs/DECISIONS.md)

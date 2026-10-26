@@ -1,0 +1,17 @@
+- generic [ref=e2]:
+  - generic [aria-hidden] [ref=e3]:
+    - strong [ref=e12]: Petzo
+    - generic [ref=e13]: Panel administrativo
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - heading "Petzo · Panel admin" [level=1] [ref=e23]
+        - paragraph [ref=e24]: Inicia sesión con tu cuenta de administrador.
+      - generic [ref=e25]:
+        - text: Correo
+        - textbox "Correo" [ref=e26]
+      - generic [ref=e27]:
+        - text: Contraseña
+        - textbox "Contraseña" [ref=e28]
+      - button "Entrar" [ref=e29] [cursor=pointer]
+      - button "Continuar con Google" [ref=e30] [cursor=pointer]
