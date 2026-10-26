@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { BadgeCheck, Check, Download, Inbox, RotateCw, Trash2, X } from 'lucide-react'
 import { api, ApiError, useAction, useLoad, type Load } from './api.ts'
 
 export type Profile = {
@@ -36,10 +37,14 @@ function Loaded<T>({ load, error, children }: { load: Load<T>; error?: string; c
   if (load.error)
     return (
       <p className="error" role="alert">
-        {load.error} <button onClick={load.reload}>Reintentar</button>
+        {load.error}{' '}
+        <button className="secondary" onClick={load.reload}>
+          <RotateCw size={16} />
+          Reintentar
+        </button>
       </p>
     )
-  if (load.data === undefined) return <p className="muted">Cargando…</p>
+  if (load.data === undefined) return <p className="muted" role="status">Cargando…</p>
   return (
     <>
       {error && <p className="error" role="alert">{error}</p>}
@@ -48,7 +53,14 @@ function Loaded<T>({ load, error, children }: { load: Load<T>; error?: string; c
   )
 }
 
-const empty = (text: string) => <p className="muted">{text}</p>
+const empty = (text: string) => (
+  <div className="empty">
+    <Inbox size={28} />
+    <p>{text}</p>
+  </div>
+)
+
+const risk = (score: number | null) => (score === null ? '' : score >= 70 ? 'high' : score >= 40 ? 'mid' : 'low')
 
 export function Moderation() {
   const load = useLoad<Pet[]>('/admin/moderation')
@@ -63,19 +75,27 @@ export function Moderation() {
         pets.length
           ? pets.map(p => (
               <article key={p.id} className="card">
-                <div className="photos">
-                  {p.photos.map(ph => <img key={ph.id} src={ph.url} alt={p.name} />)}
-                </div>
-                <h3>{p.name} <span className="muted">· {p.species === 'dog' ? 'Perro' : 'Gato'}</span></h3>
+                {p.photos.length > 0 && (
+                  <div className="photos">
+                    {p.photos.map(ph => <img key={ph.id} src={ph.url} alt={p.name} width={140} height={140} loading="lazy" />)}
+                  </div>
+                )}
+                <h2>{p.name} <span className="muted">· {p.species === 'dog' ? 'Perro' : 'Gato'}</span></h2>
                 <p className="muted">Publicado por {p.publisher?.name ?? '—'}</p>
-                <p><b>Riesgo:</b> {p.riskScore ?? '—'} / 100</p>
-                <p><b>Motivo:</b> {p.moderationReason ?? '—'}</p>
+                <p className="ai">
+                  <span className={`badge ${risk(p.riskScore)}`}>Riesgo {p.riskScore ?? '—'} / 100</span>
+                  <span><b>Motivo:</b> {p.moderationReason ?? '—'}</span>
+                </p>
                 {p.description && <p>{p.description}</p>}
                 <div className="actions">
                   <button disabled={act.busy} onClick={() => act.run(() => api(`/admin/pets/${p.id}/approve?version=${p.version}`, 'POST'))}>
+                    <Check size={16} />
                     Aprobar
                   </button>
-                  <button className="danger" disabled={act.busy} onClick={() => reject(p)}>Rechazar</button>
+                  <button className="danger" disabled={act.busy} onClick={() => reject(p)}>
+                    <X size={16} />
+                    Rechazar
+                  </button>
                 </div>
               </article>
             ))
@@ -94,7 +114,7 @@ export function Foundations() {
         list.length
           ? list.map(f => (
               <article key={f.id} className="card">
-                <h3>{f.foundationName}</h3>
+                <h2>{f.foundationName}</h2>
                 <p className="muted">
                   {f.foundationInstagram && `@${f.foundationInstagram.replace(/^@/, '')} · `}
                   {f.fullName}
@@ -102,6 +122,7 @@ export function Foundations() {
                 {f.foundationBio && <p>{f.foundationBio}</p>}
                 <div className="actions">
                   <button disabled={act.busy} onClick={() => act.run(() => api(`/admin/foundations/${f.id}/verify`, 'POST'))}>
+                    <BadgeCheck size={16} />
                     Verificar (plan Pro)
                   </button>
                   <button
@@ -109,6 +130,7 @@ export function Foundations() {
                     disabled={act.busy}
                     onClick={() => confirm(`¿Rechazar la verificación de ${f.foundationName}?`) && act.run(() => api(`/admin/foundations/${f.id}/reject`, 'POST'))}
                   >
+                    <X size={16} />
                     Rechazar
                   </button>
                 </div>
@@ -132,40 +154,46 @@ export function Users() {
     <Loaded load={load} error={act.error}>
       {users =>
         users.length ? (
-          <table>
-            <thead>
-              <tr><th>Nombre</th><th>Tipo</th><th>Verificación</th><th>Plan</th><th>Cuenta</th></tr>
-            </thead>
-            <tbody>
-              {users.map(u => (
-                <tr key={u.id}>
-                  <td>{u.fullName ?? '—'}{u.role === 'admin' && <span className="muted"> (admin)</span>}</td>
-                  <td>{u.accountType === 'foundation' ? u.foundationName ?? 'Fundación' : 'Persona'}</td>
-                  <td>{verification[u.verificationStatus]}</td>
-                  <td>
-                    <select
-                      aria-label={`Plan de ${u.fullName ?? u.id}`}
-                      value={u.plan}
-                      disabled={act.busy}
-                      onChange={e => act.run(() => api(`/admin/users/${u.id}/plan`, 'PUT', { plan: e.target.value }))}
-                    >
-                      <option value="free">Gratis</option>
-                      <option value="pro">Pro</option>
-                    </select>
-                  </td>
-                  <td>
-                    <div className="actions">
-                      {u.suspended ? (
-                        <button disabled={act.busy} onClick={() => suspend(u, false)}>Reactivar</button>
-                      ) : (
-                        <button className="danger" disabled={act.busy} onClick={() => suspend(u, true)}>Suspender</button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="table-card">
+            <table>
+              <thead>
+                <tr><th>Nombre</th><th>Tipo</th><th>Verificación</th><th>Plan</th><th>Cuenta</th></tr>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u.id}>
+                    <td>{u.fullName ?? '—'}{u.role === 'admin' && <span className="muted"> (admin)</span>}</td>
+                    <td>{u.accountType === 'foundation' ? u.foundationName ?? 'Fundación' : 'Persona'}</td>
+                    <td>{verification[u.verificationStatus]}</td>
+                    <td>
+                      <select
+                        aria-label={`Plan de ${u.fullName ?? u.id}`}
+                        value={u.plan}
+                        disabled={act.busy}
+                        onChange={e => act.run(() => api(`/admin/users/${u.id}/plan`, 'PUT', { plan: e.target.value }))}
+                      >
+                        <option value="free">Gratis</option>
+                        <option value="pro">Pro</option>
+                      </select>
+                    </td>
+                    <td>
+                      <span className="toggle">
+                        <button
+                          role="switch"
+                          className="switch"
+                          aria-checked={!u.suspended}
+                          aria-label={`Cuenta activa de ${u.fullName ?? u.id}`}
+                          disabled={act.busy}
+                          onClick={() => suspend(u, !u.suspended)}
+                        />
+                        <span className={u.suspended ? 'muted' : undefined}>{u.suspended ? 'Suspendida' : 'Activa'}</span>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           empty('No hay usuarios.')
         )
@@ -192,26 +220,31 @@ export function Reports() {
     <Loaded load={load} error={act.error}>
       {reports =>
         reports.length ? (
-          <table>
-            <thead>
-              <tr><th>Publicación</th><th>Motivo</th><th>Fecha</th><th /></tr>
-            </thead>
-            <tbody>
-              {reports.map(r => (
-                <tr key={r.id}>
-                  <td>{r.petName}</td>
-                  <td>{r.reason}</td>
-                  <td>{date(r.createdAt)}</td>
-                  <td>
-                    <div className="actions">
-                      <button disabled={act.busy} onClick={() => act.run(() => api(`/admin/reports/${r.id}/resolve`, 'POST'))}>Descartar</button>
-                      <button className="danger" disabled={act.busy} onClick={() => takeDown(r)}>Retirar publicación</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="table-card">
+            <table>
+              <thead>
+                <tr><th>Publicación</th><th>Motivo</th><th>Fecha</th><th><span className="sr-only">Acciones</span></th></tr>
+              </thead>
+              <tbody>
+                {reports.map(r => (
+                  <tr key={r.id}>
+                    <td>{r.petName}</td>
+                    <td>{r.reason}</td>
+                    <td>{date(r.createdAt)}</td>
+                    <td>
+                      <div className="actions">
+                        <button className="secondary" disabled={act.busy} onClick={() => act.run(() => api(`/admin/reports/${r.id}/resolve`, 'POST'))}>Descartar</button>
+                        <button className="danger" disabled={act.busy} onClick={() => takeDown(r)}>
+                          <Trash2 size={16} />
+                          Retirar publicación
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           empty('No hay reportes abiertos.')
         )
@@ -242,32 +275,37 @@ export function Imports() {
   }
   return (
     <>
-      <form className="row" onSubmit={submit}>
+      <form className="card row" onSubmit={submit}>
         <label>
           Fundación (identificador)
           <input value={handle} onChange={e => setHandle(e.target.value)} placeholder="patas-del-avila" required />
         </label>
-        <button disabled={act.busy || !handle.trim()}>Importar</button>
+        <button disabled={act.busy || !handle.trim()}>
+          <Download size={16} />
+          Importar
+        </button>
       </form>
       <Loaded load={load} error={act.error}>
         {jobs =>
           jobs.length ? (
-            <table>
-              <thead>
-                <tr><th>Fundación</th><th>Estado</th><th>Creadas</th><th>Error</th><th>Fecha</th></tr>
-              </thead>
-              <tbody>
-                {jobs.map(j => (
-                  <tr key={j.id}>
-                    <td>{j.instagramHandle}</td>
-                    <td>{importStatus[j.status]}</td>
-                    <td>{j.petsCreated}</td>
-                    <td>{j.error ?? '—'}</td>
-                    <td>{date(j.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="table-card">
+              <table>
+                <thead>
+                  <tr><th>Fundación</th><th>Estado</th><th>Creadas</th><th>Error</th><th>Fecha</th></tr>
+                </thead>
+                <tbody>
+                  {jobs.map(j => (
+                    <tr key={j.id}>
+                      <td>{j.instagramHandle}</td>
+                      <td><span className={`badge ${j.status}`}>{importStatus[j.status]}</span></td>
+                      <td>{j.petsCreated}</td>
+                      <td>{j.error ?? '—'}</td>
+                      <td>{date(j.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             empty('Aún no hay importaciones.')
           )
@@ -293,7 +331,7 @@ export function Stats() {
       {data => (
         <div className="stats">
           {Object.entries(stats).map(([key, label]) => (
-            <div key={key} className="card">
+            <div key={key} className="card stat">
               <strong>{data[key as keyof typeof stats]}</strong>
               <span className="muted">{label}</span>
             </div>
