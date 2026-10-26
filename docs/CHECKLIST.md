@@ -1,7 +1,7 @@
 # Checklist
 
 Estado por sprint según SPEC §16 (D-21, D-27), con cada ítem atado a su historia de usuario (SPEC §7) y requerimiento (§5).
-`[x]` hecho y probado (`tsc` + bundle de Metro + endpoint con test en verde en el backend) · `[~]` parcial o depende de Cris · `[ ]` pendiente.
+`[x]` hecho y probado (`tsc` + bundle de Metro + endpoint con test en verde en el backend) · `[~]` parcial o depende de Cris · `[ ]` pendiente · `[-]` fuera de alcance, con su causa.
 La prueba manual en el teléfono (Expo Go contra la API local) va aparte, al final de F1.
 Repos (exactamente dos, como pide el reto): `petzo-backend` (API, n8n, Stagehand; estado del reto en su `docs/CHECKLIST.md`) y `petzo-frontend` (este: app en `apps/mobile`, panel en `apps/admin`).
 
@@ -9,8 +9,8 @@ Repos (exactamente dos, como pide el reto): `petzo-backend` (API, n8n, Stagehand
 - [x] B0 Supabase + modelo: Flyway V1 (baseline) + V2 (trigger de perfiles); un registro nuevo crea su perfil
 - [x] B1 API core: JWT, perfiles, mascotas, fotos, catálogo, límite de plan, admin, Swagger (tests en verde)
 - [x] B2 Solicitudes + IA: IA real por OpenRouter (`gpt-4.1-mini`); match verificado en vivo el 25-oct
-- [~] B3 Automatizaciones: `/internal/*`, flujos n8n (OpenRouter + Gmail) y worker Stagehand listos; Stagehand corrió en Chrome real. Faltan importar y ejecutar los flujos en n8n staging (sin ellos las publicaciones quedan en revisión para el admin, RNF-08)
-- [~] B4 API lista: tests (27/27), Dockerfile y colección `.http` listos; corre en local (`:8090`); el deploy en Render es opcional mientras la demo sea local
+- [~] B3 Automatizaciones: flujos n8n importados y activos en staging; moderación (ejecución 417) e importación con Stagehand corridas en vivo. Falta el correo del flujo 2: la credencial SMTP necesita contraseña (Cris)
+- [x] B4 API lista: 27/27 tests, Dockerfile y colección `.http`; corre en local (`:8090`) y pasó el recorrido completo por la API el 26-oct. El deploy en Render queda fuera de alcance (demo local)
 
 ## F1 App móvil (Expo)
 Base
@@ -37,7 +37,8 @@ Historias Should / Could
 - [x] HU-16 Favoritos: agregar, quitar y lista en el perfil (RF-14)
 
 Prueba en el teléfono
-- [ ] Flujo completo en Expo Go contra la API local: registro → perfil → publicar → aprobar (panel o n8n) → solicitar → aprobar → WhatsApp
+- [x] Flujo completo contra la API local: en el iPhone (25-oct: login, publicar, catálogo) y por la API de punta a punta (26-oct, 20 pasos: registro → perfil → publicar → moderación → aprobar → solicitar → aprobar → WhatsApp; `petzo-backend/docs/evidencia/e2e/`)
+- [~] Revisar en el iPhone el rediseño con la paleta nueva (Cris; la lógica y las llamadas a la API no cambiaron, comparadas antes/después)
 
 Fuera de la app (otros repos o v2)
 - HU-13, HU-14, HU-15 están en el panel admin (`apps/admin`, F2)
@@ -50,13 +51,13 @@ Fuera de la app (otros repos o v2)
 - [x] HU-12 / RF-21 Fundaciones: verificar o rechazar; plan Gratis o Pro
 - [x] RF-22 Usuarios (suspender o reactivar) y reportes (descartar o retirar la publicación)
 - [x] HU-14 Importaciones: lanzar y ver el progreso (se refresca cada 5 s)
-- [x] HU-15 Métricas
+- [-] HU-15 Métricas: retirada del panel el 26-oct a pedido de Cris (el endpoint `/api/admin/stats` sigue en la API)
 - [x] `npm run build` y `npm run lint` OK
 - [x] Login en vivo por la API y guardia de rol: un usuario normal ve "Tu cuenta no tiene permisos de administrador" (`docs/evidencia/panel-no-admin.png`)
 - [x] Probar las vistas con un admin real: el admin entra con Google, modera y lanza importaciones (25-oct)
 
 ## F3 Entrega
-- [ ] APK con EAS (opcional mientras la demo sea local)
+- [-] APK con EAS: fuera de alcance; el reto acepta Expo Go en dispositivo (DECISIONS §2)
 - [x] Prueba de punta a punta (25-oct: iPhone, emulador Android y panel contra Supabase real)
 - [x] READMEs y evidencias (`docs/evidencia/`)
 - [x] Auditoría final (26-oct): ningún cliente toca Supabase y Google coincide con la API; 4 arreglos (pantalla en blanco sin API, refresh vs. cierre de sesión, error claro sin URL de la API, "Retirar" en reportes repetidos); `tsc`, build, lint y `expo export` en verde
@@ -64,14 +65,16 @@ Fuera de la app (otros repos o v2)
 
 ## Pendientes de Cris
 - [x] Repos `petzo-backend` y `petzo-frontend` en GitHub
-- [~] Archivar `petzo-web` en GitHub (el panel ya vive en `apps/admin`): confirmar que quedó archivado
+- [x] `petzo-web` archivado en GitHub (confirmado por la API de GitHub el 26-oct)
+- [ ] Hacer públicos `petzo-backend` y `petzo-frontend` para quien evalúa (hoy privados; la IA no tiene permiso)
 - [x] Repo renombrado en GitHub a `petzo-frontend`
 - [x] IA: ya no hace falta `ANTHROPIC_API_KEY`; todo va por la clave de OpenRouter (DECISIONS §9)
-- [~] Flujos de n8n importados y activos en staging con sus URLs en `.env`; el flujo 1 ya corrió. Falta la contraseña de Gmail en la credencial **Petzo SMTP** para el flujo 2
-- [ ] Servicio Docker en Render (solo si la demo deja de ser local)
-- [ ] Sesión del CLI de Expo (`npx expo login` o `EXPO_TOKEN`) para EAS (solo para el APK)
+- [~] Flujos de n8n importados y activos en staging con sus URLs en `.env`; el flujo 1 ya corrió. Falta la contraseña en la credencial **Petzo SMTP** para el flujo 2, y levantar el túnel cada vez que cambia la red
+- [ ] Site URL de Supabase = `http://192.168.0.159:8090` (la IP de la PC cambió el 26-oct; sin esto falla el login con Google)
+- [-] Servicio Docker en Render: fuera de alcance (demo local)
+- [-] Sesión del CLI de Expo para EAS: solo hacía falta para el APK; Expo Go usa `EXPO_TOKEN` en el proceso
 
-## Recortables (en este orden, si hay atraso)
-- [ ] HU-15 dashboard → HU-16 favoritos → HU-11 reportes → HU-06 match
+## Recortables
+- [x] Nada se recortó de las historias: favoritos (HU-16), reportes (HU-11) y match (HU-06) están hechos; solo el panel de métricas (HU-15) se retiró a pedido
 
 - [x] Rediseño (26-oct): app con splash animado, onboarding, inicio con categorías y grilla, detalle con chips; panel con barra lateral, buscador, tarjetas y splash. Lógica y llamadas a la API sin cambios (comparadas); tsc, export, build y lint en verde
