@@ -1,17 +1,29 @@
-import { Image } from 'expo-image';
+import { FlashList } from '@shopify/flash-list';
 import { router, useFocusEffect } from 'expo-router';
-import { CloudAlert, Heart, RefreshCw } from 'lucide-react-native';
+import { CloudAlert, Heart, RefreshCw, Search } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { petMeta } from '@/components/PetCard';
+import { PetCard } from '@/components/PetCard';
 import { Button, Header, Skeleton, StateView } from '@/components/ui';
 import { api, type Pet } from '@/lib/api';
 import { useSession } from '@/lib/session';
-import { color, radius, type } from '@/lib/theme';
+import { color, radius } from '@/lib/theme';
+import { useToast } from '@/lib/toast';
+
+function SkeletonCard() {
+  return (
+    <View style={{ flex: 1, gap: 8 }}>
+      <Skeleton style={{ aspectRatio: 1, borderRadius: radius.md }} />
+      <Skeleton style={{ height: 16, width: '60%', marginTop: 2 }} />
+      <Skeleton style={{ height: 12, width: '80%' }} />
+    </View>
+  );
+}
 
 export default function Favorites() {
-  const { zoneName } = useSession();
+  const { zoneName, favIds, toggleFav } = useSession();
+  const say = useToast();
   const [pets, setPets] = useState<Pet[] | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -21,43 +33,52 @@ export default function Favorites() {
   }, []);
   useFocusEffect(load);
 
+  const onOpen = useCallback((id: string) => router.push(`/pet/${id}`), []);
+  // Unsaved pets stay listed until the next visit, so a second tap undoes it
+  const onFav = useCallback((id: string) => toggleFav(id).catch(() => say('No pudimos guardar el favorito.')), [toggleFav, say]);
+
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       <Header title="Favoritos" />
-      <ScrollView contentContainerStyle={styles.body}>
-        {failed ? (
-          <StateView icon={CloudAlert} title="No pudimos cargar tus favoritos" action={<Button label="Reintentar" variant="secondary" icon={RefreshCw} onPress={load} />} />
-        ) : !pets ? (
-          <Skeleton style={{ height: 96, borderRadius: radius.md }} />
-        ) : pets.length === 0 ? (
-          <StateView
-            icon={Heart}
-            title="Aún no tienes favoritos"
-            body="Toca el corazón en cualquier peludo para guardarlo aquí."
-            action={<Button label="Explorar peludos" variant="secondary" onPress={() => router.navigate('/')} />}
-          />
-        ) : (
-          pets.map((p) => (
-            <Pressable key={p.id} accessibilityRole="button" accessibilityLabel={`Ver a ${p.name}`} onPress={() => router.push(`/pet/${p.id}`)} style={styles.card}>
-              <Image source={p.photos[0]?.url} style={styles.thumb} contentFit="cover" />
-              <View style={{ flex: 1, gap: 4 }}>
-                <Text style={type.title} numberOfLines={1}>
-                  {p.name}
-                </Text>
-                <Text style={type.small}>{petMeta(p)}</Text>
-                <Text style={type.small}>{zoneName(p.municipalityId)}</Text>
-              </View>
-            </Pressable>
-          ))
-        )}
-      </ScrollView>
+      {pets?.length && !failed ? (
+        <FlashList
+          data={pets}
+          numColumns={2}
+          keyExtractor={(p) => p.id}
+          contentContainerStyle={styles.body}
+          renderItem={({ item, index }) => (
+            <View style={index % 2 ? styles.right : styles.left}>
+              <PetCard pet={item} zone={zoneName(item.municipalityId)} fav={favIds.has(item.id)} onOpen={onOpen} onFav={onFav} />
+            </View>
+          )}
+        />
+      ) : (
+        <ScrollView contentContainerStyle={styles.body}>
+          {failed ? (
+            <StateView icon={CloudAlert} title="No pudimos cargar tus favoritos" action={<Button label="Reintentar" variant="secondary" icon={RefreshCw} onPress={load} />} />
+          ) : !pets ? (
+            <View style={styles.skeletonRow}>
+              <SkeletonCard />
+              <SkeletonCard />
+            </View>
+          ) : (
+            <StateView
+              icon={Heart}
+              title="Aún no tienes favoritos"
+              body="Toca el corazón en cualquier peludo para guardarlo aquí."
+              action={<Button label="Explorar peludos" icon={Search} onPress={() => router.navigate('/')} />}
+            />
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: color.canvas },
-  body: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24, gap: 12 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, padding: 12 },
-  thumb: { width: 72, height: 72, borderRadius: radius.md, backgroundColor: color.strong },
+  body: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24 },
+  skeletonRow: { flexDirection: 'row', gap: 16 },
+  left: { paddingRight: 8, paddingBottom: 20 },
+  right: { paddingLeft: 8, paddingBottom: 20 },
 });

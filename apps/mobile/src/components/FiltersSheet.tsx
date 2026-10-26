@@ -48,8 +48,8 @@ export function FiltersSheet({ visible, filters, onApply, onClose }: Props) {
       onClose={onClose}
       footer={
         <View style={styles.footer}>
-          <Button label="Limpiar" variant="text" onPress={() => setDraft(DEFAULT_FILTERS)} />
-          <Button label={applyLabel} disabled={count === 0} onPress={() => onApply(draft)} />
+          <Button label="Limpiar" variant="secondary" onPress={() => setDraft(DEFAULT_FILTERS)} style={{ flex: 1 }} />
+          <Button label={applyLabel} disabled={count === 0} onPress={() => onApply(draft)} style={{ flex: 2 }} />
         </View>
       }
     >
@@ -77,8 +77,11 @@ export function FiltersSheet({ visible, filters, onApply, onClose }: Props) {
           onChange={(v) => set({ sex: v })}
         />
       </View>
-      <View style={{ gap: 4 }}>
-        <Text style={type.title}>Tamaño</Text>
+      <View style={styles.group}>
+        <View style={styles.head}>
+          <Text style={type.title}>Tamaño</Text>
+          <Text style={type.small}>Puedes elegir varios</Text>
+        </View>
         <View style={styles.wrap}>
           {(Object.keys(SIZE) as Size[]).map((s) => (
             <Chip key={s} label={SIZE[s]} on={draft.sizes.includes(s)} onPress={() => toggleSize(s)} />
@@ -124,9 +127,10 @@ export function FiltersSheet({ visible, filters, onApply, onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
-  footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  group: { gap: 8 },
-  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  ages: { flexDirection: 'row', gap: 8 },
-  age: { flex: 1, gap: 4 },
+  footer: { flexDirection: 'row', gap: 12 },
+  group: { gap: 12 },
+  head: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 8, marginVertical: -6 },
+  ages: { flexDirection: 'row', gap: 12 },
+  age: { flex: 1, gap: 6 },
 });

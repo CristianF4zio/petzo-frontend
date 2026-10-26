@@ -1,10 +1,10 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Camera, Lock, MapPin } from 'lucide-react-native';
+import { Camera, ChevronDown, Lock, MapPin } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Field, FieldError, Footer, Header, Input, OptionSheet, SelectButton } from '@/components/ui';
+import { Button, Field, FieldError, Footer, Header, Input, OptionSheet } from '@/components/ui';
 import { ApiError, api, upload } from '@/lib/api';
 import { formatWhatsapp, initials, localWhatsapp } from '@/lib/format';
 import { pickAvatar, type LocalPhoto } from '@/lib/photos';
@@ -60,32 +60,44 @@ export default function ProfileSetup() {
   };
 
   const photoUri = avatar?.uri ?? profile?.avatarUrl;
+  const pick = async () => setAvatar((await pickAvatar()) ?? avatar);
+  const zoneLabel = zoneName(Number(zona));
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       <Header title="Completa tu perfil" onBack={leave} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <Text style={type.body}>
+          <Text style={type.small}>
             {next === 'publish' ? 'Antes de publicar necesitamos algunos datos. Te toma un minuto.' : 'Lo necesitas para publicar o pedir una adopción. Te toma un minuto.'}
           </Text>
-          <View style={styles.photoRow}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Foto de perfil" onPress={async () => setAvatar((await pickAvatar()) ?? avatar)} style={styles.avatar}>
-              {photoUri ? <Image source={photoUri} style={StyleSheet.absoluteFill} contentFit="cover" /> : profile?.fullName ? <Text style={type.title}>{initials(profile.fullName)}</Text> : <Camera size={24} color={color.muted} />}
+          <View style={[styles.section, styles.photoRow]}>
+            <Pressable accessibilityRole="button" accessibilityLabel={photoUri ? 'Cambiar foto de perfil' : 'Agregar foto de perfil'} onPress={pick} style={styles.avatar}>
+              {photoUri ? <Image source={photoUri} style={StyleSheet.absoluteFill} contentFit="cover" /> : profile?.fullName ? <Text style={styles.initials}>{initials(profile.fullName)}</Text> : <Camera size={24} color={color.brand} />}
             </Pressable>
-            <View style={{ gap: 2 }}>
-              <Button label={photoUri ? 'Cambiar foto' : 'Agregar foto'} variant="text" onPress={async () => setAvatar((await pickAvatar()) ?? avatar)} style={{ height: 32 }} />
+            <View style={{ flex: 1, gap: 8 }}>
+              <Text style={type.title}>Foto de perfil</Text>
               <Text style={type.caption}>Opcional. Ayuda a generar confianza.</Text>
+              <Button label={photoUri ? 'Cambiar foto' : 'Agregar foto'} variant="secondary" icon={Camera} onPress={pick} style={styles.photoButton} />
             </View>
           </View>
-          <Field label="Nombre" error={errors.nombre}>
-            <Input value={nombre} onChangeText={setNombre} placeholder="Tu nombre y apellido" error={!!errors.nombre} autoComplete="name" />
-          </Field>
-          <Field label="Zona" error={errors.zona}>
-            <SelectButton icon={MapPin} value={zoneName(Number(zona))} placeholder="Elige tu municipio" onPress={() => setZoneOpen(true)} error={!!errors.zona} />
-          </Field>
-          <View style={{ gap: 8 }}>
-            <Text style={type.label}>WhatsApp</Text>
+          <View style={styles.section}>
+            <Text style={type.title}>Tus datos</Text>
+            <Field label="Nombre" error={errors.nombre}>
+              <Input value={nombre} onChangeText={setNombre} placeholder="Tu nombre y apellido" error={!!errors.nombre} autoComplete="name" style={styles.white} />
+            </Field>
+            <Field label="Zona" error={errors.zona}>
+              <Pressable accessibilityRole="button" accessibilityLabel={`Zona: ${zoneLabel || 'elige tu municipio'}`} onPress={() => setZoneOpen(true)} style={[styles.select, errors.zona && { borderColor: color.error }]}>
+                <MapPin size={20} color={color.muted} />
+                <Text style={[type.body, { flex: 1, color: zoneLabel ? color.ink : color.muted }]} numberOfLines={1}>
+                  {zoneLabel || 'Elige tu municipio'}
+                </Text>
+                <ChevronDown size={20} color={color.ink} />
+              </Pressable>
+            </Field>
+          </View>
+          <View style={styles.section}>
+            <Text style={type.title}>WhatsApp</Text>
             <View style={[styles.wa, errors.wa && { borderColor: color.error }]}>
               <Text style={styles.prefix}>+58</Text>
               <TextInput
@@ -107,7 +119,7 @@ export default function ProfileSetup() {
           <FieldError message={errors.form} />
         </ScrollView>
         <Footer>
-          <Button label={busy ? 'Guardando…' : 'Guardar y continuar'} onPress={save} disabled={busy} />
+          <Button label={busy ? 'Guardando…' : 'Guardar'} onPress={save} disabled={busy} />
         </Footer>
       </KeyboardAvoidingView>
       <OptionSheet
@@ -127,10 +139,15 @@ export default function ProfileSetup() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: color.canvas },
-  body: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24, gap: 20 },
-  photoRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 80, height: 80, borderRadius: radius.full, borderWidth: 1, borderColor: color.hairline, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  wa: { flexDirection: 'row', height: 52, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, backgroundColor: color.soft, overflow: 'hidden' },
+  body: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 },
+  section: { backgroundColor: color.soft, borderRadius: radius.lg, padding: 16, gap: 16 },
+  photoRow: { flexDirection: 'row', alignItems: 'center' },
+  avatar: { width: 80, height: 80, borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  initials: { fontFamily: font.bold, fontSize: 24, color: color.brand },
+  photoButton: { height: 44, alignSelf: 'flex-start', paddingHorizontal: 16 },
+  white: { backgroundColor: color.canvas },
+  select: { height: 52, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, paddingHorizontal: 16, backgroundColor: color.canvas },
+  wa: { flexDirection: 'row', height: 52, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, backgroundColor: color.canvas, overflow: 'hidden' },
   prefix: { fontFamily: font.medium, fontSize: 16, color: color.body, backgroundColor: color.strong, paddingHorizontal: 14, textAlignVertical: 'center', lineHeight: 50, borderRightWidth: 1, borderRightColor: color.hairline },
   waInput: { flex: 1, paddingHorizontal: 12, fontFamily: font.regular, fontSize: 16, color: color.ink },
   lock: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },

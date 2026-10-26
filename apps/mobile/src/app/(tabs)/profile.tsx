@@ -1,26 +1,35 @@
+import Constants from 'expo-constants';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
-import { BadgeCheck, ChevronRight, Heart, MapPin, Pencil, Phone, Send, Sparkles, type LucideIcon } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { BadgeCheck, Camera, ChevronRight, Heart, LogOut, MapPin, Phone, Send, Sparkles, type LucideIcon } from 'lucide-react-native';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Field, FieldError, Input, Pill, Sheet, VerifiedBadge } from '@/components/ui';
+import { Button, Field, FieldError, Input, Pill, Sheet } from '@/components/ui';
 import { ApiError, api, type Pet } from '@/lib/api';
 import { PLAN_LIMITS, initials, isActive, localWhatsapp } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { color, radius, type } from '@/lib/theme';
+import { color, font, radius, type } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 
-
-function Row({ icon: Icon, label, sub, onPress }: { icon: LucideIcon; label: string; sub: string; onPress: () => void }) {
+// Grouped menu row: pastel icon circle, label, optional value, chevron
+function Row({ icon: Icon, tint, label, sub, value, first, onPress }: { icon: LucideIcon; tint: string; label: string; sub?: string; value?: ReactNode; first?: boolean; onPress?: () => void }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={styles.row}>
-      <Icon size={24} color={color.ink} />
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text style={[type.body, { color: color.ink }]}>{label}</Text>
-        <Text style={type.caption}>{sub}</Text>
+    <Pressable
+      accessibilityRole={onPress ? 'button' : undefined}
+      disabled={!onPress}
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, !first && styles.divider, pressed && { backgroundColor: color.soft }]}
+    >
+      <View style={[styles.rowIcon, { backgroundColor: tint }]}>
+        <Icon size={20} color={color.ink} />
       </View>
-      <ChevronRight size={20} color={color.muted} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.rowLabel}>{label}</Text>
+        {sub ? <Text style={type.caption}>{sub}</Text> : null}
+      </View>
+      {value}
+      {onPress ? <ChevronRight size={20} color={color.muted} /> : null}
     </Pressable>
   );
 }
@@ -29,6 +38,13 @@ const FOUNDATION_SUB: Record<string, string> = {
   none: 'Badge de verificada y acceso al plan Pro',
   pending: 'Solicitud en revisión',
   rejected: 'No fue aprobada. Puedes enviarla de nuevo',
+  verified: 'Tus publicaciones muestran el badge',
+};
+
+// [label, text, background]
+const FOUNDATION_BADGE: Record<string, [string, string, string]> = {
+  pending: ['Pendiente', color.ink, color.butter],
+  rejected: ['Rechazada', color.error, color.errorBg],
 };
 
 // HU-12 / RF-05: name, Instagram and description; the admin verifies it in the panel
@@ -83,6 +99,8 @@ export default function Profile() {
   const [active, setActive] = useState(0);
   const [foundation, setFoundation] = useState(false);
   const verification = profile?.verificationStatus ?? 'none';
+  const verified = verification === 'verified';
+  const pro = profile?.plan === 'pro';
   const limit = PLAN_LIMITS[profile?.plan ?? 'free'];
   const missing = !profile || !municipalities.length; // startup load failed (offline)
 
@@ -95,51 +113,102 @@ export default function Profile() {
 
   const name = profile?.fullName || 'Sin nombre';
   const wa = localWhatsapp(profile?.whatsapp);
+  const edit = () => router.push('/profile-setup');
+  const badge = FOUNDATION_BADGE[verification];
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       <ScrollView contentContainerStyle={styles.body}>
-        <Text style={type.h1}>Perfil</Text>
-        <View style={styles.me}>
-          <View style={styles.avatar}>
-            {profile?.avatarUrl ? <Image source={profile.avatarUrl} style={StyleSheet.absoluteFill} contentFit="cover" /> : <Text style={type.h2}>{initials(name)}</Text>}
-          </View>
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text style={type.h2}>{name}</Text>
+        <Text style={[type.h1, styles.title]} accessibilityRole="header">
+          Perfil
+        </Text>
+
+        <View style={[styles.section, styles.me]}>
+          {/* photo is picked and uploaded in profile-setup */}
+          <Pressable accessibilityRole="button" accessibilityLabel="Cambiar foto de perfil" onPress={edit} style={styles.avatarHit}>
+            <View style={styles.avatar}>
+              {profile?.avatarUrl ? <Image source={profile.avatarUrl} style={StyleSheet.absoluteFill} contentFit="cover" /> : <Text style={styles.initials}>{initials(name)}</Text>}
+            </View>
+            <View style={styles.camera}>
+              <Camera size={14} color={color.canvas} />
+            </View>
+          </Pressable>
+          <Text style={[type.h2, styles.name]} numberOfLines={2}>
+            {name}
+          </Text>
+          <View style={styles.meta}>
             <View style={styles.inline}>
               <MapPin size={14} color={color.muted} />
               <Text style={type.small}>{zoneName(profile?.municipalityId) || 'Sin zona'}</Text>
             </View>
-            {verification === 'verified' ? <VerifiedBadge /> : null}
+            <View style={styles.inline}>
+              <Phone size={14} color={color.muted} />
+              <Text style={type.small}>{wa ? `+58 ${wa}` : 'Sin WhatsApp'}</Text>
+            </View>
           </View>
+          <View style={styles.badges}>
+            <Pill label={pro ? 'Pro' : 'Gratis'} fg={color.ink} bg={pro ? color.peach : color.canvas} />
+            {verified ? (
+              <View style={[styles.badge, { backgroundColor: color.mint }]}>
+                <BadgeCheck size={14} color={color.verified} />
+                <Text style={[type.badge, { color: color.verified }]}>Verificada</Text>
+              </View>
+            ) : null}
+          </View>
+          <Button label="Editar perfil" variant="secondary" onPress={edit} style={styles.edit} />
         </View>
-        <View style={styles.plan}>
-          <View style={styles.planHead}>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHead}>
             <Text style={type.title}>Tu plan</Text>
-            <Pill label={profile?.plan === 'pro' ? 'Pro' : 'Gratis'} fg={color.body} bg={color.strong} />
+            <Text style={[type.small, { color: color.body }]}>{`${active} de ${limit} publicaciones activas`}</Text>
           </View>
-          <Text style={[type.small, { color: color.body }]}>{`${active} de ${limit} publicaciones activas`}</Text>
           <View style={styles.quota}>
-            <View style={{ height: '100%', width: `${Math.min(100, (active / limit) * 100)}%`, backgroundColor: color.ink }} />
+            <View style={{ height: '100%', width: `${Math.min(100, (active / limit) * 100)}%`, backgroundColor: color.ink, borderRadius: radius.full }} />
           </View>
-          {profile?.plan === 'pro' ? null : <Button label="Pásate a Pro: hasta 30 activas" variant="text" onPress={() => say('El plan Pro llega pronto. Te avisamos.')} style={{ height: 40 }} />}
+          {pro ? null : <Button label="Pásate a Pro: hasta 30 activas" variant="text" onPress={() => say('El plan Pro llega pronto. Te avisamos.')} style={{ height: 44 }} />}
         </View>
-        <View>
-          <Row icon={Phone} label="WhatsApp" sub={`${wa ? `+58 ${wa}` : 'Sin número'} · solo visible al aprobar`} onPress={() => router.push('/profile-setup')} />
-          <Row icon={Send} label="Mis solicitudes" sub="Estado de tus solicitudes de adopción" onPress={() => router.push('/my-requests')} />
-          <Row icon={Sparkles} label="Recomendados para ti" sub="Cuestionario de estilo de vida" onPress={() => router.push('/match')} />
-          <Row icon={Heart} label="Favoritos" sub={favIds.size === 1 ? '1 peludo guardado' : `${favIds.size} peludos guardados`} onPress={() => router.push('/favorites')} />
-          {verification === 'verified' ? null : (
+
+        <View style={styles.section}>
+          <Text style={type.title}>Tu actividad</Text>
+          <View style={styles.menu}>
             <Row
-              icon={BadgeCheck}
-              label="Cuenta de fundación"
-              sub={FOUNDATION_SUB[verification]!}
-              onPress={() => (verification === 'pending' ? say('Tu solicitud está en revisión. Te avisamos al terminar.') : setFoundation(true))}
+              first
+              icon={Heart}
+              tint={color.peach}
+              label="Favoritos"
+              sub={favIds.size === 1 ? '1 peludo guardado' : `${favIds.size} peludos guardados`}
+              onPress={() => router.push('/favorites')}
             />
-          )}
-          <Row icon={Pencil} label="Editar perfil" sub="Nombre, foto y zona" onPress={() => router.push('/profile-setup')} />
+            <Row icon={Send} tint={color.sky} label="Mis solicitudes" sub="Estado de tus solicitudes de adopción" onPress={() => router.push('/my-requests')} />
+            <Row icon={Sparkles} tint={color.mint} label="Recomendados por IA" sub="Cuestionario de estilo de vida" onPress={() => router.push('/match')} />
+          </View>
         </View>
-        <Button label="Cerrar sesión" variant="text" onPress={signOut} />
+
+        <View style={styles.section}>
+          <Text style={type.title}>Fundación</Text>
+          <View style={styles.menu}>
+            {verified ? (
+              <Row first icon={BadgeCheck} tint={color.mint} label={profile?.foundationName || 'Fundación verificada'} sub={FOUNDATION_SUB.verified} />
+            ) : (
+              <Row
+                first
+                icon={BadgeCheck}
+                tint={color.butter}
+                label="Cuenta de fundación"
+                sub={FOUNDATION_SUB[verification]}
+                value={badge ? <Pill label={badge[0]} fg={badge[1]} bg={badge[2]} /> : undefined}
+                onPress={() => (verification === 'pending' ? say('Tu solicitud está en revisión. Te avisamos al terminar.') : setFoundation(true))}
+              />
+            )}
+          </View>
+        </View>
+
+        <Pressable accessibilityRole="button" onPress={signOut} style={({ pressed }) => [styles.signOut, pressed && { backgroundColor: color.soft }]}>
+          <LogOut size={20} color={color.error} />
+          <Text style={styles.signOutLabel}>Cerrar sesión</Text>
+        </Pressable>
+        <Text style={[type.caption, { textAlign: 'center' }]}>{`Petzo v${Constants.expoConfig?.version ?? '1.0.0'}`}</Text>
       </ScrollView>
       <FoundationSheet visible={foundation} onClose={() => setFoundation(false)} />
     </SafeAreaView>
@@ -148,12 +217,27 @@ export default function Profile() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: color.canvas },
-  body: { padding: 16, paddingBottom: 24, gap: 20 },
-  me: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 72, height: 72, borderRadius: radius.full, borderWidth: 1, borderColor: color.hairline, backgroundColor: color.strong, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  body: { paddingHorizontal: 20, paddingBottom: 32, gap: 16 },
+  title: { paddingTop: 8, paddingBottom: 4 },
+  section: { backgroundColor: color.soft, borderRadius: radius.lg, padding: 16, gap: 12 },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  me: { alignItems: 'center', paddingVertical: 24, gap: 8 },
+  avatarHit: { width: 80, height: 80, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  avatar: { width: 72, height: 72, borderRadius: radius.full, backgroundColor: color.peach, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  initials: { fontFamily: font.bold, fontSize: 24, color: color.brand },
+  camera: { position: 'absolute', right: 2, bottom: 2, width: 28, height: 28, borderRadius: radius.full, backgroundColor: color.ink, borderWidth: 2, borderColor: color.soft, alignItems: 'center', justifyContent: 'center' },
+  name: { fontFamily: font.bold, textAlign: 'center' },
+  meta: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 16, rowGap: 4 },
   inline: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  plan: { borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, padding: 16, gap: 12 },
-  planHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  quota: { height: 4, borderRadius: radius.full, backgroundColor: color.strong, overflow: 'hidden' },
-  row: { minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: color.hairline },
+  badges: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 24, paddingHorizontal: 10, borderRadius: radius.full },
+  edit: { alignSelf: 'stretch', marginTop: 8 },
+  quota: { height: 6, borderRadius: radius.full, backgroundColor: color.strong, overflow: 'hidden' },
+  menu: { backgroundColor: color.canvas, borderRadius: radius.md, overflow: 'hidden' },
+  row: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 12, paddingVertical: 10 },
+  divider: { borderTopWidth: 1, borderTopColor: color.hairline },
+  rowIcon: { width: 40, height: 40, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
+  rowLabel: { fontFamily: font.semibold, fontSize: 16, lineHeight: 21, color: color.ink },
+  signOut: { height: 52, borderRadius: radius.full, borderWidth: 1, borderColor: color.hairline, backgroundColor: color.canvas, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8 },
+  signOutLabel: { fontFamily: font.semibold, fontSize: 16, color: color.error },
 });

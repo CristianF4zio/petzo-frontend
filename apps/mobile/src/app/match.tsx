@@ -1,13 +1,13 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { RefreshCw, SearchX, Sparkles } from 'lucide-react-native';
+import { ChevronRight, RefreshCw, SearchX, Sparkles } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { petMeta } from '@/components/PetCard';
-import { Button, Field, FieldError, Header, Pill, Segmented, Skeleton, StateView } from '@/components/ui';
+import { Button, FieldError, Header, Pill, Segmented, Skeleton, StateView } from '@/components/ui';
 import { ApiError, api, type Lifestyle, type Pet, type Species } from '@/lib/api';
-import { HOUSING, YES_NO, scoreColors } from '@/lib/format';
+import { HOUSING, YES_NO } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { color, radius, type } from '@/lib/theme';
 
@@ -64,7 +64,7 @@ export default function MatchScreen() {
         <View style={styles.body}>
           <Text style={type.small}>Buscando peludos compatibles…</Text>
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} style={{ height: 96, borderRadius: radius.md }} />
+            <Skeleton key={i} style={{ height: 104, borderRadius: radius.md }} />
           ))}
         </View>
       </SafeAreaView>
@@ -86,21 +86,34 @@ export default function MatchScreen() {
           ) : result.matches.length === 0 ? (
             <StateView icon={SearchX} title="No encontramos peludos compatibles" body="Prueba sin filtrar por especie o vuelve más tarde: entran peludos nuevos cada día." />
           ) : (
-            result.matches.map(({ pet, score, reason }) => (
-              <Pressable key={pet.id} accessibilityRole="button" accessibilityLabel={`Ver a ${pet.name}`} onPress={() => router.push(`/pet/${pet.id}`)} style={styles.card}>
-                <Image source={pet.photos[0]?.url} style={styles.thumb} contentFit="cover" />
-                <View style={{ flex: 1, gap: 4 }}>
-                  <View style={styles.row}>
-                    <Text style={[type.title, { flex: 1 }]} numberOfLines={1}>
-                      {pet.name}
-                    </Text>
-                    <Pill label={`${score}%`} fg={scoreColors(score)[0]} bg={scoreColors(score)[1]} />
+            <>
+              <View style={styles.intro}>
+                <Sparkles size={20} color={color.ink} />
+                <Text style={[type.small, { color: color.body, flex: 1 }]}>{`${result.matches.length} peludos compatibles con tu estilo de vida, del más al menos afín.`}</Text>
+              </View>
+              {result.matches.map(({ pet, score, reason }) => (
+                <Pressable
+                  key={pet.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Ver a ${pet.name}, ${score}% compatible`}
+                  onPress={() => router.push(`/pet/${pet.id}`)}
+                  style={({ pressed }) => [styles.card, pressed && { backgroundColor: color.soft }]}
+                >
+                  <Image source={pet.photos[0]?.url} style={styles.thumb} contentFit="cover" />
+                  <View style={{ flex: 1, gap: 4 }}>
+                    <View style={styles.row}>
+                      <Text style={[type.title, { flex: 1 }]} numberOfLines={1}>
+                        {pet.name}
+                      </Text>
+                      <Pill label={`${score}% afín`} fg={color.ink} bg={color.mint} />
+                    </View>
+                    <Text style={type.caption} numberOfLines={1}>{`${petMeta(pet)} · ${zoneName(pet.municipalityId)}`}</Text>
+                    {reason ? <Text style={[type.small, { color: color.body }]}>{reason}</Text> : null}
                   </View>
-                  <Text style={type.small}>{`${petMeta(pet)} · ${zoneName(pet.municipalityId)}`}</Text>
-                  {reason ? <Text style={[type.small, { color: color.body }]}>{reason}</Text> : null}
-                </View>
-              </Pressable>
-            ))
+                  <ChevronRight size={20} color={color.muted} />
+                </Pressable>
+              ))}
+            </>
           )}
           <Button label="Repetir cuestionario" variant="secondary" icon={RefreshCw} onPress={() => setResult(null)} />
         </ScrollView>
@@ -112,13 +125,20 @@ export default function MatchScreen() {
     <SafeAreaView style={styles.root} edges={['top']}>
       <Header title="Encuentra tu peludo ideal" />
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <Text style={type.body}>Cuéntanos cómo vives y te recomendamos peludos compatibles. Tus respuestas también se usan para precargar tus solicitudes.</Text>
+        <View style={styles.intro}>
+          <Sparkles size={20} color={color.ink} />
+          <Text style={[type.small, { color: color.body, flex: 1 }]}>Cuéntanos cómo vives y te recomendamos peludos compatibles. Tus respuestas también se usan para precargar tus solicitudes.</Text>
+        </View>
         {QUESTIONS.map((q) => (
-          <Field key={q.key} label={q.label} error={missing && !form[q.key] ? 'Elige una opción.' : undefined}>
+          <View key={q.key} style={styles.section}>
+            <Text style={type.title}>{q.label}</Text>
             <Segmented options={[...q.options]} value={form[q.key]} onChange={(v) => setForm((f) => ({ ...f, [q.key]: v }))} />
-          </Field>
+            <FieldError message={missing && !form[q.key] ? 'Elige una opción.' : undefined} />
+          </View>
         ))}
-        <Field label="¿Qué buscas? (opcional)">
+        <View style={styles.section}>
+          <Text style={type.title}>¿Qué buscas?</Text>
+          <Text style={type.small}>Opcional. Toca de nuevo para quitarlo.</Text>
           <Segmented
             options={[
               { value: 'dog', label: 'Perro' },
@@ -127,7 +147,7 @@ export default function MatchScreen() {
             value={species}
             onChange={(v) => setSpecies(species === v ? '' : v)}
           />
-        </Field>
+        </View>
         <FieldError message={error} />
         <Button label="Ver recomendados" icon={Sparkles} onPress={run} />
       </ScrollView>
@@ -137,8 +157,10 @@ export default function MatchScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: color.canvas },
-  body: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24, gap: 16 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, padding: 12 },
-  thumb: { width: 72, height: 72, borderRadius: radius.md, backgroundColor: color.strong },
+  body: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 32, gap: 16 },
+  intro: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', backgroundColor: color.mint, borderRadius: radius.lg, padding: 16 },
+  section: { backgroundColor: color.soft, borderRadius: radius.lg, padding: 16, gap: 12 },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, padding: 12, backgroundColor: color.canvas },
+  thumb: { width: 72, height: 72, borderRadius: 12, backgroundColor: color.strong },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 });

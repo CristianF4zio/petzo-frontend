@@ -1,11 +1,11 @@
 import { Image } from 'expo-image';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { Check, Lock, MapPin, Plus, ShieldCheck, UserRound } from 'lucide-react-native';
-import { useCallback, useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Cat, Check, Dog, Lock, MapPin, Plus, ShieldCheck, UserRound } from 'lucide-react-native';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PhotoGrid, type Tile } from '@/components/PhotoGrid';
-import { Button, Chip, Field, FieldError, Footer, IconCircle, Input, OptionSheet, Segmented, SelectButton } from '@/components/ui';
+import { Button, Chip, Field, FieldError, Footer, IconCircle, Input, OptionSheet, Pill, Segmented, SelectButton } from '@/components/ui';
 import { ApiError, api, upload as uploadFile, type Pet, type Sex, type Size, type Species } from '@/lib/api';
 import { PLAN_LIMITS, SEX, SIZE, ageText, gendered, isActive } from '@/lib/format';
 import { pickPhotos } from '@/lib/photos';
@@ -20,6 +20,10 @@ const HEALTH = [
   ['dewormed', 'Desparasitad'],
 ] as const;
 type Health = Record<(typeof HEALTH)[number][0], boolean>;
+const SPECIES = [
+  ['dog', 'Perro', Dog, color.peach],
+  ['cat', 'Gato', Cat, color.sky],
+] as const;
 
 type Form = { species: Species; name: string; years: number; months: number; sex: Sex | ''; size: Size | ''; zone: number | null; health: Health; description: string };
 type Errors = Partial<Record<'name' | 'sex' | 'size' | 'zone' | 'description' | 'step', string>>;
@@ -202,25 +206,29 @@ export default function Publish() {
 
   if (!isComplete) {
     return (
-      <SafeAreaView style={[styles.root, styles.blocked]} edges={['top']}>
-        <Text style={[type.h1, { marginBottom: 24 }]}>Publica a tu peludo</Text>
-        <IconCircle icon={UserRound} />
-        <Text style={[type.h2, { marginTop: 8 }]}>Completa tu perfil primero</Text>
-        <Text style={type.body}>Necesitamos tu zona y tu WhatsApp para conectarte con quien quiera adoptar.</Text>
-        <Button label="Completar perfil" onPress={() => router.push({ pathname: '/profile-setup', params: { next: 'publish' } })} style={{ marginTop: 12 }} />
+      <SafeAreaView style={styles.root} edges={['top']}>
+        <Top title="Publicar" subtitle="Cuéntanos de tu peludo" />
+        <View style={styles.blocked}>
+          <IconCircle icon={UserRound} />
+          <Text style={[type.h2, styles.center, { marginTop: 4 }]}>Completa tu perfil primero</Text>
+          <Text style={[type.body, styles.center, { color: color.muted }]}>Necesitamos tu zona y tu WhatsApp para conectarte con quien quiera adoptar.</Text>
+          <Button label="Completar perfil" onPress={() => router.push({ pathname: '/profile-setup', params: { next: 'publish' } })} style={styles.stretch} />
+        </View>
       </SafeAreaView>
     );
   }
 
   if (!petId && active >= limit) {
     return (
-      <SafeAreaView style={[styles.root, styles.blocked]} edges={['top']}>
-        <Text style={[type.h1, { marginBottom: 24 }]}>Publica a tu peludo</Text>
-        <IconCircle icon={Lock} />
-        <Text style={[type.h2, { marginTop: 8 }]}>{`Llegaste a tu límite de ${limit} publicaciones activas`}</Text>
-        <Text style={type.body}>Pausa una publicación o márcala como adoptada para publicar otra. Con el plan Pro tienes hasta 30 activas.</Text>
-        <Button label="Ir a Mis publicaciones" onPress={() => router.push('/mine')} style={{ marginTop: 12 }} />
-        <Button label="Conocer el plan Pro" variant="text" onPress={() => say('El plan Pro llega pronto. Te avisamos.')} style={{ alignSelf: 'center' }} />
+      <SafeAreaView style={styles.root} edges={['top']}>
+        <Top title="Publicar" subtitle="Cuéntanos de tu peludo" />
+        <View style={styles.blocked}>
+          <IconCircle icon={Lock} />
+          <Text style={[type.h2, styles.center, { marginTop: 4 }]}>{`Llegaste a tu límite de ${limit} publicaciones activas`}</Text>
+          <Text style={[type.body, styles.center, { color: color.muted }]}>Pausa una publicación o márcala como adoptada para publicar otra. Con el plan Pro tienes hasta 30 activas.</Text>
+          <Button label="Ir a Mis publicaciones" onPress={() => router.push('/mine')} style={styles.stretch} />
+          <Button label="Conocer el plan Pro" variant="text" onPress={() => say('El plan Pro llega pronto. Te avisamos.')} style={{ alignSelf: 'center' }} />
+        </View>
       </SafeAreaView>
     );
   }
@@ -229,36 +237,45 @@ export default function Publish() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
-      <View style={styles.head}>
-        <View style={styles.headRow}>
-          <Text style={type.h1}>{petId ? `Editar a ${form.name || 'tu peludo'}` : 'Publica a tu peludo'}</Text>
-          <Text style={type.caption}>{`Paso ${step} de 4`}</Text>
-        </View>
-        {petId ? (
-          <Button
-            label="Cancelar edición"
-            variant="text"
-            disabled={busy}
-            onPress={() => {
-              // params first, so the focus effect doesn't reload the pet in between
-              router.setParams({ editId: undefined });
-              reset();
-            }}
-          />
-        ) : null}
-        <View style={styles.progress}>
+      <Top
+        title={petId ? 'Editar' : 'Publicar'}
+        subtitle={petId ? `Estás editando a ${form.name || 'tu peludo'}` : 'Cuéntanos de tu peludo'}
+        right={
+          petId ? (
+            <Button
+              label="Cancelar edición"
+              variant="text"
+              disabled={busy}
+              onPress={() => {
+                // params first, so the focus effect doesn't reload the pet in between
+                router.setParams({ editId: undefined });
+                reset();
+              }}
+            />
+          ) : null
+        }
+      />
+      <View style={styles.steps}>
+        <View style={styles.progress} accessibilityRole="progressbar" accessibilityLabel={`Paso ${step} de 4`}>
           {[1, 2, 3, 4].map((i) => (
             <View key={i} style={[styles.bar, { backgroundColor: i <= step ? color.ink : color.hairline }]} />
           ))}
         </View>
-        <Text style={type.title}>{TITLES[step - 1]}</Text>
+        <View style={styles.row}>
+          <Text style={type.title}>{TITLES[step - 1]}</Text>
+          <Text style={type.caption}>{`Paso ${step} de 4`}</Text>
+        </View>
       </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           {step === 1 ? (
-            <>
-              <Text style={[type.small, { color: color.body }]}>Sube de 1 a 5 fotos tomadas por ti. La primera es la portada. Toca una foto para moverla o quitarla.</Text>
+            <View style={[styles.section, styles.soft]}>
+              <View style={styles.row}>
+                <Text style={type.title}>Fotos</Text>
+                <Pill label={`${tiles.length}/5`} fg={color.ink} bg={tiles.length ? color.mint : color.canvas} />
+              </View>
+              <Text style={type.small}>Sube de 1 a 5 fotos tomadas por ti. La primera es la portada; toca una foto para moverla.</Text>
               <PhotoGrid
                 tiles={tiles}
                 selected={selected}
@@ -278,104 +295,122 @@ export default function Publish() {
                   })
                 }
               />
-            </>
+            </View>
           ) : null}
 
           {step === 2 ? (
             <>
-              <View style={{ gap: 8 }}>
-                <Text style={type.label}>Especie</Text>
-                <Segmented
-                  options={[
-                    { value: 'dog', label: 'Perro' },
-                    { value: 'cat', label: 'Gato' },
-                  ]}
-                  value={form.species}
-                  onChange={(v) => set({ species: v })}
-                />
-              </View>
-              <Field label="Nombre" error={errors.name}>
-                <Input value={form.name} onChangeText={(v) => set({ name: v })} placeholder="¿Cómo se llama?" error={!!errors.name} maxLength={60} />
-              </Field>
-              <View style={{ gap: 8 }}>
-                <Text style={type.label}>Edad aproximada</Text>
-                <View style={styles.two}>
-                  <View style={{ flex: 1 }}>
-                    <SelectButton value={`${form.years} ${form.years === 1 ? 'año' : 'años'}`} placeholder="Años" onPress={() => setPicker('years')} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <SelectButton value={`${form.months} ${form.months === 1 ? 'mes' : 'meses'}`} placeholder="Meses" onPress={() => setPicker('months')} />
+              <Section title="¿Quién es?">
+                <View style={styles.two} accessibilityRole="radiogroup" accessibilityLabel="Especie">
+                  {SPECIES.map(([value, label, Icon, bg]) => {
+                    const on = form.species === value;
+                    return (
+                      <Pressable
+                        key={value}
+                        accessibilityRole="radio"
+                        accessibilityLabel={label}
+                        accessibilityState={{ checked: on }}
+                        onPress={() => set({ species: value })}
+                        style={({ pressed }) => [styles.species, { backgroundColor: bg }, on && styles.speciesOn, pressed && { opacity: 0.8 }]}
+                      >
+                        <View style={styles.speciesIcon}>
+                          <Icon size={24} color={color.ink} />
+                        </View>
+                        <Text style={type.title}>{label}</Text>
+                        {on ? (
+                          <View style={styles.check}>
+                            <Check size={14} color={color.canvas} strokeWidth={3} />
+                          </View>
+                        ) : null}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <Field label="Nombre" error={errors.name}>
+                  <Input value={form.name} onChangeText={(v) => set({ name: v })} placeholder="¿Cómo se llama?" error={!!errors.name} maxLength={60} />
+                </Field>
+                <View style={styles.field}>
+                  <Text style={type.label}>Edad aproximada</Text>
+                  <View style={styles.two}>
+                    <View style={{ flex: 1 }}>
+                      <SelectButton value={`${form.years} ${form.years === 1 ? 'año' : 'años'}`} placeholder="Años" onPress={() => setPicker('years')} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <SelectButton value={`${form.months} ${form.months === 1 ? 'mes' : 'meses'}`} placeholder="Meses" onPress={() => setPicker('months')} />
+                    </View>
                   </View>
                 </View>
-              </View>
-              <View style={{ gap: 8 }}>
-                <Text style={type.label}>Sexo</Text>
-                <Segmented
-                  options={[
-                    { value: 'male', label: 'Macho' },
-                    { value: 'female', label: 'Hembra' },
-                  ]}
-                  value={form.sex}
-                  onChange={(v) => {
-                    set({ sex: v });
-                    setErrors((e) => ({ ...e, sex: undefined }));
-                  }}
-                />
-                <FieldError message={errors.sex} />
-              </View>
-              <View style={{ gap: 4 }}>
-                <Text style={type.label}>Tamaño</Text>
-                <View style={styles.wrap}>
-                  {(Object.keys(SIZE) as Size[]).map((s) => (
-                    <Chip
-                      key={s}
-                      label={SIZE[s]}
-                      on={form.size === s}
-                      onPress={() => {
-                        set({ size: s });
-                        setErrors((e) => ({ ...e, size: undefined }));
-                      }}
-                    />
-                  ))}
+              </Section>
+
+              <Section title="Sexo y tamaño">
+                <View style={styles.field}>
+                  <Text style={type.label}>Sexo</Text>
+                  <Segmented
+                    options={[
+                      { value: 'male', label: 'Macho' },
+                      { value: 'female', label: 'Hembra' },
+                    ]}
+                    value={form.sex}
+                    onChange={(v) => {
+                      set({ sex: v });
+                      setErrors((e) => ({ ...e, sex: undefined }));
+                    }}
+                  />
+                  <FieldError message={errors.sex} />
                 </View>
-                <FieldError message={errors.size} />
-              </View>
-              <View style={{ gap: 8 }}>
-                <Text style={type.label}>Zona</Text>
+                <View style={{ gap: 4 }}>
+                  <Text style={type.label}>Tamaño</Text>
+                  <View style={styles.wrap}>
+                    {(Object.keys(SIZE) as Size[]).map((s) => (
+                      <Chip
+                        key={s}
+                        label={SIZE[s]}
+                        on={form.size === s}
+                        onPress={() => {
+                          set({ size: s });
+                          setErrors((e) => ({ ...e, size: undefined }));
+                        }}
+                      />
+                    ))}
+                  </View>
+                  <FieldError message={errors.size} />
+                </View>
+              </Section>
+
+              <Section title="Zona" hint="Tomada de tu perfil. Cámbiala si el peludo está en otra zona.">
                 <SelectButton icon={MapPin} value={zoneName(form.zone)} placeholder="Elige el municipio" onPress={() => setPicker('zone')} error={!!errors.zone} />
-                <Text style={type.caption}>Tomada de tu perfil. Cámbiala si el peludo está en otra zona.</Text>
                 <FieldError message={errors.zone} />
-              </View>
+              </Section>
             </>
           ) : null}
 
           {step === 3 ? (
             <>
-              <View style={{ gap: 4 }}>
-                <Text style={type.label}>Salud (marca lo que aplica)</Text>
+              <Section title="Salud" hint="Marca lo que aplica.">
                 <View style={styles.wrap}>
                   {HEALTH.map(([k, l]) => (
                     <Chip key={k} label={gendered(l, form.sex)} icon={form.health[k] ? Check : Plus} on={form.health[k]} onPress={() => set({ health: { ...form.health, [k]: !form.health[k] } })} />
                   ))}
                 </View>
-              </View>
-              <View style={{ gap: 8 }}>
-                <Text style={type.label}>Descripción</Text>
+              </Section>
+              <Section title="Descripción" hint="Cuenta cómo es, qué le gusta y qué tipo de hogar busca.">
                 <TextInput
                   accessibilityLabel="Descripción"
                   value={form.description}
                   onChangeText={(v) => set({ description: v })}
                   maxLength={1000}
                   multiline
-                  placeholder="Cuenta cómo es, qué le gusta y qué tipo de hogar busca."
+                  placeholder="Ej.: Es juguetón, se lleva bien con niños y busca un hogar con patio."
                   placeholderTextColor={color.muted}
                   style={[styles.textarea, errors.description && { borderColor: color.error }]}
                 />
-                <View style={styles.headRow}>
-                  <Text style={[type.caption, { color: color.error }]}>{errors.description ?? ''}</Text>
+                <View style={styles.row}>
+                  <View style={{ flex: 1 }}>
+                    <FieldError message={errors.description} />
+                  </View>
                   <Text style={type.caption}>{`${form.description.length}/1000`}</Text>
                 </View>
-              </View>
+              </Section>
             </>
           ) : null}
 
@@ -384,22 +419,24 @@ export default function Publish() {
               <View style={styles.review}>
                 <Image source={tiles[0]?.uri} style={{ aspectRatio: 16 / 9 }} contentFit="cover" />
                 <View style={{ padding: 16, gap: 4 }}>
-                  <Text style={type.title}>{form.name}</Text>
+                  <Text style={type.h2}>{form.name}</Text>
                   <Text style={type.small}>{`${ageText(form.years * 12 + form.months)} · ${form.sex ? SEX[form.sex] : '—'} · ${form.size ? SIZE[form.size] : '—'}`}</Text>
                   <Text style={type.small}>{`${zoneName(form.zone)} · ${tiles.length === 1 ? '1 foto' : `${tiles.length} fotos`}`}</Text>
                   <Text style={[type.small, { color: color.body, marginTop: 4 }]}>{healthLabels.join(' · ') || 'Sin datos de salud'}</Text>
                 </View>
               </View>
-              <View style={styles.note}>
-                <ShieldCheck size={22} color={color.ink} />
+              <View style={[styles.section, styles.soft, styles.note]}>
+                <View style={styles.noteIcon}>
+                  <ShieldCheck size={20} color={color.ink} />
+                </View>
                 <View style={{ flex: 1, gap: 4 }}>
                   <Text style={type.title}>Lo revisamos en minutos para evitar fraudes</Text>
-                  <Text style={[type.small, { color: color.body }]}>Te avisamos cuando esté publicada o si hay que corregir algo.</Text>
+                  <Text style={type.small}>Te avisamos cuando esté publicada o si hay que corregir algo.</Text>
                 </View>
               </View>
               {petId ? null : (
                 <View style={{ gap: 8 }}>
-                  <Text style={[type.small, { color: color.body }]}>{`Tienes ${active} de ${limit} publicaciones activas`}</Text>
+                  <Text style={type.small}>{`Tienes ${active} de ${limit} publicaciones activas`}</Text>
                   <View style={styles.quota}>
                     <View style={{ height: '100%', width: `${Math.min(100, (active / limit) * 100)}%`, backgroundColor: color.ink }} />
                   </View>
@@ -413,7 +450,7 @@ export default function Publish() {
         <Footer>
           <View style={styles.footerRow}>
             {step > 1 && !busy ? <Button label="Atrás" variant="text" onPress={() => (setStep(step - 1), setErrors({}))} /> : null}
-            <Button label={busy ? 'Enviando…' : step === 4 ? 'Enviar a revisión' : 'Continuar'} onPress={next} disabled={busy} style={{ flex: 1 }} />
+            <Button label={busy ? 'Enviando…' : step === 4 ? 'Publicar' : 'Continuar'} onPress={next} disabled={busy} style={{ flex: 1 }} />
           </View>
         </Footer>
       </KeyboardAvoidingView>
@@ -449,19 +486,59 @@ export default function Publish() {
   );
 }
 
+function Top({ title, subtitle, right }: { title: string; subtitle: string; right?: ReactNode }) {
+  return (
+    <View style={styles.top}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={type.h1} accessibilityRole="header">
+          {title}
+        </Text>
+        <Text style={type.small} numberOfLines={1}>
+          {subtitle}
+        </Text>
+      </View>
+      {right}
+    </View>
+  );
+}
+
+// Form groups sit on white: the ui.tsx inputs, chips and segmented are soft-filled
+function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+  return (
+    <View style={styles.section}>
+      <View style={{ gap: 2 }}>
+        <Text style={type.title}>{title}</Text>
+        {hint ? <Text style={type.small}>{hint}</Text> : null}
+      </View>
+      {children}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: color.canvas },
-  blocked: { paddingHorizontal: 16, paddingTop: 24, gap: 12 },
-  head: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, gap: 12, borderBottomWidth: 1, borderBottomColor: color.hairline },
-  headRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 },
+  blocked: { marginHorizontal: 20, padding: 20, gap: 12, alignItems: 'center', backgroundColor: color.soft, borderRadius: radius.lg },
+  center: { textAlign: 'center' },
+  stretch: { alignSelf: 'stretch', marginTop: 8 },
+  steps: { paddingHorizontal: 20, paddingBottom: 12, gap: 10, borderBottomWidth: 1, borderBottomColor: color.hairline },
   progress: { flexDirection: 'row', gap: 4 },
   bar: { flex: 1, height: 4, borderRadius: radius.full },
-  body: { padding: 16, gap: 20 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, gap: 16 },
+  section: { padding: 16, gap: 12, borderRadius: radius.lg, borderWidth: 1, borderColor: color.hairline, backgroundColor: color.canvas },
+  soft: { backgroundColor: color.soft, borderColor: color.soft },
+  field: { gap: 8 },
   two: { flexDirection: 'row', gap: 8 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  species: { flex: 1, height: 112, padding: 14, borderRadius: radius.md, borderWidth: 2, borderColor: 'transparent', justifyContent: 'space-between' },
+  speciesOn: { borderColor: color.ink },
+  speciesIcon: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center' },
+  check: { position: 'absolute', top: 12, right: 12, width: 24, height: 24, borderRadius: radius.full, backgroundColor: color.ink, alignItems: 'center', justifyContent: 'center' },
   textarea: { height: 180, borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, backgroundColor: color.soft, padding: 16, fontFamily: font.regular, fontSize: 16, lineHeight: 24, color: color.ink, textAlignVertical: 'top' },
-  review: { borderWidth: 1, borderColor: color.hairline, borderRadius: radius.md, overflow: 'hidden' },
-  note: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', backgroundColor: color.soft, borderRadius: radius.md, padding: 16 },
+  review: { borderWidth: 1, borderColor: color.hairline, borderRadius: radius.lg, overflow: 'hidden' },
+  note: { flexDirection: 'row', alignItems: 'flex-start' },
+  noteIcon: { width: 40, height: 40, borderRadius: radius.full, backgroundColor: color.mint, alignItems: 'center', justifyContent: 'center' },
   quota: { height: 4, borderRadius: radius.full, backgroundColor: color.strong, overflow: 'hidden' },
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
 });
