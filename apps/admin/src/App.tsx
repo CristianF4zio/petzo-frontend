@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { BadgeCheck, Download, Flag, LogOut, RotateCw, Search, ShieldAlert, ShieldCheck, Users as UsersIcon } from 'lucide-react'
+import { BadgeCheck, Download, Flag, LoaderCircle, LogOut, RefreshCw, RotateCw, Search, ShieldAlert, ShieldCheck, TriangleAlert, Users as UsersIcon } from 'lucide-react'
 import { googleClaim, googleStart, login, logout, message, useAuth, useLoad } from './api.ts'
+import { Hero } from './Hero.tsx'
 import { Logo, Splash } from './Splash.tsx'
-import { Foundations, Imports, Moderation, Reports, Users, type Profile } from './views.tsx'
+import { Avatar, Foundations, Imports, Moderation, Reports, State, Users, type Profile } from './views.tsx'
 
 const tabs = {
   moderation: ['Moderación', Moderation, ShieldCheck, 'Aprueba o rechaza las publicaciones en revisión.'],
@@ -31,7 +32,7 @@ export default function App() {
       <Splash />
       {claiming ? (
         <main className="center-page">
-          <p className="muted" role="status">Iniciando sesión…</p>
+          <State icon={LoaderCircle} tone="busy" text="Iniciando sesión…" role="status" />
         </main>
       ) : !session ? (
         <Login error={error} />
@@ -73,28 +74,38 @@ function Login({ error: initial }: { error?: string }) {
   }
 
   return (
-    <main className="center-page">
-      <form className="sheet login" onSubmit={submit}>
-        <div className="sheet-head">
-          <Logo size={48} />
-          <h1>Petzo · Panel admin</h1>
-          <p className="muted">Inicia sesión con tu cuenta de administrador.</p>
+    <main className="login">
+      <section className="login-hero">
+        <div className="login-brand">
+          <Logo size={40} />
+          <strong>Petzo</strong>
         </div>
-        <label>
-          Correo
-          <input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required />
-        </label>
-        <label>
-          Contraseña
-          <input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required />
-        </label>
-        {error && <p className="error" role="alert">{error}</p>}
-        <button disabled={busy}>Entrar</button>
-        <button type="button" className="secondary" disabled={busy} onClick={() => run(googleStart)}>
-          <GoogleIcon />
-          Continuar con Google
-        </button>
-      </form>
+        <Hero />
+        <p className="login-line">Cada mascota merece un hogar.</p>
+      </section>
+      <section className="login-side">
+        <form className="sheet" onSubmit={submit}>
+          <div className="sheet-head">
+            <Logo size={48} />
+            <h1>Panel administrativo</h1>
+            <p className="muted">Inicia sesión con tu cuenta de administrador.</p>
+          </div>
+          <label>
+            Correo
+            <input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required />
+          </label>
+          <label>
+            Contraseña
+            <input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required />
+          </label>
+          {error && <p className="alert" role="alert">{error}</p>}
+          <button disabled={busy}>Entrar</button>
+          <button type="button" className="secondary" disabled={busy} onClick={() => run(googleStart)}>
+            <GoogleIcon />
+            Continuar con Google
+          </button>
+        </form>
+      </section>
     </main>
   )
 }
@@ -103,36 +114,38 @@ function Panel({ forbidden }: { forbidden: boolean }) {
   const me = useLoad<Profile>('/me')
   const [tab, setTab] = useState<keyof typeof tabs>('moderation')
   const [query, setQuery] = useState('')
+  const [round, setRound] = useState(0)
   const [title, View, , description] = tabs[tab]
 
   if (me.error || !me.data || forbidden || me.data.role !== 'admin')
     return (
       <main className="center-page">
-        <div className="sheet gate">
-          {me.error ? (
-            <p className="error" role="alert">{me.error}</p>
-          ) : !me.data ? (
-            <p className="muted" role="status">Cargando…</p>
-          ) : (
-            <>
-              <span className="gate-icon"><ShieldAlert size={28} /></span>
-              <p className="error" role="alert">Tu cuenta no tiene permisos de administrador</p>
-              {me.data.fullName && <p className="muted">{me.data.fullName}</p>}
-            </>
-          )}
-          <div className="actions">
-            {me.error && (
-              <button onClick={me.reload}>
-                <RotateCw size={16} />
-                Reintentar
-              </button>
-            )}
+        {me.error ? (
+          <State icon={TriangleAlert} tone="danger" text={me.error} role="alert">
+            <button onClick={me.reload}>
+              <RotateCw size={16} />
+              Reintentar
+            </button>
             <button className="secondary" onClick={logout}>
               <LogOut size={16} />
               Cerrar sesión
             </button>
-          </div>
-        </div>
+          </State>
+        ) : !me.data ? (
+          <State icon={LoaderCircle} tone="busy" text="Cargando…" role="status" />
+        ) : (
+          <State
+            icon={ShieldAlert}
+            tone="danger"
+            role="alert"
+            text={<>Tu cuenta no tiene permisos de administrador{me.data.fullName && <span className="muted sub">{me.data.fullName}</span>}</>}
+          >
+            <button className="secondary" onClick={logout}>
+              <LogOut size={16} />
+              Cerrar sesión
+            </button>
+          </State>
+        )}
       </main>
     )
 
@@ -142,40 +155,47 @@ function Panel({ forbidden }: { forbidden: boolean }) {
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
-          <Logo size={32} />
+          <Logo size={36} />
           <strong>Petzo</strong>
         </div>
         <label className="search">
-          <Search size={16} />
+          <Search size={16} aria-hidden="true" />
           <span className="sr-only">Buscar sección</span>
           <input type="search" placeholder="Buscar" value={query} onChange={e => setQuery(e.target.value)} />
         </label>
         <nav aria-label="Secciones">
           {items.map(([key, [label, , Icon]]) => (
             <button key={key} className="nav-item" aria-current={key === tab ? 'page' : undefined} onClick={() => setTab(key as keyof typeof tabs)}>
-              <Icon size={18} />
+              <Icon size={18} aria-hidden="true" />
               {label}
             </button>
           ))}
           {!items.length && <p className="muted nav-empty">Sin resultados</p>}
         </nav>
         <div className="account">
+          <Avatar name={me.data.fullName} />
           <span className="account-name">
             <strong>{me.data.fullName ?? 'Administrador'}</strong>
             <span className="muted">Administrador</span>
           </span>
-          <button className="secondary" aria-label="Cerrar sesión" onClick={logout}>
-            <LogOut size={16} />
-            <span className="hide-sm">Cerrar sesión</span>
+          <button className="icon" aria-label="Cerrar sesión" title="Cerrar sesión" onClick={logout}>
+            <LogOut size={18} />
           </button>
         </div>
       </aside>
       <main className="content">
         <header className="content-head">
-          <h1>{title}</h1>
-          <p className="muted">{description}</p>
+          <div>
+            <h1>{title}</h1>
+            <p className="muted">{description}</p>
+          </div>
+          {/* remount refetches the section through its own GET */}
+          <button className="secondary" onClick={() => setRound(n => n + 1)}>
+            <RefreshCw size={16} aria-hidden="true" />
+            Actualizar
+          </button>
         </header>
-        <View />
+        <View key={round} />
       </main>
     </div>
   )

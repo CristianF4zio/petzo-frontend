@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { BadgeCheck, Check, Download, Inbox, RotateCw, Trash2, X } from 'lucide-react'
+import { BadgeCheck, Check, Download, Inbox, LoaderCircle, RotateCw, Trash2, TriangleAlert, X, type LucideIcon } from 'lucide-react'
 import { api, ApiError, useAction, useLoad, type Load } from './api.ts'
 
 export type Profile = {
@@ -33,34 +33,42 @@ type ImportJob = { id: string; instagramHandle: string; status: 'queued' | 'runn
 
 const date = (iso: string) => new Date(iso).toLocaleString('es')
 
+export const Avatar = ({ name }: { name: string | null }) => (
+  <span className="avatar" aria-hidden="true">{name?.trim()[0]?.toUpperCase() ?? '?'}</span>
+)
+
+// Centered empty/loading/error state: pastel circle + icon + text (+ actions)
+export const State = ({ icon: Icon, tone, text, role, children }: { icon: LucideIcon; tone: 'mint' | 'busy' | 'danger'; text: ReactNode; role?: 'status' | 'alert'; children?: ReactNode }) => (
+  <div className="state">
+    <span className={`state-icon ${tone}`}><Icon size={28} aria-hidden="true" /></span>
+    <p role={role}>{text}</p>
+    {children && <div className="actions">{children}</div>}
+  </div>
+)
+
 function Loaded<T>({ load, error, children }: { load: Load<T>; error?: string; children: (data: T) => ReactNode }) {
   if (load.error)
     return (
-      <p className="error" role="alert">
-        {load.error}{' '}
+      <State icon={TriangleAlert} tone="danger" text={load.error} role="alert">
         <button className="secondary" onClick={load.reload}>
           <RotateCw size={16} />
           Reintentar
         </button>
-      </p>
+      </State>
     )
-  if (load.data === undefined) return <p className="muted" role="status">Cargando…</p>
+  if (load.data === undefined) return <State icon={LoaderCircle} tone="busy" text="Cargando…" role="status" />
   return (
     <>
-      {error && <p className="error" role="alert">{error}</p>}
+      {error && <p className="alert" role="alert">{error}</p>}
       {children(load.data)}
     </>
   )
 }
 
-const empty = (text: string) => (
-  <div className="empty">
-    <Inbox size={28} />
-    <p>{text}</p>
-  </div>
-)
+const empty = (text: string) => <State icon={Inbox} tone="mint" text={text} />
 
 const risk = (score: number | null) => (score === null ? '' : score >= 70 ? 'high' : score >= 40 ? 'mid' : 'low')
+const riskLabel = { high: 'Riesgo alto', mid: 'Riesgo medio', low: 'Riesgo bajo', '': 'Sin análisis' }
 
 export function Moderation() {
   const load = useLoad<Pet[]>('/admin/moderation')
@@ -72,21 +80,26 @@ export function Moderation() {
   return (
     <Loaded load={load} error={act.error}>
       {pets =>
-        pets.length
-          ? pets.map(p => (
+        pets.length ? (
+          <div className="grid">
+            {pets.map(p => (
               <article key={p.id} className="card">
                 {p.photos.length > 0 && (
                   <div className="photos">
-                    {p.photos.map(ph => <img key={ph.id} src={ph.url} alt={p.name} width={140} height={140} loading="lazy" />)}
+                    {p.photos.map(ph => <img key={ph.id} src={ph.url} alt={p.name} width={120} height={120} loading="lazy" />)}
                   </div>
                 )}
-                <h2>{p.name} <span className="muted">· {p.species === 'dog' ? 'Perro' : 'Gato'}</span></h2>
-                <p className="muted">Publicado por {p.publisher?.name ?? '—'}</p>
-                <p className="ai">
-                  <span className={`badge ${risk(p.riskScore)}`}>Riesgo {p.riskScore ?? '—'} / 100</span>
-                  <span><b>Motivo:</b> {p.moderationReason ?? '—'}</span>
-                </p>
-                {p.description && <p>{p.description}</p>}
+                <div className="card-head">
+                  <div>
+                    <h2>{p.name}</h2>
+                    <p className="muted">{p.species === 'dog' ? 'Perro' : 'Gato'} · Publicado por {p.publisher?.name ?? '—'}</p>
+                  </div>
+                  <span className={`badge ${risk(p.riskScore)}`}>
+                    {riskLabel[risk(p.riskScore)]}{p.riskScore !== null && ` · ${p.riskScore}/100`}
+                  </span>
+                </div>
+                <p className="reason"><b>Motivo:</b> {p.moderationReason ?? '—'}</p>
+                {p.description && <p className="desc">{p.description}</p>}
                 <div className="actions">
                   <button disabled={act.busy} onClick={() => act.run(() => api(`/admin/pets/${p.id}/approve?version=${p.version}`, 'POST'))}>
                     <Check size={16} />
@@ -98,12 +111,27 @@ export function Moderation() {
                   </button>
                 </div>
               </article>
-            ))
-          : empty('No hay publicaciones en revisión.')
+            ))}
+          </div>
+        ) : (
+          empty('No hay publicaciones en revisión.')
+        )
       }
     </Loaded>
   )
 }
+
+const verification = { none: '—', pending: 'Pendiente', verified: 'Verificada', rejected: 'Rechazada' }
+
+const Verification = ({ status }: { status: Profile['verificationStatus'] }) =>
+  status === 'none' ? (
+    <span className="muted">—</span>
+  ) : (
+    <span className={`badge ${status}`}>
+      {status === 'verified' && <BadgeCheck size={14} aria-hidden="true" />}
+      {verification[status]}
+    </span>
+  )
 
 export function Foundations() {
   const load = useLoad<Profile[]>('/admin/foundations')
@@ -111,15 +139,25 @@ export function Foundations() {
   return (
     <Loaded load={load} error={act.error}>
       {list =>
-        list.length
-          ? list.map(f => (
+        list.length ? (
+          <div className="grid">
+            {list.map(f => (
               <article key={f.id} className="card">
-                <h2>{f.foundationName}</h2>
-                <p className="muted">
-                  {f.foundationInstagram && `@${f.foundationInstagram.replace(/^@/, '')} · `}
-                  {f.fullName}
-                </p>
-                {f.foundationBio && <p>{f.foundationBio}</p>}
+                <div className="card-head">
+                  <div className="who">
+                    <Avatar name={f.foundationName} />
+                    <div>
+                      <h2>{f.foundationName}</h2>
+                      <p className="muted">
+                        {f.foundationInstagram && <span className="handle">@{f.foundationInstagram.replace(/^@/, '')}</span>}
+                        {f.foundationInstagram && f.fullName && ' · '}
+                        {f.fullName}
+                      </p>
+                    </div>
+                  </div>
+                  <Verification status={f.verificationStatus} />
+                </div>
+                {f.foundationBio && <p className="desc">{f.foundationBio}</p>}
                 <div className="actions">
                   <button disabled={act.busy} onClick={() => act.run(() => api(`/admin/foundations/${f.id}/verify`, 'POST'))}>
                     <BadgeCheck size={16} />
@@ -135,14 +173,15 @@ export function Foundations() {
                   </button>
                 </div>
               </article>
-            ))
-          : empty('No hay fundaciones pendientes de verificación.')
+            ))}
+          </div>
+        ) : (
+          empty('No hay fundaciones pendientes de verificación.')
+        )
       }
     </Loaded>
   )
 }
-
-const verification = { none: '—', pending: 'Pendiente', verified: 'Verificada', rejected: 'Rechazada' }
 
 export function Users() {
   const load = useLoad<Profile[]>('/admin/users')
@@ -162,9 +201,15 @@ export function Users() {
               <tbody>
                 {users.map(u => (
                   <tr key={u.id}>
-                    <td>{u.fullName ?? '—'}{u.role === 'admin' && <span className="muted"> (admin)</span>}</td>
+                    <td>
+                      <span className="who">
+                        <Avatar name={u.fullName} />
+                        <strong>{u.fullName ?? '—'}</strong>
+                        {u.role === 'admin' && <span className="badge">Admin</span>}
+                      </span>
+                    </td>
                     <td>{u.accountType === 'foundation' ? u.foundationName ?? 'Fundación' : 'Persona'}</td>
-                    <td>{verification[u.verificationStatus]}</td>
+                    <td><Verification status={u.verificationStatus} /></td>
                     <td>
                       <select
                         aria-label={`Plan de ${u.fullName ?? u.id}`}
@@ -228,11 +273,11 @@ export function Reports() {
               <tbody>
                 {reports.map(r => (
                   <tr key={r.id}>
-                    <td>{r.petName}</td>
+                    <td><strong>{r.petName}</strong></td>
                     <td>{r.reason}</td>
-                    <td>{date(r.createdAt)}</td>
+                    <td className="muted nowrap">{date(r.createdAt)}</td>
                     <td>
-                      <div className="actions">
+                      <div className="actions end">
                         <button className="secondary" disabled={act.busy} onClick={() => act.run(() => api(`/admin/reports/${r.id}/resolve`, 'POST'))}>Descartar</button>
                         <button className="danger" disabled={act.busy} onClick={() => takeDown(r)}>
                           <Trash2 size={16} />
@@ -296,11 +341,11 @@ export function Imports() {
                 <tbody>
                   {jobs.map(j => (
                     <tr key={j.id}>
-                      <td>{j.instagramHandle}</td>
+                      <td><strong>{j.instagramHandle}</strong></td>
                       <td><span className={`badge ${j.status}`}>{importStatus[j.status]}</span></td>
                       <td>{j.petsCreated}</td>
-                      <td>{j.error ?? '—'}</td>
-                      <td>{date(j.createdAt)}</td>
+                      <td className={j.error ? 'error' : 'muted'}>{j.error ?? '—'}</td>
+                      <td className="muted nowrap">{date(j.createdAt)}</td>
                     </tr>
                   ))}
                 </tbody>
