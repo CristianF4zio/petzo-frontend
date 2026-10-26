@@ -23,3 +23,4 @@
 | F2 (en petzo-web, antes de mudarlo) | ponytail:ponytail-audit | Revisar el scaffold | 1 hallazgo: `VITE_API_URL` apunta al puerto 3000 de la API de Node borrada |
 | Reto | vercel-react-native-skills | Sesión con `expo-secure-store`, subida multipart y Google con `expo-web-browser` + `expo-crypto` | Paquetes de Expo Go (sin módulos nativos extra); comprobado con `tsc` y el bundle |
 | Reto | playwright-cli | Probar el panel en un navegador real: login por la API con un usuario sin rol | Se vio "Tu cuenta no tiene permisos de administrador" y el backend respondió 403 en las 6 rutas admin; captura en `docs/evidencia/panel-no-admin.png` |
+| Reto (cierre) | ponytail-audit | Auditoría final antes de la entrega | Arreglos de una línea: pantalla en blanco si la API no responde al abrir, refresh que deshacía el cierre de sesión, mensaje claro si falta la URL de la API, "Retirar" en reportes repetidos; `tsc`, `npm run build`, `npm run lint` y `expo export` en verde |

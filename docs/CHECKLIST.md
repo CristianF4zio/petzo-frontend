@@ -53,19 +53,21 @@ Fuera de la app (otros repos o v2)
 - [x] HU-15 Métricas
 - [x] `npm run build` y `npm run lint` OK
 - [x] Login en vivo por la API y guardia de rol: un usuario normal ve "Tu cuenta no tiene permisos de administrador" (`docs/evidencia/panel-no-admin.png`)
-- [ ] Probar las vistas con un admin real (Cris crea el admin con el SQL del README)
+- [x] Probar las vistas con un admin real: el admin entra con Google, modera y lanza importaciones (25-oct)
 
 ## F3 Entrega
 - [ ] APK con EAS (opcional mientras la demo sea local)
-- [ ] Prueba de punta a punta
-- [ ] READMEs y evidencias
+- [x] Prueba de punta a punta (25-oct: iPhone, emulador Android y panel contra Supabase real)
+- [x] READMEs y evidencias (`docs/evidencia/`)
+- [x] Auditoría final (26-oct): ningún cliente toca Supabase y Google coincide con la API; 4 arreglos (pantalla en blanco sin API, refresh vs. cierre de sesión, error claro sin URL de la API, "Retirar" en reportes repetidos); `tsc`, build, lint y `expo export` en verde
+- [ ] Video de 3–5 min (Cris)
 
 ## Pendientes de Cris
 - [x] Repos `petzo-backend` y `petzo-frontend` en GitHub
-- [ ] Archivar `petzo-web` en GitHub (el panel ya vive en `apps/admin`)
+- [~] Archivar `petzo-web` en GitHub (el panel ya vive en `apps/admin`): confirmar que quedó archivado
 - [x] Repo renombrado en GitHub a `petzo-frontend`
-- [ ] `ANTHROPIC_API_KEY` en `petzo-backend/.env` (pre-evaluación y match)
-- [ ] Importar los 2 flujos de n8n y poner sus URLs en `petzo-backend/.env` (moderación automática y correos)
+- [x] IA: ya no hace falta `ANTHROPIC_API_KEY`; todo va por la clave de OpenRouter (DECISIONS §9)
+- [~] Flujos de n8n importados y activos en staging con sus URLs en `.env`; el flujo 1 ya corrió. Falta la contraseña de Gmail en la credencial **Petzo SMTP** para el flujo 2
 - [ ] Servicio Docker en Render (solo si la demo deja de ser local)
 - [ ] Sesión del CLI de Expo (`npx expo login` o `EXPO_TOKEN`) para EAS (solo para el APK)
 
