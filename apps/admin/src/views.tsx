@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { BadgeCheck, Check, Download, Inbox, LoaderCircle, RotateCw, Trash2, TriangleAlert, X, type LucideIcon } from 'lucide-react'
+import { BadgeCheck, Check, Download, ExternalLink, Inbox, LoaderCircle, RotateCw, Trash2, TriangleAlert, X, type LucideIcon } from 'lucide-react'
 import { api, ApiError, useAction, useLoad, type Load } from './api.ts'
 
 export type Profile = {
@@ -32,6 +32,7 @@ type Report = { id: string; petId: string; petName: string; reason: string; crea
 type ImportJob = { id: string; instagramHandle: string; status: 'queued' | 'running' | 'done' | 'failed'; petsCreated: number; error: string | null; createdAt: string }
 
 const date = (iso: string) => new Date(iso).toLocaleString('es')
+const shortDate = (iso: string) => new Date(iso).toLocaleString('es', { dateStyle: 'short', timeStyle: 'short' })
 
 export const Avatar = ({ name }: { name: string | null }) => (
   <span className="avatar" aria-hidden="true">{name?.trim()[0]?.toUpperCase() ?? '?'}</span>
@@ -81,37 +82,64 @@ export function Moderation() {
     <Loaded load={load} error={act.error}>
       {pets =>
         pets.length ? (
-          <div className="grid">
-            {pets.map(p => (
-              <article key={p.id} className="card">
-                {p.photos.length > 0 && (
-                  <div className="photos">
-                    {p.photos.map(ph => <img key={ph.id} src={ph.url} alt={p.name} width={120} height={120} loading="lazy" />)}
-                  </div>
-                )}
-                <div className="card-head">
-                  <div>
-                    <h2>{p.name}</h2>
-                    <p className="muted">{p.species === 'dog' ? 'Perro' : 'Gato'} · Publicado por {p.publisher?.name ?? '—'}</p>
-                  </div>
-                  <span className={`badge ${risk(p.riskScore)}`}>
-                    {riskLabel[risk(p.riskScore)]}{p.riskScore !== null && ` · ${p.riskScore}/100`}
-                  </span>
-                </div>
-                <p className="reason"><b>Motivo:</b> {p.moderationReason ?? '—'}</p>
-                {p.description && <p className="desc">{p.description}</p>}
-                <div className="actions">
-                  <button disabled={act.busy} onClick={() => act.run(() => api(`/admin/pets/${p.id}/approve?version=${p.version}`, 'POST'))}>
-                    <Check size={16} />
-                    Aprobar
-                  </button>
-                  <button className="danger" disabled={act.busy} onClick={() => reject(p)}>
-                    <X size={16} />
-                    Rechazar
-                  </button>
-                </div>
-              </article>
-            ))}
+          <div className="table-card">
+            <table className="data">
+              <caption className="sr-only">Publicaciones en revisión</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Mascota</th>
+                  <th scope="col">Publicado por</th>
+                  <th scope="col">Riesgo IA</th>
+                  <th scope="col">Motivo de la IA</th>
+                  <th scope="col">Descripción</th>
+                  <th scope="col"><span className="sr-only">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {pets.map(p => (
+                  <tr key={p.id}>
+                    <td>
+                      <div className="pet-cell">
+                        {p.photos[0] ? (
+                          <img className="thumb" src={p.photos[0].url} alt={p.name} width={56} height={56} loading="lazy" />
+                        ) : (
+                          <span className="thumb" aria-hidden="true" />
+                        )}
+                        <div>
+                          <strong>{p.name}</strong>
+                          <div className="muted small">
+                            {p.species === 'dog' ? 'Perro' : 'Gato'} · {p.photos.length} {p.photos.length === 1 ? 'foto' : 'fotos'}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{p.publisher?.name ?? '—'}</td>
+                    <td>
+                      <span className={`badge ${risk(p.riskScore)}`}>
+                        {riskLabel[risk(p.riskScore)]}
+                        {p.riskScore !== null && ` · ${p.riskScore}`}
+                      </span>
+                    </td>
+                    <td className="wrap">{p.moderationReason ?? '—'}</td>
+                    <td className="wrap">
+                      <span className="clamp" title={p.description ?? undefined}>{p.description ?? '—'}</span>
+                    </td>
+                    <td>
+                      <div className="actions">
+                        <button disabled={act.busy} onClick={() => act.run(() => api(`/admin/pets/${p.id}/approve?version=${p.version}`, 'POST'))}>
+                          <Check size={16} />
+                          Aprobar
+                        </button>
+                        <button className="danger" disabled={act.busy} onClick={() => reject(p)}>
+                          <X size={16} />
+                          Rechazar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
           empty('No hay publicaciones en revisión.')
@@ -133,53 +161,162 @@ const Verification = ({ status }: { status: Profile['verificationStatus'] }) =>
     </span>
   )
 
+type ImportedFoundation = {
+  handle: string
+  name: string | null
+  sourceUrl: string | null
+  runs: number
+  lastImport: string
+  lastStatus: ImportJob['status']
+  petsImported: number
+  verified: boolean
+}
+
+// Short, readable form of the page Stagehand read (host + path)
+const page = (url: string) => {
+  const u = new URL(url)
+  const last = u.pathname.split('/').filter(Boolean).pop()
+  return last ? `${u.host}/…/${last}` : u.host
+}
+
 export function Foundations() {
+  const imported = useLoad<ImportedFoundation[]>('/admin/imported-foundations')
   const load = useLoad<Profile[]>('/admin/foundations')
   const act = useAction(load.reload)
   return (
-    <Loaded load={load} error={act.error}>
-      {list =>
-        list.length ? (
-          <div className="grid">
-            {list.map(f => (
-              <article key={f.id} className="card">
-                <div className="card-head">
-                  <div className="who">
-                    <Avatar name={f.foundationName} />
-                    <div>
-                      <h2>{f.foundationName}</h2>
-                      <p className="muted">
-                        {f.foundationInstagram && <span className="handle">@{f.foundationInstagram.replace(/^@/, '')}</span>}
-                        {f.foundationInstagram && f.fullName && ' · '}
-                        {f.fullName}
-                      </p>
-                    </div>
-                  </div>
-                  <Verification status={f.verificationStatus} />
-                </div>
-                {f.foundationBio && <p className="desc">{f.foundationBio}</p>}
-                <div className="actions">
-                  <button disabled={act.busy} onClick={() => act.run(() => api(`/admin/foundations/${f.id}/verify`, 'POST'))}>
-                    <BadgeCheck size={16} />
-                    Verificar (plan Pro)
-                  </button>
-                  <button
-                    className="danger"
-                    disabled={act.busy}
-                    onClick={() => confirm(`¿Rechazar la verificación de ${f.foundationName}?`) && act.run(() => api(`/admin/foundations/${f.id}/reject`, 'POST'))}
-                  >
-                    <X size={16} />
-                    Rechazar
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          empty('No hay fundaciones pendientes de verificación.')
-        )
-      }
-    </Loaded>
+    <>
+      <section className="section" aria-labelledby="imported-title">
+        <div className="section-head">
+          <h2 id="imported-title">Fundaciones leídas por Stagehand</h2>
+          <p className="muted">Lo que el worker extrae de la página de cada fundación en cada importación.</p>
+        </div>
+        <Loaded load={imported}>
+          {rows =>
+            rows.length ? (
+              <div className="table-card">
+                <table className="data">
+                  <caption className="sr-only">Fundaciones leídas por Stagehand</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Fundación</th>
+                      <th scope="col">Página</th>
+                      <th scope="col" className="num" title="Mascotas importadas">Mascotas</th>
+                      <th scope="col" className="num" title="Veces que Stagehand leyó la página">Lecturas</th>
+                      <th scope="col">Última lectura</th>
+                      <th scope="col">Estado</th>
+                      <th scope="col" title="¿Hay una cuenta de fundación verificada con este identificador?">Verificada</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map(f => (
+                      <tr key={f.handle}>
+                        <td>
+                          <div className="who">
+                            <Avatar name={f.name ?? f.handle} />
+                            <div>
+                              <strong>{f.name ?? 'Sin nombre leído'}</strong>
+                              <div className="handle small">@{f.handle}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          {f.sourceUrl ? (
+                            <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" className="link">
+                              {page(f.sourceUrl)}
+                              <ExternalLink size={14} aria-hidden="true" />
+                              <span className="sr-only">(se abre en otra pestaña)</span>
+                            </a>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                        <td className="num">{f.petsImported}</td>
+                        <td className="num">{f.runs}</td>
+                        <td className="nowrap">{shortDate(f.lastImport)}</td>
+                        <td><span className={`badge ${f.lastStatus}`}>{importStatus[f.lastStatus]}</span></td>
+                        <td>
+                          {f.verified ? (
+                            <span className="badge verified"><BadgeCheck size={14} aria-hidden="true" />Sí</span>
+                          ) : (
+                            <span className="badge">No</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              empty('Stagehand todavía no ha leído ninguna fundación.')
+            )
+          }
+        </Loaded>
+      </section>
+
+      <section className="section" aria-labelledby="requests-title">
+        <div className="section-head">
+          <h2 id="requests-title">Solicitudes de verificación</h2>
+          <p className="muted">Cuentas que pidieron ser fundación verificada (plan Pro).</p>
+        </div>
+        <Loaded load={load} error={act.error}>
+          {list =>
+            list.length ? (
+              <div className="table-card">
+                <table className="data">
+                  <caption className="sr-only">Solicitudes de verificación de fundaciones</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Fundación</th>
+                      <th scope="col">Instagram</th>
+                      <th scope="col">Responsable</th>
+                      <th scope="col">Descripción</th>
+                      <th scope="col">Estado</th>
+                      <th scope="col"><span className="sr-only">Acciones</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {list.map(f => (
+                      <tr key={f.id}>
+                        <td>
+                          <div className="who">
+                            <Avatar name={f.foundationName} />
+                            <strong>{f.foundationName}</strong>
+                          </div>
+                        </td>
+                        <td>{f.foundationInstagram ? <span className="handle">@{f.foundationInstagram.replace(/^@/, '')}</span> : '—'}</td>
+                        <td>{f.fullName ?? '—'}</td>
+                        <td className="wrap">
+                          <span className="clamp" title={f.foundationBio ?? undefined}>{f.foundationBio ?? '—'}</span>
+                        </td>
+                        <td><Verification status={f.verificationStatus} /></td>
+                        <td>
+                          <div className="actions">
+                            <button disabled={act.busy} onClick={() => act.run(() => api(`/admin/foundations/${f.id}/verify`, 'POST'))}>
+                              <BadgeCheck size={16} />
+                              Verificar
+                            </button>
+                            <button
+                              className="danger"
+                              disabled={act.busy}
+                              onClick={() => confirm(`¿Rechazar la verificación de ${f.foundationName}?`) && act.run(() => api(`/admin/foundations/${f.id}/reject`, 'POST'))}
+                            >
+                              <X size={16} />
+                              Rechazar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              empty('No hay fundaciones pendientes de verificación.')
+            )
+          }
+        </Loaded>
+      </section>
+    </>
   )
 }
 

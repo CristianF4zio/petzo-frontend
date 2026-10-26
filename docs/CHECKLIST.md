@@ -78,3 +78,5 @@ Fuera de la app (otros repos o v2)
 - [x] Nada se recortó de las historias: favoritos (HU-16), reportes (HU-11) y match (HU-06) están hechos; solo el panel de métricas (HU-15) se retiró a pedido
 
 - [x] Rediseño (26-oct): app con splash animado, onboarding, inicio con categorías y grilla, detalle con chips; panel con barra lateral, buscador, tarjetas y splash. Lógica y llamadas a la API sin cambios (comparadas); tsc, export, build y lint en verde
+
+- [x] Moderación y Fundaciones en tablas (26-oct): Moderación con miniatura, publicador, riesgo IA, motivo, descripción y acciones; Fundaciones con la tabla de lo que leyó Stagehand (nombre, identificador, página, mascotas, lecturas, última lectura, estado, verificada) y la de solicitudes de verificación; revisado con capturas a 1440 px

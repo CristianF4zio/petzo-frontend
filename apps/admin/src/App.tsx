@@ -7,7 +7,7 @@ import { Avatar, Foundations, Imports, Moderation, Reports, State, Users, type P
 
 const tabs = {
   moderation: ['Moderación', Moderation, ShieldCheck, 'Aprueba o rechaza las publicaciones en revisión.'],
-  foundations: ['Fundaciones', Foundations, BadgeCheck, 'Verifica las fundaciones que solicitaron el plan Pro.'],
+  foundations: ['Fundaciones', Foundations, BadgeCheck, 'Fundaciones que Stagehand leyó y solicitudes de verificación.'],
   users: ['Usuarios', Users, UsersIcon, 'Gestiona planes y suspende cuentas.'],
   reports: ['Reportes', Reports, Flag, 'Revisa los reportes abiertos de la comunidad.'],
   imports: ['Importaciones', Imports, Download, 'Importa publicaciones de una fundación con Stagehand.'],
