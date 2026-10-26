@@ -71,7 +71,8 @@ export class ApiError extends Error {
   }
 }
 
-export const BASE = process.env.EXPO_PUBLIC_API_URL! + '/api';
+if (!process.env.EXPO_PUBLIC_API_URL) throw Error('Falta EXPO_PUBLIC_API_URL en apps/mobile/.env');
+export const BASE = process.env.EXPO_PUBLIC_API_URL + '/api';
 
 const KEY = 'session';
 let session: Session | null = null;
@@ -99,10 +100,13 @@ export async function saveSession(t: Tokens | null) {
 // One refresh at a time: parallel 401s share it. Only a rejected refresh token signs out; offline keeps the session.
 function refresh() {
   refreshing ??= (async () => {
+    const sent = session!.refreshToken;
     try {
-      await saveSession(await send<Tokens>('/auth/refresh', { method: 'POST', body: { refreshToken: session!.refreshToken } }));
+      const t = await send<Tokens>('/auth/refresh', { method: 'POST', body: { refreshToken: sent } });
+      // Signed out (or in again) while refreshing: don't bring the old session back
+      if (session?.refreshToken === sent) await saveSession(t);
     } catch (e) {
-      if (e instanceof ApiError && e.status >= 400 && e.status < 500) await saveSession(null);
+      if (e instanceof ApiError && e.status >= 400 && e.status < 500 && session?.refreshToken === sent) await saveSession(null);
     } finally {
       refreshing = null;
     }

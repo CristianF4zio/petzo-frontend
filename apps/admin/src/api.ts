@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 
+if (!import.meta.env.VITE_API_URL) throw Error('Falta VITE_API_URL en apps/admin/.env')
 const API = import.meta.env.VITE_API_URL + '/api'
 const SESSION = 'petzo.session'
 const GOOGLE = 'petzo.google'

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { api, useAction, useLoad, type Load } from './api.ts'
+import { api, ApiError, useAction, useLoad, type Load } from './api.ts'
 
 export type Profile = {
   id: string
@@ -181,7 +181,10 @@ export function Reports() {
     const reason = prompt(`Motivo para retirar "${r.petName}":`, r.reason)?.trim()
     if (reason)
       act.run(async () => {
-        await api(`/admin/pets/${r.petId}/reject`, 'POST', { reason })
+        // 409: already taken down (another report) or paused; the report still gets closed
+        await api(`/admin/pets/${r.petId}/reject`, 'POST', { reason }).catch(e => {
+          if (!(e instanceof ApiError && e.status === 409)) throw e
+        })
         await api(`/admin/reports/${r.id}/resolve`, 'POST')
       })
   }

@@ -50,7 +50,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       return;
     }
     // A failed /me (offline) still lets the app open; screens retry on their own
-    refreshProfile().finally(() => setReady(true));
+    refreshProfile()
+      .catch(() => {})
+      .finally(() => setReady(true));
   }, [signedIn, refreshProfile]);
 
   const toggleFav = useCallback(
