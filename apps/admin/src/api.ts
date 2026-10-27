@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import { sha256 } from './sha256.ts'
 
 if (!import.meta.env.VITE_API_URL) throw Error('Falta VITE_API_URL en apps/admin/.env')
 const API = import.meta.env.VITE_API_URL + '/api'
@@ -89,10 +90,23 @@ export async function logout() {
 const base64url = (bytes: ArrayBuffer | Uint8Array) =>
   btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 
+// randomUUID and subtle only exist on secure pages (https/localhost); getRandomValues works everywhere
+const uuid = () => {
+  const b = crypto.getRandomValues(new Uint8Array(16))
+  b[6] = (b[6] & 0x0f) | 0x40
+  b[8] = (b[8] & 0x3f) | 0x80
+  const hex = [...b].map(x => x.toString(16).padStart(2, '0')).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
+const digest = async (text: string) => {
+  const bytes = new TextEncoder().encode(text)
+  return crypto.subtle ? crypto.subtle.digest('SHA-256', bytes) : sha256(bytes)
+}
+
 export async function googleStart() {
-  const flow = crypto.randomUUID()
+  const flow = uuid()
   const secret = base64url(crypto.getRandomValues(new Uint8Array(32)))
-  const challenge = base64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret)))
+  const challenge = base64url(await digest(secret))
   sessionStorage.setItem(GOOGLE, JSON.stringify({ flow, secret }))
   const redirect = encodeURIComponent(location.origin + '/auth-callback')
   location.assign(`${API}/auth/google/start?flow=${flow}&challenge=${challenge}&redirect=${redirect}`)
